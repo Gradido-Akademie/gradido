@@ -260,18 +260,13 @@ function del(e) {
 }
 </script>
 
-<style scoped lang="scss">
-$teal: #178d81;
-$green: #047006;
-$blue: #0e79bc;
-$rose: #c2557e;
-
+<style scoped>
 .matching-page {
   color: #383838;
   font-size: 15px;
 }
 
-/* --- Such-Kachel --- */
+/* Such-Kachel */
 .search-tile {
   display: flex;
   align-items: center;
@@ -279,25 +274,24 @@ $rose: #c2557e;
   background: #fff;
   padding: 16px 20px;
   margin-bottom: 22px;
-
-  .ic {
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
-    background: $teal;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-  }
-  .tile-arrow {
-    color: $teal;
-    font-size: 20px;
-  }
+}
+.search-tile .ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #178d81;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.search-tile .tile-arrow {
+  color: #178d81;
+  font-size: 20px;
 }
 
-/* --- Tab-Leiste --- */
+/* Tab-Leiste */
 .nav-seg {
   background: #d1d1d1;
   border-radius: 26px;
@@ -305,30 +299,28 @@ $rose: #c2557e;
   box-shadow: 0 6px 18px rgb(56 56 56 / 14%);
   padding: 4px;
   margin: 0 6px 22px;
-
-  button {
-    flex: 1;
-    border: none;
-    background: transparent;
-    color: #000;
-    font-size: 14px;
-    padding: 10px 6px;
-    border-radius: 22px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-
-    &.active {
-      background: $teal;
-      color: #fff;
-      font-weight: 700;
-    }
-  }
+}
+.nav-seg button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #000;
+  font-size: 14px;
+  padding: 10px 6px;
+  border-radius: 22px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.nav-seg button.active {
+  background: #178d81;
+  color: #fff;
+  font-weight: 700;
 }
 
-/* --- Einträge-Liste --- */
+/* Einträge-Liste */
 .status-head {
   margin: 0 6px 14px;
 }
@@ -340,10 +332,9 @@ $rose: #c2557e;
   background: #fff;
   padding: 16px 18px;
   margin: 0 6px 20px;
-
-  &.paused {
-    opacity: 0.55;
-  }
+}
+.card-item.paused {
+  opacity: 0.55;
 }
 .row-top {
   display: flex;
@@ -362,16 +353,15 @@ $rose: #c2557e;
   justify-content: center;
   color: #fff;
   font-size: 30px;
-
-  &.interesse {
-    background: $rose;
-  }
-  &.angebot {
-    background: $green;
-  }
-  &.gesuch {
-    background: $blue;
-  }
+}
+.ava.interesse {
+  background: #c2557e;
+}
+.ava.angebot {
+  background: #047006;
+}
+.ava.gesuch {
+  background: #0e79bc;
 }
 .type-label {
   font-weight: 700;
@@ -419,18 +409,17 @@ $rose: #c2557e;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-
-  svg {
-    font-size: 18px;
-  }
-  &:hover {
-    color: $teal;
-  }
+}
+.act svg {
+  font-size: 18px;
+}
+.act:hover {
+  color: #178d81;
 }
 
-/* --- Buttons --- */
+/* Buttons */
 .btn-teal {
-  background: $teal;
+  background: #178d81;
   border: none;
   color: #fff;
   border-radius: 22px;
@@ -440,14 +429,13 @@ $rose: #c2557e;
   align-items: center;
   gap: 7px;
   cursor: pointer;
-
-  &:hover {
-    background: #0f6e56;
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
+}
+.btn-teal:hover {
+  background: #0f6e56;
+}
+.btn-teal:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 .btn-light-soft {
   background: #f0f1ee;
@@ -468,7 +456,7 @@ $rose: #c2557e;
   gap: 7px;
 }
 
-/* --- Über mich / Position --- */
+/* Über mich / Position */
 .tab-pad {
   margin: 0 6px;
 }
@@ -504,19 +492,18 @@ $rose: #c2557e;
   color: #8a8a84;
 }
 
-/* --- Empty state --- */
+/* Empty state */
 .empty-state {
   text-align: center;
   padding: 40px 16px;
   color: #77776f;
-
-  .empty-icon {
-    font-size: 36px;
-    color: #c9ccc6;
-  }
+}
+.empty-state .empty-icon {
+  font-size: 36px;
+  color: #c9ccc6;
 }
 
-/* --- Popup --- */
+/* Popup */
 .mtc-backdrop {
   position: fixed;
   inset: 0;
@@ -566,45 +553,42 @@ $rose: #c2557e;
   border-radius: 16px;
   margin-bottom: 14px;
   color: #fff;
-
-  &.interesse {
-    background: $rose;
-  }
-  &.angebot {
-    background: $green;
-  }
-  &.gesuch {
-    background: $blue;
-  }
+}
+.cat-label.interesse {
+  background: #c2557e;
+}
+.cat-label.angebot {
+  background: #047006;
+}
+.cat-label.gesuch {
+  background: #0e79bc;
 }
 .type-choice {
   display: flex;
   gap: 10px;
   margin-bottom: 14px;
-
-  button {
-    flex: 1;
-    border: 1.5px solid #d7dbd5;
-    background: #fff;
-    border-radius: 16px;
-    padding: 12px 6px;
-    cursor: pointer;
-    font-size: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-
-    svg {
-      font-size: 22px;
-    }
-    &.sel {
-      border-color: $teal;
-      background: #e6f2f0;
-      color: $teal;
-      font-weight: 600;
-    }
-  }
+}
+.type-choice button {
+  flex: 1;
+  border: 1.5px solid #d7dbd5;
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px 6px;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.type-choice button svg {
+  font-size: 22px;
+}
+.type-choice button.sel {
+  border-color: #178d81;
+  background: #e6f2f0;
+  color: #178d81;
+  font-weight: 600;
 }
 .details-toggle {
   cursor: pointer;
