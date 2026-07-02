@@ -76,6 +76,14 @@ const routes = [
     },
   },
   {
+    path: '/matching',
+    component: () => import('@/pages/Matching'),
+    meta: {
+      requiresAuth: true,
+      pageTitle: 'matching',
+    },
+  },
+  {
     path: '/information',
     component: () => import('@/pages/InfoStatistic'),
     meta: {

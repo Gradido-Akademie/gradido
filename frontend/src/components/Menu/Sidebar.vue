@@ -37,7 +37,7 @@
               <span class="ms-2">{{ $t('creation') }}</span>
             </div>
           </BNavItem>
-          <BNavItem class="mb-3" active-class="active-route" @click.prevent>
+          <BNavItem to="/matching" class="mb-3" active-class="active-route">
             <div class="sidebar-menu-item-wrapper">
               <i-mdi-handshake class="svg-icon" />
               <span class="ms-2">Matching</span>
