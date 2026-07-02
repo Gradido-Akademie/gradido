@@ -12,19 +12,19 @@
 
     <!-- Tab-Leiste (Einträge / Über mich / Position) -->
     <div class="nav-seg">
-      <button :class="{ active: tab === 'eintraege' }" @click="tab = 'eintraege'">
+      <button :class="{ active: tab === 'entries' }" @click="goTab('entries')">
         <i-bi-card-list /> Einträge
       </button>
-      <button :class="{ active: tab === 'ueber' }" @click="tab = 'ueber'">
+      <button :class="{ active: tab === 'about' }" @click="goTab('about')">
         <i-bi-person /> Über mich
       </button>
-      <button :class="{ active: tab === 'position' }" @click="tab = 'position'">
+      <button :class="{ active: tab === 'position' }" @click="goTab('position')">
         <i-bi-geo-alt /> Position
       </button>
     </div>
 
     <!-- EINTRÄGE -->
-    <div v-if="tab === 'eintraege'">
+    <div v-if="tab === 'entries'">
       <template v-if="entries.length">
         <div class="d-flex align-items-center justify-content-between status-head">
           <span class="status-line">
@@ -82,7 +82,7 @@
     </div>
 
     <!-- ÜBER MICH -->
-    <div v-if="tab === 'ueber'" class="tab-pad">
+    <div v-if="tab === 'about'" class="tab-pad">
       <label class="fw-bold mb-2 d-block">Wer Du bist — in Deinen eigenen Worten</label>
       <textarea
         v-model="aboutMe"
@@ -187,8 +187,18 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const tab = ref('eintraege')
+const route = useRoute()
+const router = useRouter()
+
+// The active tab is driven by the route param (/matching/:tab) so the
+// right-hand explanation column (MatchingTemplate) can switch in sync
+// via $route.params.tab.
+const tab = computed(() => route.params.tab || 'entries')
+const goTab = (name) => {
+  if (tab.value !== name) router.push(`/matching/${name}`)
+}
 
 const types = [
   { key: 'interesse', label: 'Ich liebe' },

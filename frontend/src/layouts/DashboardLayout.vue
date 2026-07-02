@@ -131,6 +131,9 @@
                 <template #contributions>
                   <contributions-template />
                 </template>
+                <template #matching>
+                  <matching-template />
+                </template>
                 <template #empty />
               </right-side>
             </BCol>
@@ -167,6 +170,9 @@
             <template #contributions>
               <contributions-template />
             </template>
+            <template #matching>
+              <matching-template />
+            </template>
           </right-side>
         </BCol>
       </BRow>
@@ -188,6 +194,7 @@ import { useRouter } from 'vue-router'
 import { useQuery, useMutation } from '@vue/apollo-composable'
 import ContentHeader from '@/layouts/templates/ContentHeader'
 import ContributionsTemplate from '@/layouts/templates/ContributionsTemplate'
+import MatchingTemplate from '@/layouts/templates/MatchingTemplate'
 import Breadcrumb from '@/components/Breadcrumb/breadcrumb'
 import RightSide from '@/layouts/templates/RightSide'
 import SkeletonOverview from '@/components/skeleton/Overview'

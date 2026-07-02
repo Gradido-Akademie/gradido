@@ -82,6 +82,17 @@ const routes = [
       requiresAuth: true,
       pageTitle: 'matching',
     },
+    redirect: () => {
+      return { path: '/matching/entries' }
+    },
+  },
+  {
+    path: '/matching/:tab',
+    component: () => import('@/pages/Matching'),
+    meta: {
+      requiresAuth: true,
+      pageTitle: 'matching',
+    },
   },
   {
     path: '/information',
