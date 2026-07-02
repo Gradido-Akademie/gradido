@@ -37,15 +37,21 @@
               <span class="ms-2">{{ $t('creation') }}</span>
             </div>
           </BNavItem>
+          <BNavItem class="mb-3" active-class="active-route" @click.prevent>
+            <div class="sidebar-menu-item-wrapper">
+              <i-mdi-handshake class="svg-icon" />
+              <span class="ms-2">Matching</span>
+            </div>
+          </BNavItem>
+        </BNav>
+        <hr class="m-3" />
+        <BNav vertical class="w-100">
           <BNavItem to="/information" class="mb-3" active-class="active-route">
             <div class="sidebar-menu-item-wrapper">
               <i-mdi-information class="svg-icon" />
               <span class="ms-2">{{ $t('info') }}</span>
             </div>
           </BNavItem>
-        </BNav>
-        <hr class="m-3" />
-        <BNav vertical class="w-100">
           <BNavItem
             to="/settings"
             class="mb-3 d-block"
