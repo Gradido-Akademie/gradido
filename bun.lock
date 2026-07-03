@@ -18,7 +18,7 @@
     },
     "admin": {
       "name": "admin",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "@iconify/json": "^2.2.228",
         "@popperjs/core": "^2.11.8",
@@ -88,7 +88,7 @@
     },
     "backend": {
       "name": "backend",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "cross-env": "^7.0.3",
         "email-templates": "^10.0.1",
@@ -164,7 +164,7 @@
     },
     "config-schema": {
       "name": "config-schema",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "esbuild": "^0.25.2",
         "joi": "17.13.3",
@@ -182,7 +182,7 @@
     },
     "core": {
       "name": "core",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "database": "*",
         "email-templates": "^10.0.1",
@@ -219,7 +219,7 @@
     },
     "database": {
       "name": "database",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "@types/uuid": "^8.3.4",
         "cross-env": "^7.0.3",
@@ -255,7 +255,7 @@
     },
     "dht-node": {
       "name": "dht-node",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "cross-env": "^7.0.3",
         "dht-rpc": "6.18.1",
@@ -293,7 +293,7 @@
     },
     "federation": {
       "name": "federation",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "cross-env": "^7.0.3",
         "email-templates": "^10.0.1",
@@ -353,7 +353,7 @@
     },
     "frontend": {
       "name": "frontend",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "@morev/vue-transitions": "^3.0.2",
         "@types/leaflet": "^1.9.12",
@@ -405,6 +405,7 @@
         "@iconify-json/humbleicons": "^1.2.6",
         "@iconify-json/ion": "^1.2.2",
         "@iconify-json/mdi": "^1.2.3",
+        "@iconify-json/tabler": "^1.2.0",
         "@intlify/eslint-plugin-vue-i18n": "^1.4.0",
         "@intlify/unplugin-vue-i18n": "^6.0.5",
         "@vitest/coverage-v8": "^2.0.5",
@@ -449,7 +450,7 @@
     },
     "shared": {
       "name": "shared",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "esbuild": "^0.25.2",
         "jose": "^4.14.4",
@@ -469,7 +470,7 @@
     },
     "shared-native": {
       "name": "shared-native",
-      "version": "2.8.1",
+      "version": "2.8.3",
       "dependencies": {
         "detect-libc": "^2.1.2",
         "node-addon-api": "^8.7.0",
@@ -778,6 +779,8 @@
     "@iconify-json/ion": ["@iconify-json/ion@1.2.6", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-JftEXKfjvJNn3SrGeSBrG/waRkjeTpLdMLNLwpAX4NgI14QgJoAeXEh2iZjNPqioAkeIgErX4Bi6mnFwpjk3BQ=="],
 
     "@iconify-json/mdi": ["@iconify-json/mdi@1.2.3", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg=="],
+
+    "@iconify-json/tabler": ["@iconify-json/tabler@1.2.35", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-/sJMqHvh5ZWrEERVfDCT5NjVDeKJdhosFtKjJofAVl+P/3AzLiryOQw7WvrfDF25Xa5N/eoOQ15Y1jnhYXxBoQ=="],
 
     "@iconify/json": ["@iconify/json@2.2.413", "", { "dependencies": { "@iconify/types": "*", "pathe": "^2.0.3" } }, "sha512-0MpvnDjGoFuVgDLZkaAi3UzUJbfXhiaouLp50/eCJvbiXPtOHpcYkRfT++Zu+YR3meDn9KDRZQF/VS7OFPIMIA=="],
 

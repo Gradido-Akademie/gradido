@@ -39,7 +39,7 @@
           </BNavItem>
           <BNavItem to="/matching" class="mb-3" active-class="active-route">
             <div class="sidebar-menu-item-wrapper">
-              <i-mdi-handshake class="svg-icon" />
+              <i-tabler-heart-handshake class="svg-icon" />
               <span class="ms-2">Matching</span>
             </div>
           </BNavItem>
