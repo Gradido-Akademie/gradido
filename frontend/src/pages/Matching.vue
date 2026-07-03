@@ -73,6 +73,9 @@
               <i-bi-chevron-up v-if="e.open" /><i-bi-chevron-down v-else />
               <div>Details</div>
             </BCol>
+            <BCol v-else class="no-details d-flex align-items-center justify-content-center">
+              (keine Details)
+            </BCol>
             <BCol class="pointer" @click="e.active = !e.active">
               <i-bi-pause v-if="e.active" /><i-bi-play v-else />
               <div>{{ e.active ? 'Pausieren' : 'Aktivieren' }}</div>
@@ -398,6 +401,11 @@ function del(e) {
   background: #f7f8f6;
   font-size: 14px;
   color: #55554f;
+}
+/* placeholder so the action row keeps 4 fixed columns when an entry has no details */
+.no-details {
+  color: #a8a8a2;
+  font-style: italic;
 }
 
 /* Position tab: map placeholder + switch */
