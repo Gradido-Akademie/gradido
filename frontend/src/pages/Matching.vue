@@ -1,6 +1,6 @@
 <template>
   <div class="matching-page mt--3">
-    <!-- Einstieg zur Such-Karte (Glüh-Feld-Dienst; Matching-eigener Baustein) -->
+    <!-- Entry point to the search map (glow-field service; Matching-specific) -->
     <div
       class="search-tile bg-white gradido-border-radius app-box-shadow d-flex align-items-center p-3 mb-4 pointer"
     >
@@ -14,7 +14,7 @@
       <i-bi-arrow-right class="matching-teal" />
     </div>
 
-    <!-- Tab-Leiste (Einträge / Über mich / Position) — Muster wie NavContributions -->
+    <!-- Tab bar (entries / about / position) — same pattern as NavContributions -->
     <div class="matching-nav rounded-26 shadow d-flex justify-content-between mx-lg-5 mb-4">
       <BButton
         variant="link"
@@ -42,7 +42,7 @@
       </BButton>
     </div>
 
-    <!-- EINTRÄGE -->
+    <!-- Entries -->
     <div v-if="tab === 'entries'">
       <template v-if="entries.length">
         <div class="d-flex align-items-center justify-content-between mb-3 mx-2">
@@ -107,7 +107,7 @@
       </div>
     </div>
 
-    <!-- ÜBER MICH -->
+    <!-- About -->
     <div v-if="tab === 'about'" class="mx-2">
       <label class="fw-bold mb-2 d-block">Wer Du bist — in Deinen eigenen Worten</label>
       <textarea
@@ -123,7 +123,7 @@
       <div v-if="savedNote" class="small text-muted mt-2">Gespeichert. (Vorschau — noch ohne Backend)</div>
     </div>
 
-    <!-- POSITION -->
+    <!-- Position -->
     <div v-if="tab === 'position'" class="mx-2">
       <p class="small text-muted">
         Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust.
@@ -150,56 +150,58 @@
       </div>
     </div>
 
-    <!-- POPUP: Neuer Eintrag -->
-    <BModal v-model="showNew" title="Neuer Eintrag" hide-footer centered>
-      <div class="d-flex gap-2 mb-3">
-        <BButton
-          v-for="t in types"
-          :key="t.key"
-          variant="outline-secondary"
-          class="type-choice__btn flex-fill"
-          :class="{ 'is-sel': newType === t.key }"
-          @click="newType = t.key"
+    <!-- Popup: new entry -->
+    <BModal v-model="showNew" centered>
+      <template #title>Neuer Eintrag</template>
+      <template #default>
+        <div class="d-flex gap-2 mb-3">
+          <BButton
+            v-for="t in types"
+            :key="t.key"
+            variant="outline-secondary"
+            class="type-choice__btn flex-fill"
+            :class="{ 'is-sel': newType === t.key }"
+            @click="newType = t.key"
+          >
+            <i-bi-heart v-if="t.key === 'interesse'" />
+            <i-bi-box-seam v-else-if="t.key === 'angebot'" />
+            <i-bi-search v-else />
+            <div>{{ t.label }}</div>
+          </BButton>
+        </div>
+
+        <div
+          class="cat-label rounded-like-card d-flex align-items-center justify-content-center gap-2 mb-3"
+          :class="`type-${newType}`"
         >
-          <i-bi-heart v-if="t.key === 'interesse'" />
-          <i-bi-box-seam v-else-if="t.key === 'angebot'" />
+          <i-bi-heart-fill v-if="newType === 'interesse'" />
+          <i-bi-box-seam v-else-if="newType === 'angebot'" />
           <i-bi-search v-else />
-          <div>{{ t.label }}</div>
-        </BButton>
-      </div>
+          {{ typeLabel(newType) }}
+        </div>
 
-      <div
-        class="cat-label rounded-like-card d-flex align-items-center justify-content-center gap-2 mb-3"
-        :class="`type-${newType}`"
-      >
-        <i-bi-heart-fill v-if="newType === 'interesse'" />
-        <i-bi-box-seam v-else-if="newType === 'angebot'" />
-        <i-bi-search v-else />
-        {{ typeLabel(newType) }}
-      </div>
+        <label class="small text-muted">… in einem Satz</label>
+        <input v-model="newSummary" class="form-control" :placeholder="placeholder" />
 
-      <label class="small text-muted">… in einem Satz</label>
-      <input v-model="newSummary" class="form-control" :placeholder="placeholder" />
+        <div class="mt-3">
+          <a
+            class="small text-muted pointer d-inline-flex align-items-center gap-1"
+            @click="showDetails = !showDetails"
+          >
+            <i-bi-chevron-up v-if="showDetails" /><i-bi-chevron-down v-else />
+            Details · Bedingungen · Preis · Gradido
+          </a>
+          <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2" rows="3"></textarea>
+        </div>
 
-      <div class="mt-3">
-        <a
-          class="small text-muted pointer d-inline-flex align-items-center gap-1"
-          @click="showDetails = !showDetails"
-        >
-          <i-bi-chevron-up v-if="showDetails" /><i-bi-chevron-down v-else />
-          Details · Bedingungen · Preis · Gradido
-        </a>
-        <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2" rows="3"></textarea>
-      </div>
-
-      <BFormCheckbox v-model="newRemote" class="mt-3">
-        Auch überregional / online verfügbar
-      </BFormCheckbox>
-
-      <div class="d-flex justify-content-end gap-2 mt-4">
+        <BFormCheckbox v-model="newRemote" class="mt-3">
+          Auch überregional / online verfügbar
+        </BFormCheckbox>
+      </template>
+      <template #footer>
         <BButton variant="secondary" @click="showNew = false">Abbrechen</BButton>
         <BButton variant="gradido" :disabled="!newSummary.trim()" @click="save">Speichern</BButton>
-      </div>
+      </template>
     </BModal>
   </div>
 </template>
@@ -225,7 +227,7 @@ const types = [
   { key: 'gesuch', label: 'Ich suche' },
 ]
 
-// Mock-Daten (Vorschau) — echtes Backend/DB folgt (wartet auf Dario)
+// Mock data (preview) — real backend/DB follows (waiting on Dario)
 const entries = ref([
   { id: 1, type: 'interesse', summary: 'Ich liebe Permakultur und Selbstversorgung', details: '', active: true, remote: false, open: false, date: '12. Juni 2026' },
   { id: 2, type: 'angebot', summary: 'Ich biete Hilfe beim Renovieren von Wohnungen', details: 'Wochenends, gegen Gradido oder Nachbarschaftshilfe.', active: true, remote: false, open: false, date: '8. Juni 2026' },
@@ -290,14 +292,15 @@ function del(e) {
 </script>
 
 <style scoped>
-/* Nur Matching-spezifische Ergänzungen — alles Übrige kommt aus dem Design-System
-   (Buttons: variant="gradido"/"secondary"; Karten: app-box-shadow + gradido-border-radius;
-   Eingaben: .form-control/.form-select; Abstände/Farben: Bootstrap-Utilities). */
+/* Only Matching-specific additions here — everything else comes from the design
+   system (buttons: variant="gradido"/"secondary"; cards: app-box-shadow +
+   gradido-border-radius; inputs: .form-control/.form-select; spacing/colors:
+   Bootstrap utilities). */
 .matching-page {
   color: #383838;
 }
 
-/* Such-Kachel — Einstieg zur Glüh-Feld-Karte */
+/* Search tile — entry point to the glow-field map */
 .search-tile__ic {
   width: 46px;
   height: 46px;
@@ -312,7 +315,7 @@ function del(e) {
   font-size: 20px;
 }
 
-/* Tab-Leiste — gleiches Bild wie NavContributions (grau, aktiv = Teal) */
+/* Tab bar — same look as NavContributions (grey, active = teal) */
 .matching-nav {
   background-color: #d1d1d1;
   padding: 4px;
@@ -330,7 +333,7 @@ function del(e) {
   font-weight: 700;
 }
 
-/* Eintrags-Typ-Farben (Matching-Bedeutung Interesse/Angebot/Gesuch = RGB) */
+/* Entry-type colors (Matching meaning Interest/Offer/Request = RGB) */
 .entry-avatar {
   width: 64px;
   height: 64px;
@@ -344,7 +347,7 @@ function del(e) {
   padding: 12px;
 }
 .type-interesse {
-  background: #c2557e;
+  background: #c62828;
 }
 .type-angebot {
   background: #047006;
@@ -359,7 +362,7 @@ function del(e) {
   font-weight: 600;
 }
 
-/* kleine Status-Marken am Eintrag */
+/* small status badges on an entry */
 .badge-soft {
   font-size: 12px;
   padding: 3px 9px;
@@ -376,7 +379,7 @@ function del(e) {
   color: #55554f;
 }
 
-/* Position-Tab: Karten-Platzhalter + Schalter */
+/* Position tab: map placeholder + switch */
 .mapbox {
   height: 180px;
   background: repeating-linear-gradient(45deg, #eef1ed, #eef1ed 12px, #e8ebe6 12px, #e8ebe6 24px);
