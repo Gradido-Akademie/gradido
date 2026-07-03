@@ -1,19 +1,5 @@
 <template>
   <div class="matching-page mt--3">
-    <!-- Entry point to the search map (glow-field service; Matching-specific) -->
-    <div
-      class="search-tile bg-white gradido-border-radius app-box-shadow d-flex align-items-center p-3 mb-4 pointer"
-    >
-      <div class="search-tile__ic d-flex align-items-center justify-content-center me-3">
-        <i-bi-compass />
-      </div>
-      <div class="flex-grow-1">
-        <div class="fw-bold">Auf der Karte suchen</div>
-        <div class="small text-muted">Menschen in Deiner Nähe finden — als Glüh-Feld auf der Karte</div>
-      </div>
-      <i-bi-arrow-right class="matching-teal" />
-    </div>
-
     <!-- Tab bar (entries / about / position) — same pattern as NavContributions -->
     <div class="matching-nav rounded-26 shadow d-flex justify-content-between mx-lg-5 mb-4">
       <BButton
@@ -49,7 +35,7 @@
           <span class="small text-muted">
             {{ entries.length }} Einträge · {{ liveCount }} live · {{ entries.length - liveCount }} pausiert
           </span>
-          <BButton variant="gradido" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</BButton>
+          <button type="button" class="btn-add" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</button>
         </div>
 
         <div
@@ -103,7 +89,7 @@
           <strong>Noch keine Einträge.</strong><br />
           Biete etwas an, suche etwas, oder teile ein Interesse — und werde gefunden.
         </p>
-        <BButton variant="gradido" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</BButton>
+        <button type="button" class="btn-add" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</button>
       </div>
     </div>
 
@@ -294,21 +280,6 @@ function del(e) {
   color: #383838;
 }
 
-/* Search tile — entry point to the glow-field map */
-.search-tile__ic {
-  width: 46px;
-  height: 46px;
-  flex: 0 0 46px;
-  border-radius: 14px;
-  background: #178d81;
-  color: #fff;
-  font-size: 22px;
-}
-.matching-teal {
-  color: #178d81;
-  font-size: 20px;
-}
-
 /* Tab bar — same look as NavContributions (grey, active = teal) */
 .matching-nav {
   background-color: #d1d1d1;
@@ -325,6 +296,22 @@ function del(e) {
   background-color: #178d81;
   color: #fff !important;
   font-weight: 700;
+}
+
+/* "New entry" — subtle grey text action (not a CTA) */
+.btn-add {
+  border: none;
+  background: none;
+  color: #5f5f5a;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 4px;
+  cursor: pointer;
+}
+.btn-add:hover {
+  color: #383838;
 }
 
 /* Entry-type colors (Matching meaning Interest/Offer/Request = RGB) */
@@ -360,7 +347,7 @@ function del(e) {
 .type-choice__btn {
   border: none;
   border-radius: 22px;
-  color: #000 !important;
+  color: #383838 !important;
   font-size: 15px;
   padding: 12px 6px;
   cursor: pointer;

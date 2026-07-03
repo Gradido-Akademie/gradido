@@ -2,7 +2,7 @@
   <contribution-info>
     <template #entries>
       <div class="text-dark">
-        <h5>So funktioniert Matching</h5>
+        <h4 class="alert-heading">So funktioniert Matching</h4>
         <p>
           Leg an, was Du liebst, bietest oder suchst — jeder aktive Eintrag lässt Dich in den
           passenden Suchen anderer auftauchen.
@@ -26,7 +26,7 @@
     </template>
     <template #about>
       <div class="text-dark">
-        <h5>Wer Du bist</h5>
+        <h4 class="alert-heading">Wer Du bist</h4>
         <p>
           Ein paar warme, ehrliche Sätze über Dich schaffen Vertrauen, bevor Dich jemand
           anschreibt.
@@ -36,7 +36,7 @@
     </template>
     <template #position>
       <div class="text-dark">
-        <h5>Deine Privatsphäre</h5>
+        <h4 class="alert-heading">Deine Privatsphäre</h4>
         <p>
           Du entscheidest, wie genau Du erscheinst. „Ungefähr“ zeigt Dich im Umkreis — nie
           auf der Haustür.
