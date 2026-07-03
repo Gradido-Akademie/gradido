@@ -225,7 +225,7 @@ const types = [
 const entries = ref([
   { id: 1, type: 'interesse', summary: 'Ich liebe Permakultur und Selbstversorgung', details: '', active: true, remote: false, open: false, date: '12. Juni 2026' },
   { id: 2, type: 'angebot', summary: 'Ich biete Hilfe beim Renovieren von Wohnungen', details: 'Wochenends, gegen Gradido oder Nachbarschaftshilfe.', active: true, remote: false, open: false, date: '8. Juni 2026' },
-  { id: 3, type: 'gesuch', summary: 'Ich suche jemanden für meine Steuererklärung', details: '', active: false, remote: false, open: false, date: '2. Juni 2026' },
+  { id: 3, type: 'gesuch', summary: 'Ich suche jemanden für meine Steuererklärung', details: '', active: true, remote: false, open: false, date: '2. Juni 2026' },
   { id: 4, type: 'angebot', summary: 'Ich biete Webdesign und Pflege von Webseiten', details: '', active: true, remote: true, open: false, date: '28. Mai 2026' },
 ])
 
@@ -355,27 +355,45 @@ function del(e) {
 .cat-gesuch {
   color: #0e79bc;
 }
-/* Type-choice buttons: solid colored, white text/icon; unselected dimmed */
+/* Type-choice buttons: unselected = pale tint with black text/icon;
+   selected = full color with white text/icon and a ring */
 .type-choice__btn {
   border: none;
   border-radius: 22px;
-  color: #fff !important;
+  color: #000 !important;
   font-size: 15px;
   padding: 12px 6px;
-  opacity: 0.4;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
 }
+.type-choice__btn.type-interesse {
+  background: #f2caca;
+}
+.type-choice__btn.type-angebot {
+  background: #d3e9c8;
+}
+.type-choice__btn.type-gesuch {
+  background: #cfe6f6;
+}
 .type-choice__btn svg {
   font-size: 22px;
 }
 .type-choice__btn.is-sel {
-  opacity: 1;
+  color: #fff !important;
   box-shadow: 0 0 0 3px rgb(0 0 0 / 18%);
   font-weight: 600;
+}
+.type-choice__btn.is-sel.type-interesse {
+  background: #c62828;
+}
+.type-choice__btn.is-sel.type-angebot {
+  background: #047006;
+}
+.type-choice__btn.is-sel.type-gesuch {
+  background: #0e79bc;
 }
 
 /* small status badges on an entry */
