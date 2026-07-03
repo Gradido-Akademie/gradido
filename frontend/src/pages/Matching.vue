@@ -102,7 +102,7 @@
       <textarea
         v-model="aboutMe"
         class="form-control"
-        rows="6"
+        rows="10"
         placeholder="Erzähl, wer Du bist, was Dich bewegt, was Du teilst — das schafft Vertrauen, bevor jemand Dich anschreibt."
       ></textarea>
       <div class="d-flex justify-content-between align-items-center mt-2">
@@ -174,7 +174,7 @@
             <i-bi-chevron-up v-if="showDetails" /><i-bi-chevron-down v-else />
             Details · Bedingungen · Preis · Gradido
           </a>
-          <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2" rows="3"></textarea>
+          <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2" rows="5"></textarea>
         </div>
 
         <BFormCheckbox v-model="newRemote" class="mt-3">
@@ -213,7 +213,7 @@ const types = [
 // Mock data (preview) — real backend/DB follows (waiting on Dario)
 const entries = ref([
   { id: 1, type: 'interesse', summary: 'Ich liebe Permakultur und Selbstversorgung', details: '', active: true, remote: false, open: false, date: '12. Juni 2026' },
-  { id: 2, type: 'angebot', summary: 'Ich biete Hilfe beim Renovieren von Wohnungen', details: 'Wochenends, gegen Gradido oder Nachbarschaftshilfe.', active: true, remote: false, open: false, date: '8. Juni 2026' },
+  { id: 2, type: 'angebot', summary: 'Ich biete Hilfe beim Renovieren von Wohnungen', details: 'Wochenends, gegen Gradido oder Nachbarschaftshilfe.\nIch bringe eigenes Werkzeug mit.\nAuch kleinere Elektro- und Malerarbeiten sind möglich.', active: true, remote: false, open: true, date: '8. Juni 2026' },
   { id: 3, type: 'gesuch', summary: 'Ich suche jemanden für meine Steuererklärung', details: '', active: true, remote: false, open: false, date: '2. Juni 2026' },
   { id: 4, type: 'angebot', summary: 'Ich biete Webdesign und Pflege von Webseiten', details: '', active: true, remote: true, open: false, date: '28. Mai 2026' },
 ])
@@ -401,6 +401,7 @@ function del(e) {
   background: #f7f8f6;
   font-size: 14px;
   color: #55554f;
+  white-space: pre-wrap;
 }
 /* placeholder so the action row keeps 4 fixed columns when an entry has no details */
 .no-details {
