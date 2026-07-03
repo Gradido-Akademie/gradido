@@ -174,7 +174,7 @@
             <i-bi-chevron-up v-if="showDetails" /><i-bi-chevron-down v-else />
             Details · Bedingungen · Preis · Gradido
           </a>
-          <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2 matching-textarea" rows="5"></textarea>
+          <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2 matching-textarea" rows="5" style="height: auto"></textarea>
         </div>
 
         <BFormCheckbox v-model="newRemote" class="mt-3">
