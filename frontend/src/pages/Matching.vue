@@ -101,7 +101,7 @@
       <label class="fw-bold mb-2 d-block">Wer Du bist — in Deinen eigenen Worten</label>
       <textarea
         v-model="aboutMe"
-        class="form-control"
+        class="form-control matching-textarea"
         rows="10"
         placeholder="Erzähl, wer Du bist, was Dich bewegt, was Du teilst — das schafft Vertrauen, bevor jemand Dich anschreibt."
       ></textarea>
@@ -174,7 +174,7 @@
             <i-bi-chevron-up v-if="showDetails" /><i-bi-chevron-down v-else />
             Details · Bedingungen · Preis · Gradido
           </a>
-          <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2" rows="5"></textarea>
+          <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2 matching-textarea" rows="5"></textarea>
         </div>
 
         <BFormCheckbox v-model="newRemote" class="mt-3">
@@ -407,6 +407,10 @@ function del(e) {
 .no-details {
   color: #a8a8a2;
   font-style: italic;
+}
+/* let textareas grow to their rows — the design system forces .form-control to 50px */
+.matching-textarea {
+  height: auto;
 }
 
 /* Position tab: map placeholder + switch */
