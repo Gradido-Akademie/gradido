@@ -1,187 +1,206 @@
 <template>
   <div class="matching-page mt--3">
-    <!-- Einstieg zur Such-Karte (separater Glüh-Feld-Dienst; Verlinkung folgt) -->
-    <div class="search-tile gradido-border-radius app-box-shadow">
-      <div class="ic"><i-bi-compass /></div>
+    <!-- Einstieg zur Such-Karte (Glüh-Feld-Dienst; Matching-eigener Baustein) -->
+    <div
+      class="search-tile bg-white gradido-border-radius app-box-shadow d-flex align-items-center p-3 mb-4 pointer"
+    >
+      <div class="search-tile__ic d-flex align-items-center justify-content-center me-3">
+        <i-bi-compass />
+      </div>
       <div class="flex-grow-1">
         <div class="fw-bold">Auf der Karte suchen</div>
-        <div class="hint">Menschen in Deiner Nähe finden — als Glüh-Feld auf der Karte</div>
+        <div class="small text-muted">Menschen in Deiner Nähe finden — als Glüh-Feld auf der Karte</div>
       </div>
-      <i-bi-arrow-right class="tile-arrow" />
+      <i-bi-arrow-right class="matching-teal" />
     </div>
 
-    <!-- Tab-Leiste (Einträge / Über mich / Position) -->
-    <div class="nav-seg">
-      <button :class="{ active: tab === 'entries' }" @click="goTab('entries')">
-        <i-bi-card-list /> Einträge
-      </button>
-      <button :class="{ active: tab === 'about' }" @click="goTab('about')">
-        <i-bi-person /> Über mich
-      </button>
-      <button :class="{ active: tab === 'position' }" @click="goTab('position')">
-        <i-bi-geo-alt /> Position
-      </button>
+    <!-- Tab-Leiste (Einträge / Über mich / Position) — Muster wie NavContributions -->
+    <div class="matching-nav rounded-26 shadow d-flex justify-content-between mx-lg-5 mb-4">
+      <BButton
+        variant="link"
+        class="matching-nav__btn"
+        :class="{ 'is-active': tab === 'entries' }"
+        @click="goTab('entries')"
+      >
+        <i-bi-card-list class="me-1" /> Einträge
+      </BButton>
+      <BButton
+        variant="link"
+        class="matching-nav__btn"
+        :class="{ 'is-active': tab === 'about' }"
+        @click="goTab('about')"
+      >
+        <i-bi-person class="me-1" /> Über mich
+      </BButton>
+      <BButton
+        variant="link"
+        class="matching-nav__btn"
+        :class="{ 'is-active': tab === 'position' }"
+        @click="goTab('position')"
+      >
+        <i-bi-geo-alt class="me-1" /> Position
+      </BButton>
     </div>
 
     <!-- EINTRÄGE -->
     <div v-if="tab === 'entries'">
       <template v-if="entries.length">
-        <div class="d-flex align-items-center justify-content-between status-head">
-          <span class="status-line">
+        <div class="d-flex align-items-center justify-content-between mb-3 mx-2">
+          <span class="small text-muted">
             {{ entries.length }} Einträge · {{ liveCount }} live · {{ entries.length - liveCount }} pausiert
           </span>
-          <button class="btn-teal" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</button>
+          <BButton variant="gradido" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</BButton>
         </div>
 
         <div
           v-for="e in entries"
           :key="e.id"
-          class="card-item gradido-border-radius app-box-shadow"
-          :class="{ paused: !e.active }"
+          class="bg-white app-box-shadow gradido-border-radius p-3 mb-4"
+          :class="{ 'opacity-05': !e.active }"
         >
-          <div class="row-top">
-            <div class="ava" :class="e.type">
-              <i-bi-heart-fill v-if="e.type === 'interesse'" />
-              <i-bi-box-seam v-else-if="e.type === 'angebot'" />
-              <i-bi-search v-else />
-            </div>
-            <div class="flex-grow-1 min-w-0">
-              <div class="datesmall">{{ e.date }}</div>
-              <div class="type-label">{{ typeWord(e.type) }}</div>
-              <div class="summary">{{ e.summary }}</div>
-              <div class="mt-2">
-                <span v-if="e.remote" class="soft"><i-bi-globe2 /> Überregional</span>
-                <span v-if="!e.active" class="soft"><i-bi-pause-circle /> Pausiert · nicht in der Suche</span>
+          <BRow>
+            <BCol cols="3" md="2">
+              <div
+                class="entry-avatar rounded-like-card d-flex align-items-center justify-content-center"
+                :class="`type-${e.type}`"
+              >
+                <i-bi-heart-fill v-if="e.type === 'interesse'" />
+                <i-bi-box-seam v-else-if="e.type === 'angebot'" />
+                <i-bi-search v-else />
               </div>
-            </div>
-          </div>
-          <div v-if="e.open && e.details" class="details-box">{{ e.details }}</div>
-          <div class="act-row">
-            <div v-if="e.details" class="act" @click="e.open = !e.open">
+            </BCol>
+            <BCol class="min-w-0">
+              <div class="small text-muted">{{ e.date }}</div>
+              <div class="fw-bold">{{ typeWord(e.type) }}</div>
+              <div class="word-break">{{ e.summary }}</div>
+              <div class="mt-2">
+                <span v-if="e.remote" class="badge-soft me-2"><i-bi-globe2 /> Überregional</span>
+                <span v-if="!e.active" class="badge-soft">
+                  <i-bi-pause-circle /> Pausiert · nicht in der Suche
+                </span>
+              </div>
+            </BCol>
+          </BRow>
+          <div v-if="e.open && e.details" class="details-box rounded-20 p-2 mt-3">{{ e.details }}</div>
+          <BRow class="mt-3 pt-2 border-top text-center small text-muted">
+            <BCol v-if="e.details" class="pointer" @click="e.open = !e.open">
               <i-bi-chevron-up v-if="e.open" /><i-bi-chevron-down v-else />
-              <span>Details</span>
-            </div>
-            <div class="act" @click="e.active = !e.active">
+              <div>Details</div>
+            </BCol>
+            <BCol class="pointer" @click="e.active = !e.active">
               <i-bi-pause v-if="e.active" /><i-bi-play v-else />
-              <span>{{ e.active ? 'Pausieren' : 'Aktivieren' }}</span>
-            </div>
-            <div class="act"><i-bi-pencil /><span>Bearbeiten</span></div>
-            <div class="act" @click="del(e)"><i-bi-trash /><span>Löschen</span></div>
-          </div>
+              <div>{{ e.active ? 'Pausieren' : 'Aktivieren' }}</div>
+            </BCol>
+            <BCol class="pointer"><i-bi-pencil /><div>Bearbeiten</div></BCol>
+            <BCol class="pointer" @click="del(e)"><i-bi-trash /><div>Löschen</div></BCol>
+          </BRow>
         </div>
       </template>
 
-      <div v-else class="empty-state">
+      <div v-else class="text-center text-muted py-5">
         <i-bi-hearts class="empty-icon" />
-        <p class="mt-2 mb-3">
+        <p class="mt-3 mb-3">
           <strong>Noch keine Einträge.</strong><br />
           Biete etwas an, suche etwas, oder teile ein Interesse — und werde gefunden.
         </p>
-        <button class="btn-teal" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</button>
+        <BButton variant="gradido" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</BButton>
       </div>
     </div>
 
     <!-- ÜBER MICH -->
-    <div v-if="tab === 'about'" class="tab-pad">
+    <div v-if="tab === 'about'" class="mx-2">
       <label class="fw-bold mb-2 d-block">Wer Du bist — in Deinen eigenen Worten</label>
       <textarea
         v-model="aboutMe"
-        class="form-control soft-input"
+        class="form-control"
         rows="6"
         placeholder="Erzähl, wer Du bist, was Dich bewegt, was Du teilst — das schafft Vertrauen, bevor jemand Dich anschreibt."
       ></textarea>
       <div class="d-flex justify-content-between align-items-center mt-2">
-        <span class="hint">{{ aboutMe.length }} / ~1000 Zeichen</span>
-        <button class="btn-teal" @click="savedNote = true">Speichern</button>
+        <span class="small text-muted">{{ aboutMe.length }} / ~1000 Zeichen</span>
+        <BButton variant="gradido" @click="savedNote = true">Speichern</BButton>
       </div>
-      <div v-if="savedNote" class="hint mt-2">Gespeichert. (Vorschau — noch ohne Backend)</div>
+      <div v-if="savedNote" class="small text-muted mt-2">Gespeichert. (Vorschau — noch ohne Backend)</div>
     </div>
 
     <!-- POSITION -->
-    <div v-if="tab === 'position'" class="tab-pad">
-      <p class="hint">
+    <div v-if="tab === 'position'" class="mx-2">
+      <p class="small text-muted">
         Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust.
       </p>
-      <div class="mapbox gradido-border-radius">
-        <span><i-bi-geo-alt /> Karte (Adresse suchen · Pin ziehen)</span>
+      <div class="mapbox gradido-border-radius d-flex align-items-center justify-content-center my-3">
+        <span class="text-muted"><i-bi-geo-alt /> Karte (Adresse suchen · Pin ziehen)</span>
       </div>
-      <button class="btn-outline-soft"><i-bi-search /> Adresse suchen</button>
+      <BButton variant="outline-secondary"><i-bi-search /> Adresse suchen</BButton>
       <div class="mt-3 accuracy-field">
-        <label class="hint d-block">Genauigkeit</label>
-        <select v-model="accuracy" class="form-select soft-input">
+        <label class="small text-muted d-block">Genauigkeit</label>
+        <select v-model="accuracy" class="form-select">
           <option value="genau">genau</option>
           <option value="ungefaehr">ungefähr (Umkreis der Community)</option>
         </select>
       </div>
-      <div class="switch-row mt-2">
+      <div class="d-flex align-items-center justify-content-between border-top mt-3 py-3">
         <div>
           <div class="fw-bold">Bin ich auffindbar?</div>
-          <div class="hint">Schaltet Deine Karten-Präsenz an/aus</div>
+          <div class="small text-muted">Schaltet Deine Karten-Präsenz an/aus</div>
         </div>
         <div class="form-check form-switch">
-          <input v-model="gmsAllowed" class="form-check-input big-switch" type="checkbox" />
+          <input v-model="gmsAllowed" class="form-check-input matching-switch" type="checkbox" />
         </div>
       </div>
     </div>
 
     <!-- POPUP: Neuer Eintrag -->
-    <div v-if="showNew" class="mtc-backdrop" @click.self="showNew = false">
-      <div class="mtc-modal gradido-border-radius">
-        <div class="mtc-modal-head">
-          <h5 class="fw-bold m-0">Neuer Eintrag</h5>
-          <button class="btn-x" @click="showNew = false"><i-bi-x-lg /></button>
-        </div>
-        <div class="mtc-modal-body">
-          <div class="type-choice">
-            <button
-              v-for="t in types"
-              :key="t.key"
-              :class="{ sel: newType === t.key }"
-              @click="newType = t.key"
-            >
-              <i-bi-heart v-if="t.key === 'interesse'" />
-              <i-bi-box-seam v-else-if="t.key === 'angebot'" />
-              <i-bi-search v-else />
-              {{ t.label }}
-            </button>
-          </div>
-
-          <div class="cat-label" :class="newType">
-            <i-bi-heart-fill v-if="newType === 'interesse'" />
-            <i-bi-box-seam v-else-if="newType === 'angebot'" />
-            <i-bi-search v-else />
-            {{ typeLabel(newType) }}
-          </div>
-
-          <label class="hint">… in einem Satz</label>
-          <input v-model="newSummary" class="form-control soft-input" :placeholder="placeholder" />
-
-          <div class="mt-3">
-            <a class="hint details-toggle" @click="showDetails = !showDetails">
-              <i-bi-chevron-up v-if="showDetails" /><i-bi-chevron-down v-else />
-              Details · Bedingungen · Preis · Gradido
-            </a>
-            <textarea
-              v-if="showDetails"
-              v-model="newDetails"
-              class="form-control soft-input mt-2"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="form-check mt-3">
-            <input id="mtc-remote" v-model="newRemote" class="form-check-input" type="checkbox" />
-            <label class="form-check-label hint" for="mtc-remote">
-              Auch überregional / online verfügbar
-            </label>
-          </div>
-        </div>
-        <div class="mtc-modal-foot">
-          <button class="btn-light-soft" @click="showNew = false">Abbrechen</button>
-          <button class="btn-teal" :disabled="!newSummary.trim()" @click="save">Speichern</button>
-        </div>
+    <BModal v-model="showNew" title="Neuer Eintrag" hide-footer centered>
+      <div class="d-flex gap-2 mb-3">
+        <BButton
+          v-for="t in types"
+          :key="t.key"
+          variant="outline-secondary"
+          class="type-choice__btn flex-fill"
+          :class="{ 'is-sel': newType === t.key }"
+          @click="newType = t.key"
+        >
+          <i-bi-heart v-if="t.key === 'interesse'" />
+          <i-bi-box-seam v-else-if="t.key === 'angebot'" />
+          <i-bi-search v-else />
+          <div>{{ t.label }}</div>
+        </BButton>
       </div>
-    </div>
+
+      <div
+        class="cat-label rounded-like-card d-flex align-items-center justify-content-center gap-2 mb-3"
+        :class="`type-${newType}`"
+      >
+        <i-bi-heart-fill v-if="newType === 'interesse'" />
+        <i-bi-box-seam v-else-if="newType === 'angebot'" />
+        <i-bi-search v-else />
+        {{ typeLabel(newType) }}
+      </div>
+
+      <label class="small text-muted">… in einem Satz</label>
+      <input v-model="newSummary" class="form-control" :placeholder="placeholder" />
+
+      <div class="mt-3">
+        <a
+          class="small text-muted pointer d-inline-flex align-items-center gap-1"
+          @click="showDetails = !showDetails"
+        >
+          <i-bi-chevron-up v-if="showDetails" /><i-bi-chevron-down v-else />
+          Details · Bedingungen · Preis · Gradido
+        </a>
+        <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2" rows="3"></textarea>
+      </div>
+
+      <BFormCheckbox v-model="newRemote" class="mt-3">
+        Auch überregional / online verfügbar
+      </BFormCheckbox>
+
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <BButton variant="secondary" @click="showNew = false">Abbrechen</BButton>
+        <BButton variant="gradido" :disabled="!newSummary.trim()" @click="save">Speichern</BButton>
+      </div>
+    </BModal>
   </div>
 </template>
 
@@ -271,339 +290,110 @@ function del(e) {
 </script>
 
 <style scoped>
+/* Nur Matching-spezifische Ergänzungen — alles Übrige kommt aus dem Design-System
+   (Buttons: variant="gradido"/"secondary"; Karten: app-box-shadow + gradido-border-radius;
+   Eingaben: .form-control/.form-select; Abstände/Farben: Bootstrap-Utilities). */
 .matching-page {
   color: #383838;
-  font-size: 15px;
 }
 
-/* Such-Kachel */
-.search-tile {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: #fff;
-  padding: 16px 20px;
-  margin-bottom: 22px;
-}
-.search-tile .ic {
+/* Such-Kachel — Einstieg zur Glüh-Feld-Karte */
+.search-tile__ic {
   width: 46px;
   height: 46px;
+  flex: 0 0 46px;
   border-radius: 14px;
   background: #178d81;
   color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 22px;
 }
-.search-tile .tile-arrow {
+.matching-teal {
   color: #178d81;
   font-size: 20px;
 }
 
-/* Tab-Leiste */
-.nav-seg {
-  background: #d1d1d1;
-  border-radius: 26px;
-  display: flex;
-  box-shadow: 0 6px 18px rgb(56 56 56 / 14%);
+/* Tab-Leiste — gleiches Bild wie NavContributions (grau, aktiv = Teal) */
+.matching-nav {
+  background-color: #d1d1d1;
   padding: 4px;
-  margin: 0 6px 22px;
 }
-.nav-seg button {
+.matching-nav__btn {
   flex: 1;
-  border: none;
-  background: transparent;
-  color: #000;
+  color: #000 !important;
   font-size: 14px;
-  padding: 10px 6px;
-  border-radius: 22px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
+  text-decoration: none;
+  border-radius: 25px;
 }
-.nav-seg button.active {
-  background: #178d81;
-  color: #fff;
+.matching-nav__btn.is-active {
+  background-color: #178d81;
+  color: #fff !important;
   font-weight: 700;
 }
 
-/* Einträge-Liste */
-.status-head {
-  margin: 0 6px 14px;
-}
-.status-line {
-  font-size: 14px;
-  color: #6b6b66;
-}
-.card-item {
-  background: #fff;
-  padding: 16px 18px;
-  margin: 0 6px 20px;
-}
-.card-item.paused {
-  opacity: 0.55;
-}
-.row-top {
-  display: flex;
-  gap: 16px;
-}
-.min-w-0 {
-  min-width: 0;
-}
-.ava {
-  width: 70px;
-  height: 70px;
-  border-radius: 16px;
-  flex: 0 0 70px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Eintrags-Typ-Farben (Matching-Bedeutung Interesse/Angebot/Gesuch = RGB) */
+.entry-avatar {
+  width: 64px;
+  height: 64px;
   color: #fff;
-  font-size: 30px;
+  font-size: 28px;
 }
-.ava.interesse {
+.cat-label {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 12px;
+}
+.type-interesse {
   background: #c2557e;
 }
-.ava.angebot {
+.type-angebot {
   background: #047006;
 }
-.ava.gesuch {
+.type-gesuch {
   background: #0e79bc;
 }
-.type-label {
-  font-weight: 700;
-  margin-top: 2px;
+.type-choice__btn.is-sel {
+  border-color: #178d81 !important;
+  background: #e6f2f0 !important;
+  color: #178d81 !important;
+  font-weight: 600;
 }
-.summary {
-  font-size: 16px;
-}
-.datesmall {
-  font-size: 13px;
-  color: #9a9a94;
-}
-.soft {
+
+/* kleine Status-Marken am Eintrag */
+.badge-soft {
   font-size: 12px;
   padding: 3px 9px;
   border-radius: 20px;
   background: #f0f1ee;
   color: #5f5f5a;
-  margin-right: 6px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
 .details-box {
-  margin-top: 10px;
-  padding: 10px 12px;
   background: #f7f8f6;
-  border-radius: 14px;
   font-size: 14px;
   color: #55554f;
 }
-.act-row {
-  display: flex;
-  border-top: 1px solid #eee;
-  margin-top: 14px;
-  padding-top: 10px;
-}
-.act {
-  flex: 1;
-  text-align: center;
-  color: #8a8a84;
-  cursor: pointer;
-  font-size: 13px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-.act svg {
-  font-size: 18px;
-}
-.act:hover {
-  color: #178d81;
-}
 
-/* Buttons */
-.btn-teal {
-  background: #178d81;
-  border: none;
-  color: #fff;
-  border-radius: 22px;
-  padding: 9px 20px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  cursor: pointer;
-}
-.btn-teal:hover {
-  background: #0f6e56;
-}
-.btn-teal:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-.btn-light-soft {
-  background: #f0f1ee;
-  border: none;
-  border-radius: 22px;
-  padding: 9px 20px;
-  cursor: pointer;
-}
-.btn-outline-soft {
-  background: #fff;
-  border: 1px solid #cfd4cd;
-  border-radius: 18px;
-  padding: 6px 14px;
-  font-size: 14px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-/* Über mich / Position */
-.tab-pad {
-  margin: 0 6px;
-}
-.soft-input {
-  border-radius: 16px;
-}
+/* Position-Tab: Karten-Platzhalter + Schalter */
 .mapbox {
   height: 180px;
   background: repeating-linear-gradient(45deg, #eef1ed, #eef1ed 12px, #e8ebe6 12px, #e8ebe6 24px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9a9a94;
-  margin: 12px 0;
-  gap: 7px;
 }
 .accuracy-field {
   max-width: 320px;
 }
-.switch-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-top: 1px solid #ececec;
-}
-.big-switch {
+.matching-switch {
   width: 3em;
   height: 1.5em;
 }
-.hint {
-  font-size: 13px;
-  color: #8a8a84;
-}
 
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 40px 16px;
-  color: #77776f;
-}
-.empty-state .empty-icon {
+.empty-icon {
   font-size: 36px;
   color: #c9ccc6;
 }
-
-/* Popup */
-.mtc-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgb(0 0 0 / 45%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1050;
-  padding: 16px;
-}
-.mtc-modal {
-  background: #fff;
-  width: 100%;
-  max-width: 480px;
-  box-shadow: 0 20px 60px rgb(0 0 0 / 25%);
-}
-.mtc-modal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 20px 6px;
-}
-.mtc-modal-body {
-  padding: 6px 20px;
-}
-.mtc-modal-foot {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 12px 20px 18px;
-}
-.btn-x {
-  border: none;
-  background: transparent;
-  font-size: 18px;
-  color: #8a8a84;
-  cursor: pointer;
-}
-.cat-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: 22px;
-  font-weight: 700;
-  padding: 12px;
-  border-radius: 16px;
-  margin-bottom: 14px;
-  color: #fff;
-}
-.cat-label.interesse {
-  background: #c2557e;
-}
-.cat-label.angebot {
-  background: #047006;
-}
-.cat-label.gesuch {
-  background: #0e79bc;
-}
-.type-choice {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.type-choice button {
-  flex: 1;
-  border: 1.5px solid #d7dbd5;
-  background: #fff;
-  border-radius: 16px;
-  padding: 12px 6px;
-  cursor: pointer;
-  font-size: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.type-choice button svg {
-  font-size: 22px;
-}
-.type-choice button.sel {
-  border-color: #178d81;
-  background: #e6f2f0;
-  color: #178d81;
-  font-weight: 600;
-}
-.details-toggle {
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.min-w-0 {
+  min-width: 0;
 }
 </style>
