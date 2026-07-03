@@ -1,5 +1,18 @@
 <template>
   <div class="matching-page mt--3">
+    <!-- Jump-off to the find map. Shown on every tab. Access needs an active map
+         presence (position set AND visible); otherwise the click guides to Position.
+         The "map coming soon" branch is a placeholder for the real map navigation. -->
+    <div class="matching-header d-flex justify-content-end mx-lg-5 mb-3">
+      <button type="button" class="find-btn" @click="showFind = true">
+        <i-bi-map class="find-btn__icon" />
+        <span class="find-btn__text">
+          <span class="find-btn__title">Auf der Karte finden</span>
+          <span class="find-btn__sub">Entdecke, wer zu Dir passt</span>
+        </span>
+      </button>
+    </div>
+
     <!-- Tab bar (entries / about / position) — same pattern as NavContributions -->
     <div class="matching-nav rounded-26 shadow d-flex justify-content-between mx-lg-5 mb-4">
       <BButton
@@ -118,9 +131,13 @@
         Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust.
       </p>
       <div class="mapbox gradido-border-radius d-flex align-items-center justify-content-center my-3">
-        <span class="text-muted"><i-bi-geo-alt /> Karte (Adresse suchen · Pin ziehen)</span>
+        <span class="text-muted">
+          <i-bi-geo-alt />
+          {{ hasPosition ? 'Position gesetzt (Mock)' : 'Karte (Adresse suchen · Pin ziehen)' }}
+        </span>
       </div>
-      <BButton variant="outline-secondary"><i-bi-search /> Adresse suchen</BButton>
+      <BButton variant="outline-secondary" @click="mockSetPosition"><i-bi-search /> Adresse suchen</BButton>
+      <span v-if="hasPosition" class="small text-muted ms-2">Position gesetzt (zum Testen)</span>
       <div class="mt-3 accuracy-field">
         <label class="small text-muted d-block">Genauigkeit</label>
         <select v-model="accuracy" class="form-select">
@@ -186,6 +203,28 @@
         <BButton variant="gradido" :disabled="!newSummary.trim()" @click="save">Speichern</BButton>
       </template>
     </BModal>
+
+    <!-- Find-map access dialog: guide to Position, or (placeholder) coming-soon note -->
+    <BModal v-model="showFind" centered>
+      <template #title>{{ findHasAccess ? 'Auf der Karte finden' : 'Zeig Dich zuerst auf der Karte' }}</template>
+      <template #default>
+        <p v-if="findHasAccess" class="mb-0">
+          Die Karte kommt bald. Sobald sie da ist, findest Du hier Menschen, die zu Dir passen.
+        </p>
+        <p v-else class="mb-0">
+          Sobald Du Deine Position gesetzt und Dich auf der Karte sichtbar gemacht hast,
+          kannst Du auch andere in Deiner Nähe finden.
+        </p>
+      </template>
+      <template #footer>
+        <BButton v-if="findHasAccess" variant="gradido" @click="showFind = false">Alles klar</BButton>
+        <template v-else>
+          <BButton variant="secondary" @click="showFind = false">Später</BButton>
+          <BButton v-if="tab === 'position'" variant="gradido" @click="showFind = false">Verstanden</BButton>
+          <BButton v-else variant="gradido" @click="goPositionFromFind">Zur Position</BButton>
+        </template>
+      </template>
+    </BModal>
   </div>
 </template>
 
@@ -220,8 +259,14 @@ const entries = ref([
 
 const aboutMe = ref('')
 const savedNote = ref(false)
-const gmsAllowed = ref(true)
+// Map presence (mock): a user can find others only once positioned AND visible.
+const hasPosition = ref(false)
+const gmsAllowed = ref(false)
 const accuracy = ref('ungefaehr')
+
+// Find-map access dialog
+const showFind = ref(false)
+const findHasAccess = computed(() => hasPosition.value && gmsAllowed.value)
 
 const showNew = ref(false)
 const newType = ref('interesse')
@@ -245,6 +290,14 @@ const typeLabels = { interesse: 'Ich liebe', angebot: 'Ich biete', gesuch: 'Ich 
 const typeWord = (t) => typeWords[t]
 const typeLabel = (t) => typeLabels[t]
 
+// Mock: pretend the user picked an address (real geocoding lands with the backend)
+function mockSetPosition() {
+  hasPosition.value = true
+}
+function goPositionFromFind() {
+  showFind.value = false
+  goTab('position')
+}
 function openNew() {
   showNew.value = true
   newType.value = 'interesse'
@@ -281,6 +334,39 @@ function del(e) {
    Bootstrap utilities). */
 .matching-page {
   color: #383838;
+}
+
+/* Find-map jump-off button (header, top-right of the content column) */
+.find-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: #178d81;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 11px 20px;
+  cursor: pointer;
+}
+.find-btn:hover {
+  background: #0f6e56;
+}
+.find-btn__icon {
+  font-size: 26px;
+}
+.find-btn__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: left;
+}
+.find-btn__title {
+  font-weight: 700;
+  font-size: 16px;
+}
+.find-btn__sub {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* Tab bar — same look as NavContributions (grey, active = teal) */
