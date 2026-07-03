@@ -7,13 +7,15 @@
       <button type="button" class="find-btn" @click="showFind = true">
         <i-bi-map class="find-btn__icon" />
         <span class="find-btn__text">
-          <span class="find-btn__title">Auf der Karte finden</span>
-          <span class="find-btn__sub">Entdecke, wer zu Dir passt</span>
+          <span class="find-btn__title">{{ $t('matching.find.title') }}</span>
+          <span class="find-btn__sub">{{ $t('matching.find.subtitle') }}</span>
         </span>
       </button>
     </div>
 
-    <!-- Tab bar (entries / about / position) — same pattern as NavContributions -->
+    <!-- Tab bar (entries / about / position) — same pattern as NavContributions.
+         The label sits in its own nowrap span so a two-word label (any language)
+         wraps below the icon as a unit instead of breaking between the words. -->
     <div class="matching-nav rounded-26 shadow d-flex justify-content-between mx-lg-5 mb-4">
       <BButton
         variant="link"
@@ -21,7 +23,7 @@
         :class="{ 'is-active': tab === 'entries' }"
         @click="goTab('entries')"
       >
-        <i-bi-card-list class="me-1" /> Einträge
+        <i-bi-card-list class="me-1" /><span class="matching-nav__label">{{ $t('matching.tabs.entries') }}</span>
       </BButton>
       <BButton
         variant="link"
@@ -29,7 +31,7 @@
         :class="{ 'is-active': tab === 'about' }"
         @click="goTab('about')"
       >
-        <i-bi-person class="me-1" /> Über mich
+        <i-bi-person class="me-1" /><span class="matching-nav__label">{{ $t('matching.tabs.about') }}</span>
       </BButton>
       <BButton
         variant="link"
@@ -37,7 +39,7 @@
         :class="{ 'is-active': tab === 'position' }"
         @click="goTab('position')"
       >
-        <i-bi-geo-alt class="me-1" /> Position
+        <i-bi-geo-alt class="me-1" /><span class="matching-nav__label">{{ $t('matching.tabs.position') }}</span>
       </BButton>
     </div>
 
@@ -46,9 +48,11 @@
       <template v-if="entries.length">
         <div class="d-flex align-items-center justify-content-between mb-3 mx-2">
           <span class="small text-muted">
-            {{ entries.length }} Einträge · {{ liveCount }} live · {{ entries.length - liveCount }} pausiert
+            {{ $t('matching.entries.count', { total: entries.length, live: liveCount, paused: entries.length - liveCount }) }}
           </span>
-          <button type="button" class="btn-add" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</button>
+          <button type="button" class="btn-add" @click="openNew">
+            <i-bi-plus-lg /> {{ $t('matching.entries.new') }}
+          </button>
         </div>
 
         <div
@@ -70,12 +74,14 @@
             </BCol>
             <BCol class="min-w-0">
               <div class="small text-muted">{{ e.date }}</div>
-              <div class="fw-bold">{{ typeWord(e.type) }}</div>
+              <div class="fw-bold">{{ $t(`matching.type.${e.type}.word`) }}</div>
               <div class="word-break">{{ e.summary }}</div>
               <div class="mt-2">
-                <span v-if="e.remote" class="badge-soft me-2"><i-bi-globe2 /> Überregional</span>
+                <span v-if="e.remote" class="badge-soft me-2">
+                  <i-bi-globe2 /> {{ $t('matching.entries.remote') }}
+                </span>
                 <span v-if="!e.active" class="badge-soft">
-                  <i-bi-pause-circle /> Pausiert · nicht in der Suche
+                  <i-bi-pause-circle /> {{ $t('matching.entries.pausedBadge') }}
                 </span>
               </div>
             </BCol>
@@ -84,17 +90,17 @@
           <BRow class="mt-3 pt-2 border-top text-center small text-muted">
             <BCol v-if="e.details" class="pointer" @click="e.open = !e.open">
               <i-bi-chevron-up v-if="e.open" /><i-bi-chevron-down v-else />
-              <div>Details</div>
+              <div>{{ $t('matching.entries.details') }}</div>
             </BCol>
             <BCol v-else class="no-details d-flex align-items-center justify-content-center">
-              (keine Details)
+              {{ $t('matching.entries.noDetails') }}
             </BCol>
             <BCol class="pointer" @click="e.active = !e.active">
               <i-bi-pause v-if="e.active" /><i-bi-play v-else />
-              <div>{{ e.active ? 'Pausieren' : 'Aktivieren' }}</div>
+              <div>{{ e.active ? $t('matching.entries.pause') : $t('matching.entries.activate') }}</div>
             </BCol>
-            <BCol class="pointer"><i-bi-pencil /><div>Bearbeiten</div></BCol>
-            <BCol class="pointer" @click="del(e)"><i-bi-trash /><div>Löschen</div></BCol>
+            <BCol class="pointer"><i-bi-pencil /><div>{{ $t('matching.entries.edit') }}</div></BCol>
+            <BCol class="pointer" @click="del(e)"><i-bi-trash /><div>{{ $t('matching.entries.delete') }}</div></BCol>
           </BRow>
         </div>
       </template>
@@ -102,53 +108,55 @@
       <div v-else class="text-center text-muted py-5">
         <i-bi-hearts class="empty-icon" />
         <p class="mt-3 mb-3">
-          <strong>Noch keine Einträge.</strong><br />
-          Biete etwas an, suche etwas, oder teile ein Interesse — und werde gefunden.
+          <strong>{{ $t('matching.entries.emptyTitle') }}</strong><br />
+          {{ $t('matching.entries.emptyText') }}
         </p>
-        <button type="button" class="btn-add" @click="openNew"><i-bi-plus-lg /> Neuer Eintrag</button>
+        <button type="button" class="btn-add" @click="openNew">
+          <i-bi-plus-lg /> {{ $t('matching.entries.new') }}
+        </button>
       </div>
     </div>
 
     <!-- About -->
     <div v-if="tab === 'about'" class="mx-2">
-      <label class="fw-bold mb-2 d-block">Wer Du bist — in Deinen eigenen Worten</label>
+      <label class="fw-bold mb-2 d-block">{{ $t('matching.about.label') }}</label>
       <textarea
         v-model="aboutMe"
         class="form-control matching-textarea"
         rows="10"
-        placeholder="Erzähl, wer Du bist, was Dich bewegt, was Du teilst — das schafft Vertrauen, bevor jemand Dich anschreibt."
+        :placeholder="$t('matching.about.placeholder')"
       ></textarea>
       <div class="d-flex justify-content-between align-items-center mt-2">
-        <span class="small text-muted">{{ aboutMe.length }} / ~1000 Zeichen</span>
-        <BButton variant="gradido" @click="savedNote = true">Speichern</BButton>
+        <span class="small text-muted">{{ $t('matching.about.counter', { count: aboutMe.length }) }}</span>
+        <BButton variant="gradido" @click="savedNote = true">{{ $t('matching.save') }}</BButton>
       </div>
-      <div v-if="savedNote" class="small text-muted mt-2">Gespeichert. (Vorschau — noch ohne Backend)</div>
+      <div v-if="savedNote" class="small text-muted mt-2">{{ $t('matching.about.saved') }}</div>
     </div>
 
     <!-- Position -->
     <div v-if="tab === 'position'" class="mx-2">
-      <p class="small text-muted">
-        Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust.
-      </p>
+      <p class="small text-muted">{{ $t('matching.position.intro') }}</p>
       <div class="mapbox gradido-border-radius d-flex align-items-center justify-content-center my-3">
         <span class="text-muted">
           <i-bi-geo-alt />
-          {{ hasPosition ? 'Position gesetzt (Mock)' : 'Karte (Adresse suchen · Pin ziehen)' }}
+          {{ hasPosition ? $t('matching.position.mapSet') : $t('matching.position.mapPlaceholder') }}
         </span>
       </div>
-      <BButton variant="outline-secondary" @click="mockSetPosition"><i-bi-search /> Adresse suchen</BButton>
-      <span v-if="hasPosition" class="small text-muted ms-2">Position gesetzt (zum Testen)</span>
+      <BButton variant="outline-secondary" @click="mockSetPosition">
+        <i-bi-search /> {{ $t('matching.position.searchAddress') }}
+      </BButton>
+      <span v-if="hasPosition" class="small text-muted ms-2">{{ $t('matching.position.setNote') }}</span>
       <div class="mt-3 accuracy-field">
-        <label class="small text-muted d-block">Genauigkeit</label>
+        <label class="small text-muted d-block">{{ $t('matching.position.accuracy') }}</label>
         <select v-model="accuracy" class="form-select">
-          <option value="genau">genau</option>
-          <option value="ungefaehr">ungefähr (Umkreis der Community)</option>
+          <option value="genau">{{ $t('matching.position.accuracyExact') }}</option>
+          <option value="ungefaehr">{{ $t('matching.position.accuracyApprox') }}</option>
         </select>
       </div>
       <div class="d-flex align-items-center justify-content-between border-top mt-3 py-3">
         <div>
-          <div class="fw-bold">Bin ich auffindbar?</div>
-          <div class="small text-muted">Schaltet Deine Karten-Präsenz an/aus</div>
+          <div class="fw-bold">{{ $t('matching.position.findable') }}</div>
+          <div class="small text-muted">{{ $t('matching.position.findableHint') }}</div>
         </div>
         <div class="form-check form-switch">
           <input v-model="gmsAllowed" class="form-check-input matching-switch" type="checkbox" />
@@ -158,30 +166,30 @@
 
     <!-- Popup: new entry -->
     <BModal v-model="showNew" centered>
-      <template #title>Neuer Eintrag</template>
+      <template #title>{{ $t('matching.entries.new') }}</template>
       <template #default>
         <div class="d-flex gap-2 mb-3">
           <button
-            v-for="t in types"
-            :key="t.key"
+            v-for="ty in types"
+            :key="ty.key"
             type="button"
             class="type-choice__btn flex-fill"
-            :class="[`type-${t.key}`, { 'is-sel': newType === t.key }]"
-            @click="newType = t.key"
+            :class="[`type-${ty.key}`, { 'is-sel': newType === ty.key }]"
+            @click="newType = ty.key"
           >
-            <i-bi-heart-fill v-if="t.key === 'interesse'" />
-            <i-bi-box-seam v-else-if="t.key === 'angebot'" />
+            <i-bi-heart-fill v-if="ty.key === 'interesse'" />
+            <i-bi-box-seam v-else-if="ty.key === 'angebot'" />
             <i-bi-search v-else />
-            <div>{{ t.label }}</div>
+            <div>{{ $t(`matching.type.${ty.key}.label`) }}</div>
           </button>
         </div>
 
         <div class="cat-label text-center fw-bold mb-3" :class="`cat-${newType}`">
-          {{ typeLabel(newType) }}
+          {{ $t(`matching.type.${newType}.label`) }}
         </div>
 
-        <label class="small text-muted">… in einem Satz</label>
-        <input v-model="newSummary" class="form-control" :placeholder="placeholder" />
+        <label class="small text-muted">{{ $t('matching.new.inSentence') }}</label>
+        <input v-model="newSummary" class="form-control" :placeholder="$t(`matching.type.${newType}.placeholder`)" />
 
         <div class="mt-3">
           <a
@@ -189,39 +197,34 @@
             @click="showDetails = !showDetails"
           >
             <i-bi-chevron-up v-if="showDetails" /><i-bi-chevron-down v-else />
-            Details · Bedingungen · Preis · Gradido
+            {{ $t('matching.new.detailsToggle') }}
           </a>
           <textarea v-if="showDetails" v-model="newDetails" class="form-control mt-2 matching-textarea" rows="5" style="height: auto"></textarea>
         </div>
 
         <BFormCheckbox v-model="newRemote" class="mt-3">
-          Auch überregional / online verfügbar
+          {{ $t('matching.new.remote') }}
         </BFormCheckbox>
       </template>
       <template #footer>
-        <BButton variant="secondary" @click="showNew = false">Abbrechen</BButton>
-        <BButton variant="gradido" :disabled="!newSummary.trim()" @click="save">Speichern</BButton>
+        <BButton variant="secondary" @click="showNew = false">{{ $t('matching.new.cancel') }}</BButton>
+        <BButton variant="gradido" :disabled="!newSummary.trim()" @click="save">{{ $t('matching.save') }}</BButton>
       </template>
     </BModal>
 
     <!-- Find-map access dialog: guide to Position, or (placeholder) coming-soon note -->
     <BModal v-model="showFind" centered>
-      <template #title>{{ findHasAccess ? 'Auf der Karte finden' : 'Zeig Dich zuerst auf der Karte' }}</template>
+      <template #title>{{ findHasAccess ? $t('matching.find.title') : $t('matching.find.gateTitle') }}</template>
       <template #default>
-        <p v-if="findHasAccess" class="mb-0">
-          Die Karte kommt bald. Sobald sie da ist, findest Du hier Menschen, die zu Dir passen.
-        </p>
-        <p v-else class="mb-0">
-          Sobald Du Deine Position gesetzt und Dich auf der Karte sichtbar gemacht hast,
-          kannst Du auch andere in Deiner Nähe finden.
-        </p>
+        <p v-if="findHasAccess" class="mb-0">{{ $t('matching.find.comingSoon') }}</p>
+        <p v-else class="mb-0">{{ $t('matching.find.gateText') }}</p>
       </template>
       <template #footer>
-        <BButton v-if="findHasAccess" variant="gradido" @click="showFind = false">Alles klar</BButton>
+        <BButton v-if="findHasAccess" variant="gradido" @click="showFind = false">{{ $t('matching.find.gotIt') }}</BButton>
         <template v-else>
-          <BButton variant="secondary" @click="showFind = false">Später</BButton>
-          <BButton v-if="tab === 'position'" variant="gradido" @click="showFind = false">Verstanden</BButton>
-          <BButton v-else variant="gradido" @click="goPositionFromFind">Zur Position</BButton>
+          <BButton variant="secondary" @click="showFind = false">{{ $t('matching.find.later') }}</BButton>
+          <BButton v-if="tab === 'position'" variant="gradido" @click="showFind = false">{{ $t('matching.find.understood') }}</BButton>
+          <BButton v-else variant="gradido" @click="goPositionFromFind">{{ $t('matching.find.toPosition') }}</BButton>
         </template>
       </template>
     </BModal>
@@ -230,8 +233,10 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
@@ -243,11 +248,7 @@ const goTab = (name) => {
   if (tab.value !== name) router.push(`/matching/${name}`)
 }
 
-const types = [
-  { key: 'interesse', label: 'Ich liebe' },
-  { key: 'angebot', label: 'Ich biete' },
-  { key: 'gesuch', label: 'Ich suche' },
-]
+const types = [{ key: 'interesse' }, { key: 'angebot' }, { key: 'gesuch' }]
 
 // Mock data (preview) — real backend/DB follows (waiting on Dario)
 const entries = ref([
@@ -276,19 +277,6 @@ const newRemote = ref(false)
 const showDetails = ref(false)
 
 const liveCount = computed(() => entries.value.filter((e) => e.active).length)
-const placeholder = computed(
-  () =>
-    ({
-      interesse: 'z. B. Ich liebe Permakultur und Selbstversorgung',
-      angebot: 'z. B. Ich biete Hilfe beim Renovieren von Wohnungen',
-      gesuch: 'z. B. Ich suche jemanden für meine Steuererklärung',
-    })[newType.value],
-)
-
-const typeWords = { interesse: 'Interesse', angebot: 'Angebot', gesuch: 'Gesuch' }
-const typeLabels = { interesse: 'Ich liebe', angebot: 'Ich biete', gesuch: 'Ich suche' }
-const typeWord = (t) => typeWords[t]
-const typeLabel = (t) => typeLabels[t]
 
 // Mock: pretend the user picked an address (real geocoding lands with the backend)
 function mockSetPosition() {
@@ -321,7 +309,7 @@ function save() {
 }
 function del(e) {
   // eslint-disable-next-line no-alert
-  if (window.confirm('Diesen Eintrag löschen?')) {
+  if (window.confirm(t('matching.entries.deleteConfirm'))) {
     entries.value = entries.value.filter((x) => x !== e)
   }
 }
@@ -385,6 +373,10 @@ function del(e) {
   background-color: #178d81;
   color: #fff !important;
   font-weight: 700;
+}
+/* keep a multi-word tab label together; it wraps below the icon as a unit */
+.matching-nav__label {
+  white-space: nowrap;
 }
 
 /* "New entry" — subtle grey text action (not a CTA) */

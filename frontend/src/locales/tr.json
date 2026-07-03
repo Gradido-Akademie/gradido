@@ -333,6 +333,101 @@
   "link-load": "Son linki yükle| Son {n} linki yükle",
   "link-load-more": "{n} link daha yükle",
   "login": "Giriş",
+  "matching": {
+    "about": {
+      "counter": "{count} / ~1000 karakter",
+      "label": "Kendi sözlerinle kim olduğun",
+      "placeholder": "Kim olduğunu, seni neyin harekete geçirdiğini, neyi paylaştığını anlat: biri sana yazmadan önce güven oluşturur.",
+      "saved": "Kaydedildi. (Önizleme, henüz arka uç yok)"
+    },
+    "entries": {
+      "activate": "Etkinleştir",
+      "count": "{total} giriş · {live} aktif · {paused} duraklatıldı",
+      "delete": "Sil",
+      "deleteConfirm": "Bu giriş silinsin mi?",
+      "details": "Ayrıntılar",
+      "edit": "Düzenle",
+      "emptyText": "Bir şey sun, bir şey ara ya da bir ilgi alanı paylaş ve bulunmanı sağla.",
+      "emptyTitle": "Henüz giriş yok.",
+      "new": "Yeni giriş",
+      "noDetails": "(ayrıntı yok)",
+      "pause": "Duraklat",
+      "pausedBadge": "Duraklatıldı · aramada değil",
+      "remote": "Bölge üstü"
+    },
+    "find": {
+      "comingSoon": "Harita yakında geliyor. Hazır olduğunda burada sana uygun kişileri bulacaksın.",
+      "gateText": "Konumunu ayarlayıp haritada görünür olduğunda, yakınındaki diğer kişileri de bulabilirsin.",
+      "gateTitle": "Önce haritada kendini göster",
+      "gotIt": "Tamam",
+      "later": "Daha sonra",
+      "subtitle": "Sana uyanları keşfet",
+      "title": "Haritada bul",
+      "toPosition": "Konuma git",
+      "understood": "Anlaşıldı"
+    },
+    "info": {
+      "about": {
+        "heading": "Kim olduğun",
+        "p1": "Hakkında birkaç sıcak, içten cümle, biri sana yazmadan önce güven oluşturur.",
+        "p2": "Bu metin, arama haritasındaki profil kartında görünür."
+      },
+      "entries": {
+        "heading": "Eşleşme nasıl çalışır",
+        "paused": "Duraklatılan girişler kayıtlı kalır; yalnızca aramada görünmezler.",
+        "text": "Sevdiğin, sunduğun ya da aradığın şeyi belirt: her aktif giriş, başkalarının aramalarında görünmeni sağlar."
+      },
+      "position": {
+        "heading": "Gizliliğin",
+        "p1": "Ne kadar hassas görüneceğine sen karar verirsin. «Yaklaşık» seni bir alan içinde gösterir, asla kapının önünde değil.",
+        "p2": "Konum olmadan haritada değilsin. Anahtar seni istediğin zaman yeniden çıkarır."
+      }
+    },
+    "new": {
+      "cancel": "İptal",
+      "detailsToggle": "Ayrıntılar · Koşullar · Fiyat · Gradido",
+      "inSentence": "… tek cümlede",
+      "remote": "Bölge üstü / çevrimiçi de mevcut"
+    },
+    "position": {
+      "accuracy": "Hassasiyet",
+      "accuracyApprox": "yaklaşık (topluluk çevresi)",
+      "accuracyExact": "tam",
+      "findable": "Bulunabilir miyim?",
+      "findableHint": "Haritadaki varlığını açar/kapatır",
+      "intro": "Eşleşmeye katılmak için kendini haritaya yerleştir: yalnızca bunu yaptığında görünürsün.",
+      "mapPlaceholder": "Harita (adres ara · iğneyi sürükle)",
+      "mapSet": "Konum ayarlandı (deneme)",
+      "searchAddress": "Adres ara",
+      "setNote": "Konum ayarlandı (test için)"
+    },
+    "save": "Kaydet",
+    "tabs": {
+      "about": "Hakkımda",
+      "entries": "Girişler",
+      "position": "Konum"
+    },
+    "type": {
+      "angebot": {
+        "desc": "verdiğin şey",
+        "label": "Sunuyorum",
+        "placeholder": "örn. Ev tadilatında yardım sunuyorum",
+        "word": "Teklif"
+      },
+      "gesuch": {
+        "desc": "aradığın şey",
+        "label": "Arıyorum",
+        "placeholder": "örn. Vergi beyannamem için birini arıyorum",
+        "word": "Talep"
+      },
+      "interesse": {
+        "desc": "sevdiğin şey",
+        "label": "Seviyorum",
+        "placeholder": "örn. Permakültür ve kendine yeterliliği seviyorum",
+        "word": "İlgi"
+      }
+    }
+  },
   "math": {
     "asterisk": "*",
     "equal": "=",

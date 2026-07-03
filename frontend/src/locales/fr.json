@@ -333,6 +333,101 @@
   "link-load": "recharger le dernier lien | recharger les {n} derniers liens",
   "link-load-more": "Enregistrer plus de {n} liens",
   "login": "Connexion",
+  "matching": {
+    "about": {
+      "counter": "{count} / ~1000 caractères",
+      "label": "Qui tu es, avec tes propres mots",
+      "placeholder": "Raconte qui tu es, ce qui te motive, ce que tu partages : cela crée la confiance avant que quelqu'un t'écrive.",
+      "saved": "Enregistré. (Aperçu, encore sans backend)"
+    },
+    "entries": {
+      "activate": "Activer",
+      "count": "{total} entrées · {live} actives · {paused} en pause",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer cette entrée ?",
+      "details": "Détails",
+      "edit": "Modifier",
+      "emptyText": "Propose quelque chose, cherche quelque chose ou partage un intérêt, et laisse-toi trouver.",
+      "emptyTitle": "Aucune entrée pour l'instant.",
+      "new": "Nouvelle entrée",
+      "noDetails": "(aucun détail)",
+      "pause": "Mettre en pause",
+      "pausedBadge": "En pause · pas dans la recherche",
+      "remote": "Suprarégional"
+    },
+    "find": {
+      "comingSoon": "La carte arrive bientôt. Dès qu'elle sera là, tu y trouveras des personnes qui te correspondent.",
+      "gateText": "Une fois que tu as défini ta position et que tu t'es rendu visible sur la carte, tu peux aussi trouver d'autres personnes près de toi.",
+      "gateTitle": "Montre-toi d'abord sur la carte",
+      "gotIt": "D'accord",
+      "later": "Plus tard",
+      "subtitle": "Découvre qui te correspond",
+      "title": "Trouver sur la carte",
+      "toPosition": "Aller à Position",
+      "understood": "Compris"
+    },
+    "info": {
+      "about": {
+        "heading": "Qui tu es",
+        "p1": "Quelques phrases chaleureuses et sincères sur toi créent la confiance avant que quelqu'un t'écrive.",
+        "p2": "Ce texte apparaît sur ta carte de profil sur la carte de recherche."
+      },
+      "entries": {
+        "heading": "Comment fonctionne le matching",
+        "paused": "Les entrées en pause restent enregistrées ; elles n'apparaissent simplement pas dans la recherche.",
+        "text": "Indique ce que tu aimes, proposes ou cherches : chaque entrée active te fait apparaître dans les recherches des autres."
+      },
+      "position": {
+        "heading": "Ta vie privée",
+        "p1": "Tu décides avec quelle précision tu apparais. « Approximative » te montre dans une zone, jamais devant ta porte.",
+        "p2": "Sans position, tu n'es pas sur la carte. L'interrupteur te retire à tout moment."
+      }
+    },
+    "new": {
+      "cancel": "Annuler",
+      "detailsToggle": "Détails · Conditions · Prix · Gradido",
+      "inSentence": "… en une phrase",
+      "remote": "Aussi disponible en suprarégional / en ligne"
+    },
+    "position": {
+      "accuracy": "Précision",
+      "accuracyApprox": "approximative (zone de la communauté)",
+      "accuracyExact": "exacte",
+      "findable": "Suis-je trouvable ?",
+      "findableHint": "Active ou désactive ta présence sur la carte",
+      "intro": "Place-toi sur la carte pour participer au matching : tu n'apparais qu'à ce moment-là.",
+      "mapPlaceholder": "Carte (chercher une adresse · déplacer l'épingle)",
+      "mapSet": "Position définie (simulation)",
+      "searchAddress": "Chercher une adresse",
+      "setNote": "Position définie (pour test)"
+    },
+    "save": "Enregistrer",
+    "tabs": {
+      "about": "À propos de moi",
+      "entries": "Entrées",
+      "position": "Position"
+    },
+    "type": {
+      "angebot": {
+        "desc": "ce que tu donnes",
+        "label": "Je propose",
+        "placeholder": "p. ex. Je propose de l'aide pour rénover des logements",
+        "word": "Offre"
+      },
+      "gesuch": {
+        "desc": "ce que tu cherches",
+        "label": "Je cherche",
+        "placeholder": "p. ex. Je cherche quelqu'un pour ma déclaration d'impôts",
+        "word": "Demande"
+      },
+      "interesse": {
+        "desc": "ce que tu aimes",
+        "label": "J'aime",
+        "placeholder": "p. ex. J'aime la permaculture et l'autosuffisance",
+        "word": "Intérêt"
+      }
+    }
+  },
   "math": {
     "asterisk": "*",
     "equal": "=",

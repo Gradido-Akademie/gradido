@@ -333,6 +333,101 @@
   "link-load": "Load the last link | Load the last {n} links",
   "link-load-more": "Load more {n} links",
   "login": "Sign in",
+  "matching": {
+    "about": {
+      "counter": "{count} / ~1000 characters",
+      "label": "Who you are — in your own words",
+      "placeholder": "Tell others who you are, what moves you, what you share — it builds trust before someone writes to you.",
+      "saved": "Saved. (Preview — no backend yet)"
+    },
+    "entries": {
+      "activate": "Activate",
+      "count": "{total} entries · {live} live · {paused} paused",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this entry?",
+      "details": "Details",
+      "edit": "Edit",
+      "emptyText": "Offer something, look for something, or share an interest — and get found.",
+      "emptyTitle": "No entries yet.",
+      "new": "New entry",
+      "noDetails": "(no details)",
+      "pause": "Pause",
+      "pausedBadge": "Paused · not in search",
+      "remote": "Nationwide"
+    },
+    "find": {
+      "comingSoon": "The map is coming soon. As soon as it is here, you will find people who fit you.",
+      "gateText": "Once you have set your position and made yourself visible on the map, you can also find others near you.",
+      "gateTitle": "First show yourself on the map",
+      "gotIt": "All set",
+      "later": "Later",
+      "subtitle": "Discover who fits you",
+      "title": "Find on the map",
+      "toPosition": "Go to Position",
+      "understood": "Got it"
+    },
+    "info": {
+      "about": {
+        "heading": "Who you are",
+        "p1": "A few warm, honest sentences about you build trust before someone writes to you.",
+        "p2": "This text appears on your profile card on the search map."
+      },
+      "entries": {
+        "heading": "How matching works",
+        "paused": "Paused entries stay saved — they just do not appear in search.",
+        "text": "List what you love, offer or look for — every active entry makes you appear in other people's matching searches."
+      },
+      "position": {
+        "heading": "Your privacy",
+        "p1": "You decide how precisely you appear. \"Approximate\" shows you within an area — never at your front door.",
+        "p2": "Without a position you are not on the map. The switch takes you out again at any time."
+      }
+    },
+    "new": {
+      "cancel": "Cancel",
+      "detailsToggle": "Details · Terms · Price · Gradido",
+      "inSentence": "… in one sentence",
+      "remote": "Also available nationwide / online"
+    },
+    "position": {
+      "accuracy": "Accuracy",
+      "accuracyApprox": "approximate (community area)",
+      "accuracyExact": "exact",
+      "findable": "Am I findable?",
+      "findableHint": "Turns your map presence on/off",
+      "intro": "Place yourself on the map to take part in matching — you only appear once you do.",
+      "mapPlaceholder": "Map (search address · drag pin)",
+      "mapSet": "Position set (mock)",
+      "searchAddress": "Search address",
+      "setNote": "Position set (for testing)"
+    },
+    "save": "Save",
+    "tabs": {
+      "about": "About me",
+      "entries": "Entries",
+      "position": "Position"
+    },
+    "type": {
+      "angebot": {
+        "desc": "what you give",
+        "label": "I offer",
+        "placeholder": "e.g. I offer help with renovating flats",
+        "word": "Offer"
+      },
+      "gesuch": {
+        "desc": "what you look for",
+        "label": "I am looking for",
+        "placeholder": "e.g. I am looking for someone for my tax return",
+        "word": "Request"
+      },
+      "interesse": {
+        "desc": "what you love",
+        "label": "I love",
+        "placeholder": "e.g. I love permaculture and self-sufficiency",
+        "word": "Interest"
+      }
+    }
+  },
   "math": {
     "asterisk": "*",
     "equal": "=",

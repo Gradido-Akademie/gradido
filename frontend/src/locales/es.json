@@ -333,6 +333,101 @@
   "link-load": "recargar el último enlace | recargar los últimos {n} enlaces",
   "link-load-more": "descargar más {n} enlaces",
   "login": "iniciar sesión",
+  "matching": {
+    "about": {
+      "counter": "{count} / ~1000 caracteres",
+      "label": "Quién eres, con tus propias palabras",
+      "placeholder": "Cuenta quién eres, qué te mueve, qué compartes: eso genera confianza antes de que alguien te escriba.",
+      "saved": "Guardado. (Vista previa, aún sin backend)"
+    },
+    "entries": {
+      "activate": "Activar",
+      "count": "{total} entradas · {live} activas · {paused} en pausa",
+      "delete": "Eliminar",
+      "deleteConfirm": "¿Eliminar esta entrada?",
+      "details": "Detalles",
+      "edit": "Editar",
+      "emptyText": "Ofrece algo, busca algo o comparte un interés, y deja que te encuentren.",
+      "emptyTitle": "Aún no hay entradas.",
+      "new": "Nueva entrada",
+      "noDetails": "(sin detalles)",
+      "pause": "Pausar",
+      "pausedBadge": "En pausa · no aparece en la búsqueda",
+      "remote": "Suprarregional"
+    },
+    "find": {
+      "comingSoon": "El mapa llegará pronto. En cuanto esté, aquí encontrarás a personas que encajan contigo.",
+      "gateText": "Una vez que hayas fijado tu posición y te hayas hecho visible en el mapa, también podrás encontrar a otros cerca de ti.",
+      "gateTitle": "Primero muéstrate en el mapa",
+      "gotIt": "De acuerdo",
+      "later": "Más tarde",
+      "subtitle": "Descubre quién encaja contigo",
+      "title": "Buscar en el mapa",
+      "toPosition": "Ir a Posición",
+      "understood": "Entendido"
+    },
+    "info": {
+      "about": {
+        "heading": "Quién eres",
+        "p1": "Unas pocas frases cálidas y sinceras sobre ti generan confianza antes de que alguien te escriba.",
+        "p2": "Este texto aparece en tu tarjeta de perfil en el mapa de búsqueda."
+      },
+      "entries": {
+        "heading": "Cómo funciona el matching",
+        "paused": "Las entradas en pausa se guardan; solo no aparecen en la búsqueda.",
+        "text": "Indica lo que te encanta, ofreces o buscas: cada entrada activa hace que aparezcas en las búsquedas de otras personas."
+      },
+      "position": {
+        "heading": "Tu privacidad",
+        "p1": "Tú decides con qué precisión apareces. «Aproximada» te muestra dentro de un área, nunca en tu puerta.",
+        "p2": "Sin posición no estás en el mapa. El interruptor te quita de nuevo en cualquier momento."
+      }
+    },
+    "new": {
+      "cancel": "Cancelar",
+      "detailsToggle": "Detalles · Condiciones · Precio · Gradido",
+      "inSentence": "… en una frase",
+      "remote": "También disponible de forma suprarregional / en línea"
+    },
+    "position": {
+      "accuracy": "Precisión",
+      "accuracyApprox": "aproximada (área de la comunidad)",
+      "accuracyExact": "exacta",
+      "findable": "¿Soy localizable?",
+      "findableHint": "Activa o desactiva tu presencia en el mapa",
+      "intro": "Ubícate en el mapa para participar en el matching: solo apareces cuando lo haces.",
+      "mapPlaceholder": "Mapa (buscar dirección · arrastrar el pin)",
+      "mapSet": "Posición fijada (simulación)",
+      "searchAddress": "Buscar dirección",
+      "setNote": "Posición fijada (para pruebas)"
+    },
+    "save": "Guardar",
+    "tabs": {
+      "about": "Sobre mí",
+      "entries": "Entradas",
+      "position": "Posición"
+    },
+    "type": {
+      "angebot": {
+        "desc": "lo que das",
+        "label": "Ofrezco",
+        "placeholder": "p. ej. Ofrezco ayuda para renovar viviendas",
+        "word": "Oferta"
+      },
+      "gesuch": {
+        "desc": "lo que buscas",
+        "label": "Busco",
+        "placeholder": "p. ej. Busco a alguien para mi declaración de la renta",
+        "word": "Petición"
+      },
+      "interesse": {
+        "desc": "lo que te encanta",
+        "label": "Me encanta",
+        "placeholder": "p. ej. Me encanta la permacultura y la autosuficiencia",
+        "word": "Interés"
+      }
+    }
+  },
   "math": {
     "asterisk": "*",
     "equal": "=",

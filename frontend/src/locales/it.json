@@ -333,6 +333,101 @@
   "link-load": "ricarica l'ultimo link | ricarica gli ultimi {n} link",
   "link-load-more": "ricarica altri {n} link",
   "login": "Accedi",
+  "matching": {
+    "about": {
+      "counter": "{count} / ~1000 caratteri",
+      "label": "Chi sei, con parole tue",
+      "placeholder": "Racconta chi sei, cosa ti muove, cosa condividi: crea fiducia prima che qualcuno ti scriva.",
+      "saved": "Salvato. (Anteprima, ancora senza backend)"
+    },
+    "entries": {
+      "activate": "Attiva",
+      "count": "{total} voci · {live} attive · {paused} in pausa",
+      "delete": "Elimina",
+      "deleteConfirm": "Eliminare questa voce?",
+      "details": "Dettagli",
+      "edit": "Modifica",
+      "emptyText": "Offri qualcosa, cerca qualcosa o condividi un interesse, e fatti trovare.",
+      "emptyTitle": "Ancora nessuna voce.",
+      "new": "Nuova voce",
+      "noDetails": "(nessun dettaglio)",
+      "pause": "Metti in pausa",
+      "pausedBadge": "In pausa · non nella ricerca",
+      "remote": "Sovraregionale"
+    },
+    "find": {
+      "comingSoon": "La mappa arriva presto. Appena sarà disponibile, qui troverai persone in sintonia con te.",
+      "gateText": "Una volta impostata la tua posizione e resa visibile sulla mappa, potrai trovare anche altre persone vicino a te.",
+      "gateTitle": "Mostrati prima sulla mappa",
+      "gotIt": "Va bene",
+      "later": "Più tardi",
+      "subtitle": "Scopri chi è in sintonia con te",
+      "title": "Trova sulla mappa",
+      "toPosition": "Vai a Posizione",
+      "understood": "Capito"
+    },
+    "info": {
+      "about": {
+        "heading": "Chi sei",
+        "p1": "Poche frasi calorose e sincere su di te creano fiducia prima che qualcuno ti scriva.",
+        "p2": "Questo testo appare sulla tua scheda profilo sulla mappa di ricerca."
+      },
+      "entries": {
+        "heading": "Come funziona il matching",
+        "paused": "Le voci in pausa restano salvate; semplicemente non appaiono nella ricerca.",
+        "text": "Indica ciò che ami, offri o cerchi: ogni voce attiva ti fa apparire nelle ricerche degli altri."
+      },
+      "position": {
+        "heading": "La tua privacy",
+        "p1": "Decidi tu con quanta precisione appari. «Approssimativa» ti mostra in un'area, mai davanti alla porta di casa.",
+        "p2": "Senza posizione non sei sulla mappa. L'interruttore ti rimuove di nuovo in qualsiasi momento."
+      }
+    },
+    "new": {
+      "cancel": "Annulla",
+      "detailsToggle": "Dettagli · Condizioni · Prezzo · Gradido",
+      "inSentence": "… in una frase",
+      "remote": "Disponibile anche a livello sovraregionale / online"
+    },
+    "position": {
+      "accuracy": "Precisione",
+      "accuracyApprox": "approssimativa (area della comunità)",
+      "accuracyExact": "esatta",
+      "findable": "Sono rintracciabile?",
+      "findableHint": "Attiva o disattiva la tua presenza sulla mappa",
+      "intro": "Posizionati sulla mappa per partecipare al matching: appari solo quando lo fai.",
+      "mapPlaceholder": "Mappa (cerca indirizzo · trascina il segnaposto)",
+      "mapSet": "Posizione impostata (simulazione)",
+      "searchAddress": "Cerca indirizzo",
+      "setNote": "Posizione impostata (per test)"
+    },
+    "save": "Salva",
+    "tabs": {
+      "about": "Su di me",
+      "entries": "Voci",
+      "position": "Posizione"
+    },
+    "type": {
+      "angebot": {
+        "desc": "ciò che dai",
+        "label": "Offro",
+        "placeholder": "es. Offro aiuto per ristrutturare case",
+        "word": "Offerta"
+      },
+      "gesuch": {
+        "desc": "ciò che cerchi",
+        "label": "Cerco",
+        "placeholder": "es. Cerco qualcuno per la mia dichiarazione dei redditi",
+        "word": "Richiesta"
+      },
+      "interesse": {
+        "desc": "ciò che ami",
+        "label": "Amo",
+        "placeholder": "es. Amo la permacultura e l'autosufficienza",
+        "word": "Interesse"
+      }
+    }
+  },
   "math": {
     "asterisk": "*",
     "equal": "=",
