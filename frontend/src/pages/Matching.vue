@@ -155,28 +155,22 @@
       <template #title>Neuer Eintrag</template>
       <template #default>
         <div class="d-flex gap-2 mb-3">
-          <BButton
+          <button
             v-for="t in types"
             :key="t.key"
-            variant="outline-secondary"
+            type="button"
             class="type-choice__btn flex-fill"
-            :class="{ 'is-sel': newType === t.key }"
+            :class="[`type-${t.key}`, { 'is-sel': newType === t.key }]"
             @click="newType = t.key"
           >
-            <i-bi-heart v-if="t.key === 'interesse'" />
+            <i-bi-heart-fill v-if="t.key === 'interesse'" />
             <i-bi-box-seam v-else-if="t.key === 'angebot'" />
             <i-bi-search v-else />
             <div>{{ t.label }}</div>
-          </BButton>
+          </button>
         </div>
 
-        <div
-          class="cat-label rounded-like-card d-flex align-items-center justify-content-center gap-2 mb-3"
-          :class="`type-${newType}`"
-        >
-          <i-bi-heart-fill v-if="newType === 'interesse'" />
-          <i-bi-box-seam v-else-if="newType === 'angebot'" />
-          <i-bi-search v-else />
+        <div class="cat-label text-center fw-bold mb-3" :class="`cat-${newType}`">
           {{ typeLabel(newType) }}
         </div>
 
@@ -341,10 +335,7 @@ function del(e) {
   font-size: 28px;
 }
 .cat-label {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-  padding: 12px;
+  font-size: 22px;
 }
 .type-interesse {
   background: #c62828;
@@ -355,10 +346,35 @@ function del(e) {
 .type-gesuch {
   background: #0e79bc;
 }
+.cat-interesse {
+  color: #c62828;
+}
+.cat-angebot {
+  color: #047006;
+}
+.cat-gesuch {
+  color: #0e79bc;
+}
+/* Type-choice buttons: solid colored, white text/icon; unselected dimmed */
+.type-choice__btn {
+  border: none;
+  border-radius: 22px;
+  color: #fff !important;
+  font-size: 15px;
+  padding: 12px 6px;
+  opacity: 0.4;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.type-choice__btn svg {
+  font-size: 22px;
+}
 .type-choice__btn.is-sel {
-  border-color: #178d81 !important;
-  background: #e6f2f0 !important;
-  color: #178d81 !important;
+  opacity: 1;
+  box-shadow: 0 0 0 3px rgb(0 0 0 / 18%);
   font-weight: 600;
 }
 
