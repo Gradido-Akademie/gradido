@@ -175,24 +175,28 @@
           @update:userPosition="onPickPosition"
         />
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <BButton variant="gradido" :disabled="!pickedLocation" @click="savePosition">
-          {{ $t('matching.save') }}
-        </BButton>
-        <span v-if="positionSaved" class="small text-muted">
-          {{ $t('matching.position.setNote') }}
-        </span>
+      <!-- Accuracy + save: right-aligned, directly below the map (where a save
+           button is expected). Both self-saving controls come from the settings page. -->
+      <div class="d-flex flex-wrap align-items-end justify-content-end gap-3 mt-3">
+        <div class="accuracy-field text-start">
+          <label class="small text-muted d-block mb-1">
+            {{ $t('matching.position.accuracy') }}
+          </label>
+          <UserGMSLocationFormat />
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span v-if="positionSaved" class="small text-muted">
+            {{ $t('matching.position.setNote') }}
+          </span>
+          <BButton variant="gradido" :disabled="!pickedLocation" @click="savePosition">
+            {{ $t('matching.save') }}
+          </BButton>
+        </div>
       </div>
 
-      <!-- Accuracy — self-saving control reused from the settings page -->
-      <div class="mt-4 accuracy-field">
-        <label class="small text-muted d-block mb-1">{{ $t('matching.position.accuracy') }}</label>
-        <UserGMSLocationFormat />
-      </div>
-
-      <!-- Findable toggle — self-saving control reused from the settings page -->
-      <div class="d-flex align-items-center justify-content-between border-top mt-3 py-3">
-        <div>
+      <!-- Findable toggle — label kept close to the switch (right-aligned group) -->
+      <div class="d-flex align-items-center justify-content-end gap-3 border-top mt-4 pt-3">
+        <div class="text-end">
           <div class="fw-bold">{{ $t('matching.position.findable') }}</div>
           <div class="small text-muted">{{ $t('matching.position.findableHint') }}</div>
         </div>
@@ -701,6 +705,18 @@ function goPositionFromFind() {
 /* Position tab */
 .accuracy-field {
   max-width: 320px;
+}
+
+/* Coordinates readout above the map: quieter than the settings-modal default
+   (which is bold) — smaller, non-bold, muted, tighter. Scoped to this page. */
+:deep(.coordinates-display) {
+  margin-top: 0;
+  font-weight: normal;
+  font-size: 0.78rem;
+  color: #6c757d;
+}
+:deep(.coordinates-display .p-2) {
+  padding: 0.2rem 0.35rem !important;
 }
 
 .empty-icon {
