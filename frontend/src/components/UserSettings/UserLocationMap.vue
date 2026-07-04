@@ -1,7 +1,7 @@
 <template>
   <div>
     <coordinates-display
-      v-if="map"
+      v-if="map && showCoordinates"
       :community-position="communityPosition"
       :user-position="userPosition"
       @centerMap="handleMapCenter"
@@ -38,6 +38,8 @@ const props = defineProps({
   communityMarkerCoords: Object,
   // optional map height; default keeps the settings-page usage unchanged
   height: { type: String, default: '400px' },
+  // the settings page shows the coordinates readout; the matching tab hides it
+  showCoordinates: { type: Boolean, default: true },
 })
 
 const { t } = useI18n()

@@ -165,32 +165,27 @@
     <div v-if="tab === 'position'" class="mx-2">
       <p class="small text-muted">{{ $t('matching.position.intro') }}</p>
 
-      <!-- Inline map (address search + draggable marker) — reused from the settings page -->
+      <!-- Inline map: address search (lupe) + draggable marker, reused from the
+           settings page. Coordinates readout hidden to keep the map compact; the
+           pin auto-saves on move. -->
       <div class="bg-white app-box-shadow gradido-border-radius p-2 my-3">
         <UserLocationMap
           v-if="userLocationLoaded"
           :user-marker-coords="userLocation"
           :community-marker-coords="communityLocation"
+          :show-coordinates="false"
           height="320px"
           @update:userPosition="onPickPosition"
         />
       </div>
-      <!-- Accuracy + save: right-aligned, directly below the map (where a save
-           button is expected). Both self-saving controls come from the settings page. -->
-      <div class="d-flex flex-wrap align-items-end justify-content-end gap-3 mt-3">
+
+      <!-- Accuracy — self-saving control, right-aligned below the map -->
+      <div class="d-flex justify-content-end mt-3">
         <div class="accuracy-field text-start">
           <label class="small text-muted d-block mb-1">
             {{ $t('matching.position.accuracy') }}
           </label>
           <UserGMSLocationFormat />
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <span v-if="positionSaved" class="small text-muted">
-            {{ $t('matching.position.setNote') }}
-          </span>
-          <BButton variant="gradido" :disabled="!pickedLocation" @click="savePosition">
-            {{ $t('matching.save') }}
-          </BButton>
         </div>
       </div>
 
@@ -326,7 +321,7 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useStore()
-const { toastError } = useAppToast()
+const { toastSuccess, toastError } = useAppToast()
 
 // The active tab is driven by the route param (/matching/:tab) so the
 // right-hand explanation column (MatchingTemplate) can switch in sync
@@ -475,7 +470,6 @@ const communityLocation = ref({ lat: 0, lng: 0 })
 const userLocationLoaded = ref(false)
 const hasPosition = ref(false)
 const pickedLocation = ref(null)
-const positionSaved = ref(false)
 
 const { onResult: onUserLocation, onError: onUserLocationError } = useQuery(
   userLocationQuery,
@@ -498,8 +492,18 @@ onUserLocation(({ data }) => {
 })
 onUserLocationError((error) => toastError(error.message))
 
+// The pin auto-saves on move (consistent with the other self-saving controls).
+// The map echoes its current position on load/remount, so skip saves that match
+// the stored location; update userLocation up front so the map's paired emit
+// (marker drag + watcher) does not trigger a second save for the same spot.
 function onPickPosition(coords) {
   pickedLocation.value = coords
+  const cur = userLocation.value
+  if (cur && Math.abs(coords.lat - cur.lat) < 1e-7 && Math.abs(coords.lng - cur.lng) < 1e-7) {
+    return
+  }
+  userLocation.value = { lat: coords.lat, lng: coords.lng }
+  savePosition()
 }
 async function savePosition() {
   if (!pickedLocation.value) return
@@ -511,7 +515,7 @@ async function savePosition() {
     await saveLocation({ gmsLocation })
     store.commit('userLocation', gmsLocation)
     hasPosition.value = true
-    positionSaved.value = true
+    toastSuccess(t('settings.GMS.location.updateSuccess'))
   } catch (error) {
     toastError(error.message)
   }
@@ -705,18 +709,6 @@ function goPositionFromFind() {
 /* Position tab */
 .accuracy-field {
   max-width: 320px;
-}
-
-/* Coordinates readout above the map: quieter than the settings-modal default
-   (which is bold) — smaller, non-bold, muted, tighter. Scoped to this page. */
-:deep(.coordinates-display) {
-  margin-top: 0;
-  font-weight: normal;
-  font-size: 0.78rem;
-  color: #6c757d;
-}
-:deep(.coordinates-display .p-2) {
-  padding: 0.2rem 0.35rem !important;
 }
 
 .empty-icon {
