@@ -13,6 +13,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import L from 'leaflet'
+// Own the Leaflet base stylesheet here so the map renders correctly wherever it
+// is embedded (the settings page imported it in a wrapper; the matching page
+// embeds this component directly, where the missing CSS left the tiles static
+// and scattered).
+import 'leaflet/dist/leaflet.css'
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch'
 import 'leaflet-geosearch/dist/geosearch.css'
 import CoordinatesDisplay from '@/components/UserSettings/CoordinatesDisplay.vue'
@@ -140,21 +145,8 @@ function initMap() {
       updateUserPosition({ lat: y, lng: x })
     })
 
-    // Center on the user. A map created before its container's layout has
-    // settled (e.g. inside a freshly shown tab) can compute a wrong pixel origin
-    // and scatter its tiles. Recompute the size and hard-set the view from
-    // explicit coordinates across the next frames to force a clean origin; this
-    // is a harmless no-op re-center when the container was already stable.
-    const settleView = () => {
-      if (!map.value) return
-      map.value.invalidateSize()
-      map.value.setView([userPosition.value.lat, userPosition.value.lng], defaultZoom, {
-        animate: false,
-      })
-    }
-    settleView()
-    requestAnimationFrame(settleView)
-    setTimeout(settleView, 300)
+    // Center map on user position
+    centerMapOnUser()
   }
 }
 
