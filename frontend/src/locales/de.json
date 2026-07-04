@@ -390,11 +390,9 @@
       "remote": "Auch überregional / online verfügbar"
     },
     "position": {
-      "accuracy": "Genauigkeit",
       "findable": "Bin ich auffindbar?",
       "findableHint": "Schaltet Deine Karten-Präsenz an/aus",
-      "intro": "Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust.",
-      "setNote": "Position gesetzt (zum Testen)"
+      "intro": "Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust."
     },
     "save": "Speichern",
     "tabs": {
@@ -488,12 +486,12 @@
       },
       "location-format": "Position auf Karte anzeigen:",
       "map": {
-        "communityCoords": "Ihr Gemeinschafts-Standort: Breitengrad {lat}, Längengrad {lng}",
-        "communityLocationLabel": "Ihr Gemeinschafts-Standort",
+        "communityCoords": "Dein Gemeinschafts-Standort: Breitengrad {lat}, Längengrad {lng}",
+        "communityLocationLabel": "Dein Gemeinschafts-Standort",
         "headline": "Geografische Standorterfassung des Benutzers",
         "search": "Nach einem Standort suchen",
-        "userCoords": "Ihr Standort: Breitengrad {lat}, Längengrad {lng}",
-        "userLocationLabel": "Ihr Standort"
+        "userCoords": "Dein Standort: Breitengrad {lat}, Längengrad {lng}",
+        "userLocationLabel": "Dein Standort"
       },
       "naming-format": "Namen anzeigen:",
       "publish-location": {

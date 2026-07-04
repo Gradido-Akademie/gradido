@@ -390,11 +390,9 @@
       "remote": "También disponible de forma suprarregional / en línea"
     },
     "position": {
-      "accuracy": "Precisión",
       "findable": "¿Soy localizable?",
       "findableHint": "Activa o desactiva tu presencia en el mapa",
-      "intro": "Ubícate en el mapa para participar en el matching: solo apareces cuando lo haces.",
-      "setNote": "Posición fijada (para pruebas)"
+      "intro": "Ubícate en el mapa para participar en el matching: solo apareces cuando lo haces."
     },
     "save": "Guardar",
     "tabs": {

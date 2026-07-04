@@ -390,11 +390,9 @@
       "remote": "Aussi disponible en suprarégional / en ligne"
     },
     "position": {
-      "accuracy": "Précision",
       "findable": "Suis-je trouvable ?",
       "findableHint": "Active ou désactive ta présence sur la carte",
-      "intro": "Place-toi sur la carte pour participer au matching : tu n'apparais qu'à ce moment-là.",
-      "setNote": "Position définie (pour test)"
+      "intro": "Place-toi sur la carte pour participer au matching : tu n'apparais qu'à ce moment-là."
     },
     "save": "Enregistrer",
     "tabs": {

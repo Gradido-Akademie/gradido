@@ -390,11 +390,9 @@
       "remote": "Disponibile anche a livello sovraregionale / online"
     },
     "position": {
-      "accuracy": "Precisione",
       "findable": "Sono rintracciabile?",
       "findableHint": "Attiva o disattiva la tua presenza sulla mappa",
-      "intro": "Posizionati sulla mappa per partecipare al matching: appari solo quando lo fai.",
-      "setNote": "Posizione impostata (per test)"
+      "intro": "Posizionati sulla mappa per partecipare al matching: appari solo quando lo fai."
     },
     "save": "Salva",
     "tabs": {

@@ -390,11 +390,9 @@
       "remote": "Bölge üstü / çevrimiçi de mevcut"
     },
     "position": {
-      "accuracy": "Hassasiyet",
       "findable": "Bulunabilir miyim?",
       "findableHint": "Haritadaki varlığını açar/kapatır",
-      "intro": "Eşleşmeye katılmak için kendini haritaya yerleştir: yalnızca bunu yaptığında görünürsün.",
-      "setNote": "Konum ayarlandı (test için)"
+      "intro": "Eşleşmeye katılmak için kendini haritaya yerleştir: yalnızca bunu yaptığında görünürsün."
     },
     "save": "Kaydet",
     "tabs": {
@@ -488,12 +486,12 @@
       },
       "location-format": "Konumu haritada göster:",
       "map": {
-        "communityCoords": "Topluluk Konumunuz: Enlem {lat}, Boylam {lng}",
-        "communityLocationLabel": "Topluluk Konumunuz",
+        "communityCoords": "Topluluk Konumun: Enlem {lat}, Boylam {lng}",
+        "communityLocationLabel": "Topluluk Konumun",
         "headline": "Kullanıcının Coğrafi Konum Tespiti",
         "search": "Konum ara",
-        "userCoords": "Konumunuz: Enlem {lat}, Boylam {lng}",
-        "userLocationLabel": "Konumunuz"
+        "userCoords": "Konumun: Enlem {lat}, Boylam {lng}",
+        "userLocationLabel": "Konumun"
       },
       "naming-format": "İsmi göster:",
       "publish-location": {
