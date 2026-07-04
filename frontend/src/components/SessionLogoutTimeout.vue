@@ -23,10 +23,10 @@
         </BCardText>
       </BCard>
       <template #footer>
-        <BButton size="lg" variant="secondary" @click="emit('logout')">
+        <BButton variant="secondary" @click="emit('logout')">
           {{ $t('navigation.logout') }}
         </BButton>
-        <BButton size="lg" variant="gradido" @click="handleOk">
+        <BButton variant="gradido" @click="handleOk">
           {{ $t('session.extend') }}
         </BButton>
       </template>
