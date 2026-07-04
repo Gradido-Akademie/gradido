@@ -140,8 +140,21 @@ function initMap() {
       updateUserPosition({ lat: y, lng: x })
     })
 
-    // Center map on user position
-    centerMapOnUser()
+    // Center on the user. A map created before its container's layout has
+    // settled (e.g. inside a freshly shown tab) can compute a wrong pixel origin
+    // and scatter its tiles. Recompute the size and hard-set the view from
+    // explicit coordinates across the next frames to force a clean origin; this
+    // is a harmless no-op re-center when the container was already stable.
+    const settleView = () => {
+      if (!map.value) return
+      map.value.invalidateSize()
+      map.value.setView([userPosition.value.lat, userPosition.value.lng], defaultZoom, {
+        animate: false,
+      })
+    }
+    settleView()
+    requestAnimationFrame(settleView)
+    setTimeout(settleView, 300)
   }
 }
 
