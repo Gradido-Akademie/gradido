@@ -421,3 +421,16 @@ export const user = gql`
     }
   }
 `
+
+export const listGmsEntries = gql`
+  query {
+    listGmsEntries {
+      entryUuid
+      entryType
+      summary
+      details
+      remote
+      active
+    }
+  }
+`

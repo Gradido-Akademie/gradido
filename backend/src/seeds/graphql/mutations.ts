@@ -386,3 +386,44 @@ export const updateHomeCommunityQuery = gql`
     }
   }
 `
+
+export const createGmsEntry = gql`
+  mutation ($input: GmsEntryInput!) {
+    createGmsEntry(input: $input) {
+      entryUuid
+      entryType
+      summary
+      details
+      remote
+      active
+    }
+  }
+`
+
+export const updateGmsEntry = gql`
+  mutation ($entryUuid: String!, $input: GmsEntryInput!) {
+    updateGmsEntry(entryUuid: $entryUuid, input: $input) {
+      entryUuid
+      entryType
+      summary
+      details
+      remote
+      active
+    }
+  }
+`
+
+export const setGmsEntryActive = gql`
+  mutation ($entryUuid: String!, $active: Boolean!) {
+    setGmsEntryActive(entryUuid: $entryUuid, active: $active) {
+      entryUuid
+      active
+    }
+  }
+`
+
+export const deleteGmsEntry = gql`
+  mutation ($entryUuid: String!) {
+    deleteGmsEntry(entryUuid: $entryUuid)
+  }
+`
