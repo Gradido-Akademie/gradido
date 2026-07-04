@@ -163,7 +163,7 @@
 
     <!-- Position -->
     <div v-if="tab === 'position'" class="mx-2">
-      <p class="small text-muted">{{ $t('matching.position.intro') }}</p>
+      <p class="small text-muted ps-2">{{ $t('matching.position.intro') }}</p>
 
       <!-- Inline map: address search (lupe) + draggable marker, reused from the
            settings page. Coordinates readout hidden to keep the map compact; the
@@ -179,28 +179,26 @@
         />
       </div>
 
-      <!-- Accuracy — self-saving control, right-aligned below the map -->
+      <!-- Accuracy — self-saving dropdown, right-aligned below the map
+           (self-explanatory: "exact" / "approximate", so no label needed) -->
       <div class="d-flex justify-content-end mt-3">
-        <div class="accuracy-field text-start">
-          <label class="small text-muted d-block mb-1">
-            {{ $t('matching.position.accuracy') }}
-          </label>
-          <UserGMSLocationFormat />
-        </div>
+        <UserGMSLocationFormat />
       </div>
 
-      <!-- Findable toggle — label kept close to the switch (right-aligned group) -->
-      <div class="d-flex align-items-center justify-content-end gap-3 border-top mt-4 pt-3">
-        <div class="text-end">
-          <div class="fw-bold">{{ $t('matching.position.findable') }}</div>
-          <div class="small text-muted">{{ $t('matching.position.findableHint') }}</div>
+      <!-- Findable toggle — title on the switch's line, hint below as explanation -->
+      <div class="border-top mt-4 pt-3">
+        <div class="d-flex align-items-center justify-content-end gap-3">
+          <span class="fw-bold">{{ $t('matching.position.findable') }}</span>
+          <UserSettingsSwitch
+            :initial-value="store.state.gmsAllowed"
+            attr-name="gmsAllowed"
+            :enabled-text="$t('settings.GMS.enabled')"
+            :disabled-text="$t('settings.GMS.disabled')"
+          />
         </div>
-        <UserSettingsSwitch
-          :initial-value="store.state.gmsAllowed"
-          attr-name="gmsAllowed"
-          :enabled-text="$t('settings.GMS.enabled')"
-          :disabled-text="$t('settings.GMS.disabled')"
-        />
+        <div class="small text-muted text-end mt-1">
+          {{ $t('matching.position.findableHint') }}
+        </div>
       </div>
     </div>
 
@@ -704,11 +702,6 @@ function goPositionFromFind() {
 /* let textareas grow to their rows — the design system forces .form-control to 50px */
 .matching-textarea {
   height: auto;
-}
-
-/* Position tab */
-.accuracy-field {
-  max-width: 320px;
 }
 
 .empty-icon {
