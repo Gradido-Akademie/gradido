@@ -6,6 +6,7 @@ import { ContributionMessage } from './ContributionMessage'
 import { DltTransaction } from './DltTransaction'
 import { Event } from './Event'
 import { FederatedCommunity } from './FederatedCommunity'
+import { GmsEntry } from './GmsEntry'
 import { LoginElopageBuys } from './LoginElopageBuys'
 import { Migration } from './Migration'
 import { PendingTransaction } from './PendingTransaction'
@@ -24,6 +25,7 @@ export {
   DltTransaction,
   Event,
   FederatedCommunity,
+  GmsEntry,
   LoginElopageBuys,
   Migration,
   PendingTransaction,
@@ -43,6 +45,7 @@ export const entities = [
   DltTransaction,
   Event,
   FederatedCommunity,
+  GmsEntry,
   LoginElopageBuys,
   Migration,
   PendingTransaction,

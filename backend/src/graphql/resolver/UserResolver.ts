@@ -699,6 +699,7 @@ export class UserResolver {
       humhubPublishName,
       gmsLocation,
       gmsPublishLocation,
+      aboutMe,
     } = updateUserInfosArgs
     const user = getUser(context)
     const logger = createLogger()
@@ -719,6 +720,7 @@ export class UserResolver {
       humhubPublishName: humhubPublishName !== undefined,
       gmsLocation: gmsLocation !== undefined,
       gmsPublishLocation: gmsPublishLocation !== undefined,
+      aboutMe: aboutMe !== undefined,
     })
 
     const updateUserInGMS = compareGmsRelevantUserSettings(user, updateUserInfosArgs)
@@ -737,6 +739,7 @@ export class UserResolver {
       gmsPublishName: gmsPublishName?.valueOf(),
       humhubPublishName: humhubPublishName?.valueOf(),
       gmsPublishLocation: gmsPublishLocation?.valueOf(),
+      aboutMe,
     })
 
     // currently alias can only be set, not updated

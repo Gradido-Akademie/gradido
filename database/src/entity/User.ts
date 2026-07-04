@@ -180,6 +180,9 @@ export class User extends BaseEntity {
   })
   gmsPublishLocation: number
 
+  @Column({ name: 'about_me', type: 'text', nullable: true, default: null })
+  aboutMe: string | null
+
   @Column({ name: 'gms_registered', type: 'bool', default: false })
   gmsRegistered: boolean
 
