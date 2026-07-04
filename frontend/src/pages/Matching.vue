@@ -5,10 +5,10 @@
          The "map coming soon" branch is a placeholder for the real map navigation. -->
     <div class="matching-header d-flex justify-content-end mx-lg-5 mb-3">
       <button type="button" class="find-btn" @click="showFind = true">
-        <i-bi-map class="find-btn__icon" />
-        <span class="find-btn__text">
-          <span class="find-btn__title">{{ $t('matching.find.title') }}</span>
-          <span class="find-btn__sub">{{ $t('matching.find.subtitle') }}</span>
+        <i-bi-map class="find-btn-icon" />
+        <span class="find-btn-text">
+          <span class="find-btn-title">{{ $t('matching.find.title') }}</span>
+          <span class="find-btn-sub">{{ $t('matching.find.subtitle') }}</span>
         </span>
       </button>
     </div>
@@ -19,30 +19,30 @@
     <div class="matching-nav rounded-26 shadow d-flex justify-content-between mx-lg-5 mb-4">
       <BButton
         variant="link"
-        class="matching-nav__btn"
+        class="matching-nav-btn"
         :class="{ 'is-active': tab === 'entries' }"
         @click="goTab('entries')"
       >
         <i-bi-card-list class="me-1" />
-        <span class="matching-nav__label">{{ $t('matching.tabs.entries') }}</span>
+        <span class="matching-nav-label">{{ $t('matching.tabs.entries') }}</span>
       </BButton>
       <BButton
         variant="link"
-        class="matching-nav__btn"
+        class="matching-nav-btn"
         :class="{ 'is-active': tab === 'about' }"
         @click="goTab('about')"
       >
         <i-bi-person class="me-1" />
-        <span class="matching-nav__label">{{ $t('matching.tabs.about') }}</span>
+        <span class="matching-nav-label">{{ $t('matching.tabs.about') }}</span>
       </BButton>
       <BButton
         variant="link"
-        class="matching-nav__btn"
+        class="matching-nav-btn"
         :class="{ 'is-active': tab === 'position' }"
         @click="goTab('position')"
       >
         <i-bi-geo-alt class="me-1" />
-        <span class="matching-nav__label">{{ $t('matching.tabs.position') }}</span>
+        <span class="matching-nav-label">{{ $t('matching.tabs.position') }}</span>
       </BButton>
     </div>
 
@@ -213,7 +213,7 @@
             v-for="ty in types"
             :key="ty.key"
             type="button"
-            class="type-choice__btn flex-fill"
+            class="type-choice-btn flex-fill"
             :class="[`type-${ty.key}`, { 'is-sel': newType === ty.key }]"
             @click="newType = ty.key"
           >
@@ -549,25 +549,30 @@ function goPositionFromFind() {
   padding: 11px 20px;
   cursor: pointer;
 }
+
 .find-btn:hover {
   background: #0f6e56;
 }
-.find-btn__icon {
+
+.find-btn-icon {
   font-size: 26px;
 }
-.find-btn__text {
+
+.find-btn-text {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
   text-align: left;
 }
-.find-btn__title {
+
+.find-btn-title {
   font-weight: 700;
   font-size: 16px;
 }
-.find-btn__sub {
+
+.find-btn-sub {
   font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgb(255 255 255 / 85%);
 }
 
 /* Tab bar — same look as NavContributions (grey, active = teal) */
@@ -575,20 +580,23 @@ function goPositionFromFind() {
   background-color: #d1d1d1;
   padding: 4px;
 }
-.matching-nav__btn {
+
+.matching-nav-btn {
   flex: 1;
   color: #000 !important;
   font-size: 14px;
   text-decoration: none;
   border-radius: 25px;
 }
-.matching-nav__btn.is-active {
+
+.matching-nav-btn.is-active {
   background-color: #178d81;
   color: #fff !important;
   font-weight: 700;
 }
+
 /* keep a multi-word tab label together; it wraps below the icon as a unit */
-.matching-nav__label {
+.matching-nav-label {
   white-space: nowrap;
 }
 
@@ -604,6 +612,7 @@ function goPositionFromFind() {
   padding: 6px 4px;
   cursor: pointer;
 }
+
 .btn-add:hover {
   color: #383838;
 }
@@ -615,30 +624,38 @@ function goPositionFromFind() {
   color: #fff;
   font-size: 28px;
 }
+
 .cat-label {
   font-size: 22px;
 }
+
 .type-interesse {
   background: #c62828;
 }
+
 .type-angebot {
   background: #047006;
 }
+
 .type-gesuch {
   background: #0e79bc;
 }
+
 .cat-interesse {
   color: #c62828;
 }
+
 .cat-angebot {
   color: #047006;
 }
+
 .cat-gesuch {
   color: #0e79bc;
 }
+
 /* Type-choice buttons: unselected = pale tint with black text/icon;
    selected = full color with white text/icon and a ring */
-.type-choice__btn {
+.type-choice-btn {
   border: none;
   border-radius: 22px;
   color: #383838 !important;
@@ -650,30 +667,38 @@ function goPositionFromFind() {
   align-items: center;
   gap: 6px;
 }
-.type-choice__btn.type-interesse {
+
+.type-choice-btn.type-interesse {
   background: #f2caca;
 }
-.type-choice__btn.type-angebot {
+
+.type-choice-btn.type-angebot {
   background: #d3e9c8;
 }
-.type-choice__btn.type-gesuch {
+
+.type-choice-btn.type-gesuch {
   background: #cfe6f6;
 }
-.type-choice__btn svg {
+
+.type-choice-btn svg {
   font-size: 22px;
 }
-.type-choice__btn.is-sel {
+
+.type-choice-btn.is-sel {
   color: #fff !important;
   box-shadow: 0 0 0 3px rgb(0 0 0 / 18%);
   font-weight: 600;
 }
-.type-choice__btn.is-sel.type-interesse {
+
+.type-choice-btn.is-sel.type-interesse {
   background: #c62828;
 }
-.type-choice__btn.is-sel.type-angebot {
+
+.type-choice-btn.is-sel.type-angebot {
   background: #047006;
 }
-.type-choice__btn.is-sel.type-gesuch {
+
+.type-choice-btn.is-sel.type-gesuch {
   background: #0e79bc;
 }
 
@@ -688,17 +713,20 @@ function goPositionFromFind() {
   align-items: center;
   gap: 5px;
 }
+
 .details-box {
   background: #f7f8f6;
   font-size: 14px;
   color: #55554f;
   white-space: pre-wrap;
 }
+
 /* placeholder so the action row keeps 4 fixed columns when an entry has no details */
 .no-details {
   color: #a8a8a2;
   font-style: italic;
 }
+
 /* let textareas grow to their rows — the design system forces .form-control to 50px */
 .matching-textarea {
   height: auto;
@@ -708,6 +736,7 @@ function goPositionFromFind() {
   font-size: 36px;
   color: #c9ccc6;
 }
+
 .min-w-0 {
   min-width: 0;
 }

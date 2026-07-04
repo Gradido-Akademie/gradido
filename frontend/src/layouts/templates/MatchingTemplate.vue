@@ -7,15 +7,24 @@
         <ul class="list-unstyled">
           <li class="d-flex align-items-baseline gap-2 mb-1">
             <i-bi-heart-fill style="color: #c2557e" />
-            <span><strong>{{ $t('matching.type.interesse.word') }}</strong> — {{ $t('matching.type.interesse.desc') }}</span>
+            <span>
+              <strong>{{ $t('matching.type.interesse.word') }}</strong>
+              — {{ $t('matching.type.interesse.desc') }}
+            </span>
           </li>
           <li class="d-flex align-items-baseline gap-2 mb-1">
             <i-bi-box-seam style="color: #047006" />
-            <span><strong>{{ $t('matching.type.angebot.word') }}</strong> — {{ $t('matching.type.angebot.desc') }}</span>
+            <span>
+              <strong>{{ $t('matching.type.angebot.word') }}</strong>
+              — {{ $t('matching.type.angebot.desc') }}
+            </span>
           </li>
           <li class="d-flex align-items-baseline gap-2 mb-1">
             <i-bi-search style="color: #0e79bc" />
-            <span><strong>{{ $t('matching.type.gesuch.word') }}</strong> — {{ $t('matching.type.gesuch.desc') }}</span>
+            <span>
+              <strong>{{ $t('matching.type.gesuch.word') }}</strong>
+              — {{ $t('matching.type.gesuch.desc') }}
+            </span>
           </li>
         </ul>
         <p>{{ $t('matching.info.entries.paused') }}</p>

@@ -78,6 +78,7 @@ module.exports = {
           'settings.password.subtitle',
           'math.asterisk',
           '/pageTitle./',
+          '/matching.type./',
           'error.empty-transactionlist',
           'error.no-transactionlist',
         ],
