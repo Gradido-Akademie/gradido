@@ -26,7 +26,7 @@
         <BButton size="lg" variant="secondary" @click="emit('logout')">
           {{ $t('navigation.logout') }}
         </BButton>
-        <BButton size="lg" variant="success" @click="handleOk">
+        <BButton size="lg" variant="gradido" @click="handleOk">
           {{ $t('session.extend') }}
         </BButton>
       </template>
