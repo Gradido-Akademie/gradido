@@ -173,6 +173,7 @@ describe('UserResolver', () => {
               emailId: expect.any(Number),
               firstName: 'Peter',
               lastName: 'Lustig',
+              aboutMe: null,
               password: '0',
               createdAt: expect.any(Date),
               // emailChecked: false,

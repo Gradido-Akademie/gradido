@@ -209,19 +209,23 @@ describe('GmsEntryResolver', () => {
       beforeAll(async () => {
         await resetEntity(DbGmsEntry)
         await loginBibi()
-        firstUuid = await seedEntry({ entryType: 'offer', summary: 'first entry' })
-        secondUuid = await seedEntry({ entryType: 'offer', summary: 'second entry' })
-        // touch the first entry so it becomes the most recently updated one
-        await mutate({
-          mutation: updateGmsEntry,
-          variables: {
-            entryUuid: firstUuid,
-            input: { entryType: 'offer', summary: 'first entry (edited)' },
-          },
-        })
+        firstUuid = await seedEntry({ entryType: 'offer', summary: 'newer entry' })
+        secondUuid = await seedEntry({ entryType: 'offer', summary: 'older entry' })
+        // Force distinct update timestamps directly. Creating both entries within
+        // the same millisecond would leave the DESC order undefined on a fast CI
+        // runner, so we set updated_at a day apart via raw SQL (this bypasses the
+        // auto-managed UpdateDateColumn, which would otherwise reset it to now).
+        await DbGmsEntry.getRepository().query(
+          'UPDATE gms_entries SET updated_at = ? WHERE entry_uuid = ?',
+          ['2024-01-02 00:00:00.000', firstUuid],
+        )
+        await DbGmsEntry.getRepository().query(
+          'UPDATE gms_entries SET updated_at = ? WHERE entry_uuid = ?',
+          ['2024-01-01 00:00:00.000', secondUuid],
+        )
       })
 
-      it('lists the most recently updated entry first', async () => {
+      it('lists entries ordered by updatedAt descending', async () => {
         const res: any = await query({ query: listGmsEntries })
         const uuids = res.data.listGmsEntries.map((entry: any) => entry.entryUuid)
         expect(uuids).toEqual([firstUuid, secondUuid])
