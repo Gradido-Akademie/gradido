@@ -16,6 +16,21 @@ export const verifyLogin = gql`
       roles
       hideAmountGDD
       hideAmountGDT
+      aboutMe
+    }
+  }
+`
+
+export const listGmsEntries = gql`
+  query {
+    listGmsEntries {
+      entryUuid
+      entryType
+      summary
+      details
+      remote
+      active
+      createdAt
     }
   }
 `

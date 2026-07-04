@@ -40,6 +40,7 @@ export const updateUserInfos = gql`
     $humhubPublishName: PublishNameType
     $gmsLocation: Location
     $gmsPublishLocation: GmsPublishLocationType
+    $aboutMe: String
   ) {
     updateUserInfos(
       firstName: $firstName
@@ -56,7 +57,39 @@ export const updateUserInfos = gql`
       humhubPublishName: $humhubPublishName
       gmsLocation: $gmsLocation
       gmsPublishLocation: $gmsPublishLocation
+      aboutMe: $aboutMe
     )
+  }
+`
+
+export const createGmsEntry = gql`
+  mutation ($input: GmsEntryInput!) {
+    createGmsEntry(input: $input) {
+      entryUuid
+    }
+  }
+`
+
+export const updateGmsEntry = gql`
+  mutation ($entryUuid: String!, $input: GmsEntryInput!) {
+    updateGmsEntry(entryUuid: $entryUuid, input: $input) {
+      entryUuid
+    }
+  }
+`
+
+export const setGmsEntryActive = gql`
+  mutation ($entryUuid: String!, $active: Boolean!) {
+    setGmsEntryActive(entryUuid: $entryUuid, active: $active) {
+      entryUuid
+      active
+    }
+  }
+`
+
+export const deleteGmsEntry = gql`
+  mutation ($entryUuid: String!) {
+    deleteGmsEntry(entryUuid: $entryUuid)
   }
 `
 
