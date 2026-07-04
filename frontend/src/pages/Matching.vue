@@ -205,7 +205,9 @@
     <!-- Popup: new entry -->
     <BModal v-model="showNew" centered>
       <template #title>
-        {{ editUuid ? $t('matching.entries.edit') : $t('matching.entries.new') }}
+        <span style="font-size: 18px">
+          {{ editUuid ? $t('matching.entries.edit') : $t('matching.entries.new') }}
+        </span>
       </template>
       <template #default>
         <div class="d-flex gap-2 mb-3">
@@ -270,7 +272,9 @@
     <!-- Find-map access dialog: guide to Position, or (placeholder) coming-soon note -->
     <BModal v-model="showFind" centered>
       <template #title>
-        {{ findHasAccess ? $t('matching.find.title') : $t('matching.find.gateTitle') }}
+        <span style="font-size: 18px">
+          {{ findHasAccess ? $t('matching.find.title') : $t('matching.find.gateTitle') }}
+        </span>
       </template>
       <template #default>
         <p v-if="findHasAccess" class="mb-0">{{ $t('matching.find.comingSoon') }}</p>

@@ -2,7 +2,7 @@
   <contribution-info>
     <template #entries>
       <div class="text-dark">
-        <h4 class="alert-heading">{{ $t('matching.info.entries.heading') }}</h4>
+        <h3>{{ $t('matching.info.entries.heading') }}</h3>
         <p>{{ $t('matching.info.entries.text') }}</p>
         <ul class="list-unstyled">
           <li class="d-flex align-items-baseline gap-2 mb-1">
@@ -32,14 +32,14 @@
     </template>
     <template #about>
       <div class="text-dark">
-        <h4 class="alert-heading">{{ $t('matching.info.about.heading') }}</h4>
+        <h3>{{ $t('matching.info.about.heading') }}</h3>
         <p>{{ $t('matching.info.about.p1') }}</p>
         <p>{{ $t('matching.info.about.p2') }}</p>
       </div>
     </template>
     <template #position>
       <div class="text-dark">
-        <h4 class="alert-heading">{{ $t('matching.info.position.heading') }}</h4>
+        <h3>{{ $t('matching.info.position.heading') }}</h3>
         <p>{{ $t('matching.info.position.p1') }}</p>
         <p>{{ $t('matching.info.position.p2') }}</p>
       </div>
