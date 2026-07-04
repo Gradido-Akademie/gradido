@@ -6,7 +6,7 @@
       :user-position="userPosition"
       @centerMap="handleMapCenter"
     />
-    <div ref="mapContainer" class="map-container" />
+    <div ref="mapContainer" class="map-container" :style="{ height }" />
   </div>
 </template>
 
@@ -31,6 +31,8 @@ const emit = defineEmits(['update:userPosition'])
 const props = defineProps({
   userMarkerCoords: Object,
   communityMarkerCoords: Object,
+  // optional map height; default keeps the settings-page usage unchanged
+  height: { type: String, default: '400px' },
 })
 
 const { t } = useI18n()

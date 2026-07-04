@@ -391,14 +391,9 @@
     },
     "position": {
       "accuracy": "Accuracy",
-      "accuracyApprox": "approximate (community area)",
-      "accuracyExact": "exact",
       "findable": "Am I findable?",
       "findableHint": "Turns your map presence on/off",
       "intro": "Place yourself on the map to take part in matching — you only appear once you do.",
-      "mapPlaceholder": "Map (search address · drag pin)",
-      "mapSet": "Position set (mock)",
-      "searchAddress": "Search address",
       "setNote": "Position set (for testing)"
     },
     "save": "Save",

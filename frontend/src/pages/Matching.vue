@@ -164,38 +164,44 @@
     <!-- Position -->
     <div v-if="tab === 'position'" class="mx-2">
       <p class="small text-muted">{{ $t('matching.position.intro') }}</p>
-      <div
-        class="mapbox gradido-border-radius d-flex align-items-center justify-content-center my-3"
-      >
-        <span class="text-muted">
-          <i-bi-geo-alt />
-          {{
-            hasPosition ? $t('matching.position.mapSet') : $t('matching.position.mapPlaceholder')
-          }}
+
+      <!-- Inline map (address search + draggable marker) — reused from the settings page -->
+      <div class="bg-white app-box-shadow gradido-border-radius p-2 my-3">
+        <UserLocationMap
+          v-if="userLocationLoaded"
+          :user-marker-coords="userLocation"
+          :community-marker-coords="communityLocation"
+          height="320px"
+          @update:userPosition="onPickPosition"
+        />
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <BButton variant="gradido" :disabled="!pickedLocation" @click="savePosition">
+          {{ $t('matching.save') }}
+        </BButton>
+        <span v-if="positionSaved" class="small text-muted">
+          {{ $t('matching.position.setNote') }}
         </span>
       </div>
-      <BButton variant="outline-secondary" @click="mockSetPosition">
-        <i-bi-search />
-        {{ $t('matching.position.searchAddress') }}
-      </BButton>
-      <span v-if="hasPosition" class="small text-muted ms-2">
-        {{ $t('matching.position.setNote') }}
-      </span>
-      <div class="mt-3 accuracy-field">
-        <label class="small text-muted d-block">{{ $t('matching.position.accuracy') }}</label>
-        <select v-model="accuracy" class="form-select">
-          <option value="genau">{{ $t('matching.position.accuracyExact') }}</option>
-          <option value="ungefaehr">{{ $t('matching.position.accuracyApprox') }}</option>
-        </select>
+
+      <!-- Accuracy — self-saving control reused from the settings page -->
+      <div class="mt-4 accuracy-field">
+        <label class="small text-muted d-block mb-1">{{ $t('matching.position.accuracy') }}</label>
+        <UserGMSLocationFormat />
       </div>
+
+      <!-- Findable toggle — self-saving control reused from the settings page -->
       <div class="d-flex align-items-center justify-content-between border-top mt-3 py-3">
         <div>
           <div class="fw-bold">{{ $t('matching.position.findable') }}</div>
           <div class="small text-muted">{{ $t('matching.position.findableHint') }}</div>
         </div>
-        <div class="form-check form-switch">
-          <input v-model="gmsAllowed" class="form-check-input matching-switch" type="checkbox" />
-        </div>
+        <UserSettingsSwitch
+          :initial-value="store.state.gmsAllowed"
+          attr-name="gmsAllowed"
+          :enabled-text="$t('settings.GMS.enabled')"
+          :disabled-text="$t('settings.GMS.disabled')"
+        />
       </div>
     </div>
 
@@ -307,7 +313,10 @@ import {
   updateGmsEntry,
   updateUserInfos,
 } from '@/graphql/mutations'
-import { listGmsEntries, verifyLogin } from '@/graphql/queries'
+import { listGmsEntries, userLocationQuery, verifyLogin } from '@/graphql/queries'
+import UserGMSLocationFormat from '@/components/UserSettings/UserGMSLocationFormat'
+import UserLocationMap from '@/components/UserSettings/UserLocationMap'
+import UserSettingsSwitch from '@/components/UserSettings/UserSettingsSwitch'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -455,17 +464,58 @@ async function saveAbout() {
   }
 }
 
-// --- Position tab: still a preview (real geocoding + persistence follow) ---
+// --- Position tab: inline map + accuracy + findable, reusing the settings components ---
+const { mutate: saveLocation } = useMutation(updateUserInfos)
+const userLocation = ref({ lat: 0, lng: 0 })
+const communityLocation = ref({ lat: 0, lng: 0 })
+const userLocationLoaded = ref(false)
 const hasPosition = ref(false)
-const gmsAllowed = ref(false)
-const accuracy = ref('ungefaehr')
-function mockSetPosition() {
-  hasPosition.value = true
+const pickedLocation = ref(null)
+const positionSaved = ref(false)
+
+const { onResult: onUserLocation, onError: onUserLocationError } = useQuery(
+  userLocationQuery,
+  {},
+  { fetchPolicy: 'network-only', enabled },
+)
+onUserLocation(({ data }) => {
+  const loc = data?.userLocation
+  if (!loc) return
+  communityLocation.value = {
+    lat: loc.communityLocation.latitude,
+    lng: loc.communityLocation.longitude,
+  }
+  hasPosition.value = Boolean(loc.userLocation)
+  userLocation.value = {
+    lat: loc.userLocation?.latitude ?? communityLocation.value.lat,
+    lng: loc.userLocation?.longitude ?? communityLocation.value.lng,
+  }
+  userLocationLoaded.value = true
+})
+onUserLocationError((error) => toastError(error.message))
+
+function onPickPosition(coords) {
+  pickedLocation.value = coords
+}
+async function savePosition() {
+  if (!pickedLocation.value) return
+  try {
+    const gmsLocation = {
+      latitude: pickedLocation.value.lat,
+      longitude: pickedLocation.value.lng,
+    }
+    await saveLocation({ gmsLocation })
+    store.commit('userLocation', gmsLocation)
+    hasPosition.value = true
+    positionSaved.value = true
+  } catch (error) {
+    toastError(error.message)
+  }
 }
 
 // --- Find-map access dialog ---
 const showFind = ref(false)
-const findHasAccess = computed(() => hasPosition.value && gmsAllowed.value)
+const findHasAccess = computed(() => Boolean(store.state.gmsAllowed) && hasPosition.value)
 function goPositionFromFind() {
   showFind.value = false
   goTab('position')
@@ -648,17 +698,9 @@ function goPositionFromFind() {
   height: auto;
 }
 
-/* Position tab: map placeholder + switch */
-.mapbox {
-  height: 180px;
-  background: repeating-linear-gradient(45deg, #eef1ed, #eef1ed 12px, #e8ebe6 12px, #e8ebe6 24px);
-}
+/* Position tab */
 .accuracy-field {
   max-width: 320px;
-}
-.matching-switch {
-  width: 3em;
-  height: 1.5em;
 }
 
 .empty-icon {

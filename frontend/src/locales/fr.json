@@ -391,14 +391,9 @@
     },
     "position": {
       "accuracy": "Précision",
-      "accuracyApprox": "approximative (zone de la communauté)",
-      "accuracyExact": "exacte",
       "findable": "Suis-je trouvable ?",
       "findableHint": "Active ou désactive ta présence sur la carte",
       "intro": "Place-toi sur la carte pour participer au matching : tu n'apparais qu'à ce moment-là.",
-      "mapPlaceholder": "Carte (chercher une adresse · déplacer l'épingle)",
-      "mapSet": "Position définie (simulation)",
-      "searchAddress": "Chercher une adresse",
       "setNote": "Position définie (pour test)"
     },
     "save": "Enregistrer",

@@ -391,14 +391,9 @@
     },
     "position": {
       "accuracy": "Hassasiyet",
-      "accuracyApprox": "yaklaşık (topluluk çevresi)",
-      "accuracyExact": "tam",
       "findable": "Bulunabilir miyim?",
       "findableHint": "Haritadaki varlığını açar/kapatır",
       "intro": "Eşleşmeye katılmak için kendini haritaya yerleştir: yalnızca bunu yaptığında görünürsün.",
-      "mapPlaceholder": "Harita (adres ara · iğneyi sürükle)",
-      "mapSet": "Konum ayarlandı (deneme)",
-      "searchAddress": "Adres ara",
       "setNote": "Konum ayarlandı (test için)"
     },
     "save": "Kaydet",

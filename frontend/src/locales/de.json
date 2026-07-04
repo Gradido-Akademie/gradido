@@ -391,14 +391,9 @@
     },
     "position": {
       "accuracy": "Genauigkeit",
-      "accuracyApprox": "ungefähr (Umkreis der Community)",
-      "accuracyExact": "genau",
       "findable": "Bin ich auffindbar?",
       "findableHint": "Schaltet Deine Karten-Präsenz an/aus",
       "intro": "Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust.",
-      "mapPlaceholder": "Karte (Adresse suchen · Pin ziehen)",
-      "mapSet": "Position gesetzt (Mock)",
-      "searchAddress": "Adresse suchen",
       "setNote": "Position gesetzt (zum Testen)"
     },
     "save": "Speichern",
