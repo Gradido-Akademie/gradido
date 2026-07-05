@@ -38,6 +38,20 @@
     color: var(--text-muted) !important;
   }
 
+  .text-dark,
+  .text-body {
+    color: var(--text) !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--text);
+  }
+
   .border,
   .border-top,
   .border-bottom,
@@ -63,4 +77,15 @@
   .main-page {
     background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg') !important;
   }
+}
+
+// Matching tab bar: the scoped light-grey control (#d1d1d1) with black inactive
+// text needs a dark surface and light text in dark mode. #app.dark-mode outweighs
+// the component's scoped !important; the active teal tab keeps its own styling.
+#app.dark-mode .matching-nav {
+  background-color: var(--surface-muted);
+}
+
+#app.dark-mode .matching-nav-btn:not(.is-active) {
+  color: var(--text) !important;
 }
