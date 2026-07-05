@@ -332,3 +332,18 @@ body.dark-mode {
 .dark-mode .qrbox #download {
   color: #047006 !important;
 }
+
+// Form inputs on focus: Bootstrap resets the background to the body bg (white) on
+// :focus, which overrides the dark idle state -> keep the dark surface, light text
+// and muted placeholder in focus too. Applies to every input (send, matching,
+// contributions, settings).
+.dark-mode .form-control:focus,
+.dark-mode .form-select:focus {
+  background-color: var(--surface-muted);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.dark-mode .form-control::placeholder {
+  color: var(--text-muted);
+}
