@@ -118,3 +118,22 @@
 #app.dark-mode .sheet-img {
   opacity: 0.85;
 }
+
+// Send tab bar (TransactionForm .nav-send-btn-wrapper): same light-grey control
+// as the Matching bar -> dark surface + light inactive labels. The active tab
+// keeps its teal .router-link-active styling.
+#app.dark-mode .nav-send-btn-wrapper {
+  background-color: var(--surface-muted) !important;
+}
+
+#app.dark-mode .nav-send-btn-wrapper > :not(.router-link-active) {
+  color: var(--text) !important;
+}
+
+// Bootstrap nav-tabs (Settings etc.): the active tab is a near-white pill in
+// light mode -> a dark raised surface with light text in dark mode.
+#app.dark-mode .nav-tabs .nav-link.active {
+  background-color: var(--surface-muted) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
