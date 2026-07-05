@@ -1,18 +1,60 @@
-$dark: #171717;
-$mode-toggle-bg: #262626;
+// Dark mode. Everything here is scoped to .dark-mode, so light mode is never
+// touched. Two layers:
+//  1) flip the design-token values to their dark equivalents;
+//  2) a coverage layer for surfaces that still use Bootstrap utilities or
+//     hardcoded colours (the bg-white card pattern etc.). This layer gets
+//     thinner as more surfaces move onto the tokens.
 
-#app {
-  &.dark-mode {
-    background-color: $dark;
-    color: #fff;
-  }
+#app.dark-mode {
+  --bg: #17181a;
+  --surface: #212327;
+  --surface-muted: #2a2c31;
+  --text: #e4e4e4;
+  --text-muted: #9a9b9e;
+  --border: #34363b;
+  --success: #46c04a;
+  --success-soft: #1f3a22;
+  --danger: #ef5350;
+  --warning: #f5b539;
+  --info: #4aa3df;
+
+  background-color: var(--bg);
+  color: var(--text);
 }
 
-#app a,
-.navbar-light,
-.navbar-nav,
-.nav-link {
-  &.dark-mode {
-    color: #a7ffa9;
+.dark-mode {
+  .bg-white,
+  .card,
+  .card-body,
+  .list-group-item,
+  .dropdown-menu,
+  .modal-content {
+    background-color: var(--surface) !important;
+    color: var(--text);
+  }
+
+  .text-muted,
+  .text-secondary {
+    color: var(--text-muted) !important;
+  }
+
+  .border,
+  .border-top,
+  .border-bottom,
+  .border-start,
+  .border-end,
+  hr {
+    border-color: var(--border) !important;
+  }
+
+  .form-control,
+  .form-select {
+    background-color: var(--surface-muted);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  a:not(.btn) {
+    color: var(--info);
   }
 }

@@ -178,12 +178,12 @@
       </BTab>
     </BTabs>
 
-    <!-- TODO<BRow>
+    <BRow class="mt-3">
       <BCol cols="12" md="6" lg="6">{{ $t('settings.darkMode') }}</BCol>
       <BCol cols="12" md="6" lg="6" class="text-end">
-        <BForm-checkbox v-model="darkMode" name="dark-mode" switch aligne></BForm-checkbox>
+        <BFormCheckbox v-model="darkMode" name="dark-mode" switch></BFormCheckbox>
       </BCol>
-    </BRow> -->
+    </BRow>
   </div>
 </template>
 <script setup>
@@ -191,7 +191,7 @@ import CONFIG from '../config'
 import { useStore } from 'vuex'
 import { updateUserInfos } from '@/graphql/mutations'
 import { useRoute } from 'vue-router'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useMutation } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
 import { useAppToast } from '@/composables/useToast'
@@ -203,7 +203,17 @@ import UserNamingFormat from '@/components/UserSettings/UserNamingFormat'
 import UserGMSLocationFormat from '@/components/UserSettings/UserGMSLocationFormat'
 import UserGmsLocationCapturing from '@/components/UserSettings/UserGmsLocationCapturing'
 import UserNewsletter from '@/components/UserSettings/UserNewsletter.vue'
-import { BTabs, BTab, BRow, BCol, BFormInput, BFormGroup, BForm, BButton } from 'bootstrap-vue-next'
+import {
+  BTabs,
+  BTab,
+  BRow,
+  BCol,
+  BFormInput,
+  BFormGroup,
+  BForm,
+  BButton,
+  BFormCheckbox,
+} from 'bootstrap-vue-next'
 
 const props = defineProps({
   balance: { type: Number, default: 0 },
@@ -267,14 +277,11 @@ const humhubStateSwitch = (eventData) => {
   humhubAllowed.value = eventData
 }
 
-// TODO: watch: {
-//   darkMode(val) {
-//     this.$store.commit('setDarkMode', this.darkMode)
-//     this.toastSuccess(
-//       this.darkMode ? this.$t('settings.modeDark') : this.$t('settings.modeLight'),
-//     )
-//   },
-// },
+// Dark mode: apply immediately via the store (App.vue toggles the .dark-mode
+// class). Session-level for now; persistence follows later.
+watch(darkMode, (val) => {
+  store.commit('setDarkMode', val)
+})
 </script>
 <style>
 .community-service-tabs {
