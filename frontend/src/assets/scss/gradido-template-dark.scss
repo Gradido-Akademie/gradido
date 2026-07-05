@@ -21,6 +21,8 @@ body.dark-mode {
   --danger: #ef5350;
   --warning: #f5b539;
   --info: #4aa3df;
+  --link: #0b9130; // Gradido green, cooler + lighter than light #047006 for dark legibility
+  --gold: #c58d38; // Gradido gold (decay accent) for balances + received amounts
 
   background-color: var(--bg);
   color: var(--text);
@@ -81,10 +83,10 @@ body.dark-mode {
   }
 
   // Links follow the Gradido-green convention (light mode uses #047006); use the
-  // lighter dark-green token so they stay legible on the dark canvas -- not the
-  // info blue.
+  // dedicated dark link-green token so they stay legible on the dark canvas --
+  // not the info blue.
   a:not(.btn) {
-    color: var(--success);
+    color: var(--link);
   }
 
   // Page watermark: swap the near-white leaves for a dark-anthracite variant so
@@ -93,7 +95,7 @@ body.dark-mode {
   // /public under a constant name with a 7-day max-age, so earlier (lighter)
   // iterations otherwise linger. Bump the version when the SVG changes.
   .main-page {
-    background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=2') !important;
+    background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=3') !important;
   }
 }
 
@@ -122,7 +124,7 @@ body.dark-mode {
 // leaves SVG -> dark variant so they are not bright shapes on the dark canvas.
 #app.dark-mode .card-circles .card,
 #app.dark-mode .community-news .card {
-  background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=2') !important;
+  background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=3') !important;
 }
 
 // Top decorative leaves image (Blaetter.png) is a brand accent -- keep it, only
@@ -184,4 +186,18 @@ body.dark-mode {
 // Lift them to muted text; #app.dark-mode outweighs the scoped !important rule.
 #app.dark-mode .footer .nav-link {
   color: var(--text-muted) !important;
+}
+
+// Account balances (GddAmount / GdtAmount) and received-transaction amounts both
+// use gradido-global-color-accent (#047006 green in light mode). In dark mode make
+// them Gradido gold so they stand apart from the green links and the sidebar. The
+// inactive-account dimming stays (it is an opacity on the whole tile).
+.dark-mode .gradido-global-color-accent {
+  color: var(--gold) !important;
+}
+
+// Received amounts in the compact last-transactions list carry .received-amount
+// (added in the component when amount > 0) -> gold too, matching the balances.
+.dark-mode .received-amount {
+  color: var(--gold) !important;
 }
