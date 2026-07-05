@@ -158,7 +158,6 @@
         </span>
         <BButton variant="gradido" @click="saveAbout">{{ $t('matching.save') }}</BButton>
       </div>
-      <div v-if="savedNote" class="small text-muted mt-2">{{ $t('matching.about.saved') }}</div>
     </div>
 
     <!-- Position -->
@@ -182,7 +181,10 @@
       <!-- Accuracy — self-saving dropdown, right-aligned below the map
            (self-explanatory: "exact" / "approximate", so no label needed) -->
       <div class="d-flex justify-content-end mt-3">
-        <UserGMSLocationFormat />
+        <UserGMSLocationFormat
+          :exact-toast="$t('matching.position.accuracyExact')"
+          :approximate-toast="$t('matching.position.accuracyApprox')"
+        />
       </div>
 
       <!-- Findable toggle — title on the switch's line, hint below as explanation -->
@@ -192,8 +194,8 @@
           <UserSettingsSwitch
             :initial-value="store.state.gmsAllowed"
             attr-name="gmsAllowed"
-            :enabled-text="$t('settings.GMS.enabled')"
-            :disabled-text="$t('settings.GMS.disabled')"
+            :enabled-text="$t('matching.position.findableOn')"
+            :disabled-text="$t('matching.position.findableOff')"
           />
         </div>
         <div class="small text-muted text-end mt-1">
@@ -474,7 +476,6 @@ async function confirmDelete() {
 
 // --- About me: read via verifyLogin, persist via updateUserInfos ---
 const aboutMe = ref('')
-const savedNote = ref(false)
 const { onResult: onUser } = useQuery(verifyLogin, null, {
   fetchPolicy: 'cache-and-network',
   enabled,
@@ -486,7 +487,7 @@ const { mutate: saveUserInfos } = useMutation(updateUserInfos)
 async function saveAbout() {
   try {
     await saveUserInfos({ aboutMe: aboutMe.value })
-    savedNote.value = true
+    toastSuccess(t('matching.about.saved'))
   } catch (error) {
     toastError(error.message)
   }

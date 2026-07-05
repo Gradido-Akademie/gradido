@@ -338,7 +338,7 @@
       "counter": "{count} / ~1000 caratteri",
       "label": "Chi sei, con parole tue",
       "placeholder": "Racconta chi sei, cosa ti muove, cosa condividi: crea fiducia prima che qualcuno ti scriva.",
-      "saved": "Salvato. (Anteprima, ancora senza backend)"
+      "saved": "Il tuo profilo è stato salvato"
     },
     "entries": {
       "activate": "Attiva",
@@ -390,8 +390,12 @@
       "remote": "Disponibile anche a livello sovraregionale / online"
     },
     "position": {
+      "accuracyApprox": "Viene mostrata una posizione leggermente modificata",
+      "accuracyExact": "Viene mostrata la tua posizione esatta",
       "findable": "Sono rintracciabile?",
       "findableHint": "Attiva o disattiva la tua presenza sulla mappa",
+      "findableOff": "Non sei più rintracciabile sulla mappa",
+      "findableOn": "Ora sei rintracciabile sulla mappa",
       "intro": "Posizionati sulla mappa per partecipare al matching: appari solo quando lo fai."
     },
     "save": "Salva",

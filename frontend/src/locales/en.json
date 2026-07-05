@@ -338,7 +338,7 @@
       "counter": "{count} / ~1000 characters",
       "label": "Who you are — in your own words",
       "placeholder": "Tell others who you are, what moves you, what you share — it builds trust before someone writes to you.",
-      "saved": "Saved. (Preview — no backend yet)"
+      "saved": "Your profile has been saved"
     },
     "entries": {
       "activate": "Activate",
@@ -390,8 +390,12 @@
       "remote": "Also available nationwide / online"
     },
     "position": {
+      "accuracyApprox": "A slightly shifted location is shown",
+      "accuracyExact": "Your exact location is shown",
       "findable": "Am I findable?",
       "findableHint": "Turns your map presence on/off",
+      "findableOff": "You are no longer findable on the map",
+      "findableOn": "You are now findable on the map",
       "intro": "Place yourself on the map to take part in matching — you only appear once you do."
     },
     "save": "Save",

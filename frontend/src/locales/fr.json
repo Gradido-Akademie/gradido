@@ -338,7 +338,7 @@
       "counter": "{count} / ~1000 caractères",
       "label": "Qui tu es, avec tes propres mots",
       "placeholder": "Raconte qui tu es, ce qui te motive, ce que tu partages : cela crée la confiance avant que quelqu'un t'écrive.",
-      "saved": "Enregistré. (Aperçu, encore sans backend)"
+      "saved": "Ton profil a été enregistré"
     },
     "entries": {
       "activate": "Activer",
@@ -390,8 +390,12 @@
       "remote": "Aussi disponible en suprarégional / en ligne"
     },
     "position": {
+      "accuracyApprox": "Une position légèrement modifiée est affichée",
+      "accuracyExact": "Ta position exacte est affichée",
       "findable": "Suis-je trouvable ?",
       "findableHint": "Active ou désactive ta présence sur la carte",
+      "findableOff": "Tu n'es plus visible sur la carte",
+      "findableOn": "Tu es maintenant visible sur la carte",
       "intro": "Place-toi sur la carte pour participer au matching : tu n'apparais qu'à ce moment-là."
     },
     "save": "Enregistrer",

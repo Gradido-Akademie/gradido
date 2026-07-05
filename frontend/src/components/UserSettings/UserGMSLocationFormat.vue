@@ -25,6 +25,13 @@ const { t } = useI18n()
 const store = useStore()
 const { toastError, toastSuccess } = useAppToast()
 
+// Optional toast overrides so the Matching page can show accuracy-specific
+// messages; Settings passes nothing and keeps the generic toast.
+const props = defineProps({
+  exactToast: { type: String, default: undefined },
+  approximateToast: { type: String, default: undefined },
+})
+
 const selectedOption = ref(
   store.state.gmsPublishLocation === 'GMS_LOCATION_TYPE_RANDOM'
     ? 'GMS_LOCATION_TYPE_APPROXIMATE'
@@ -63,7 +70,12 @@ const update = async (option) => {
     await updateUserData({
       gmsPublishLocation: option.value,
     })
-    toastSuccess(t('settings.GMS.publish-location.updated'))
+    const fallback = t('settings.GMS.publish-location.updated')
+    toastSuccess(
+      option.value === 'GMS_LOCATION_TYPE_EXACT'
+        ? props.exactToast || fallback
+        : props.approximateToast || fallback,
+    )
     selectedOption.value = option.value
     store.commit('gmsPublishLocation', option.value)
     emit('gmsPublishLocation', option.value)

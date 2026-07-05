@@ -338,7 +338,7 @@
       "counter": "{count} / ~1000 caracteres",
       "label": "Quién eres, con tus propias palabras",
       "placeholder": "Cuenta quién eres, qué te mueve, qué compartes: eso genera confianza antes de que alguien te escriba.",
-      "saved": "Guardado. (Vista previa, aún sin backend)"
+      "saved": "Tu perfil se ha guardado"
     },
     "entries": {
       "activate": "Activar",
@@ -390,8 +390,12 @@
       "remote": "También disponible de forma suprarregional / en línea"
     },
     "position": {
+      "accuracyApprox": "Se muestra una ubicación ligeramente modificada",
+      "accuracyExact": "Se muestra tu ubicación exacta",
       "findable": "¿Soy localizable?",
       "findableHint": "Activa o desactiva tu presencia en el mapa",
+      "findableOff": "Ya no se te puede encontrar en el mapa",
+      "findableOn": "Ahora se te puede encontrar en el mapa",
       "intro": "Ubícate en el mapa para participar en el matching: solo apareces cuando lo haces."
     },
     "save": "Guardar",
