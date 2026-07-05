@@ -238,3 +238,27 @@ body.dark-mode {
   --bs-pagination-disabled-color: var(--text-muted);
   --bs-pagination-disabled-border-color: var(--border);
 }
+
+// Transaction-link cards (Offene Links / QR-Codes) use a near-white translucent
+// background (#ebebeba3) -> dark surface in dark mode so the active card is not a
+// bright block. Expired links carry .light-gray-text (#adb5bd, a dim-out in light
+// mode); on the dark card that reads brighter than the active ones, so map it to
+// muted text -> expired links look greyed-out, active ones stay full-contrast.
+.dark-mode .gradido-custom-background {
+  background-color: var(--surface) !important;
+}
+
+.dark-mode .light-gray-text {
+  color: var(--text-muted) !important;
+}
+
+// Settings tabs (BTabs .nav-tabs): the strip's bottom border is light grey and
+// the inactive labels are hardcoded #383838 -> border token + light labels. The
+// active pill is already handled by the .nav-tabs .nav-link.active rule above.
+.dark-mode .nav-tabs {
+  border-bottom-color: var(--border) !important;
+}
+
+#app.dark-mode .nav-tabs .nav-link:not(.active) {
+  color: var(--text) !important;
+}
