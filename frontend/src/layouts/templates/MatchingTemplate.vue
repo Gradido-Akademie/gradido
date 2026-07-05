@@ -6,7 +6,7 @@
         <p>{{ $t('matching.info.entries.text') }}</p>
         <ul class="list-unstyled">
           <li class="d-flex align-items-baseline gap-2 mb-1">
-            <i-bi-heart-fill style="color: #c2557e" />
+            <i-bi-heart-fill style="color: #c62828" />
             <span>
               <strong>{{ $t('matching.type.interesse.word') }}</strong>
               — {{ $t('matching.type.interesse.desc') }}
