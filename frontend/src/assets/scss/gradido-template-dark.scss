@@ -102,4 +102,18 @@
 // the #app.dark-mode weight.
 #app.dark-mode .card-user-search .container {
   background-image: url('/img/svg/usersearchmap_dark.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+}
+
+// Overview watermark cards (Kreise / Community-News) use the same near-white
+// leaves SVG -> dark variant so they are not bright shapes on the dark canvas.
+#app.dark-mode .card-circles .card,
+#app.dark-mode .community-news .card {
+  background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg') !important;
+}
+
+// Top decorative leaves image (Blaetter.png): keep it just a faint hint in dark.
+#app.dark-mode .sheet-img {
+  opacity: 0.12;
 }

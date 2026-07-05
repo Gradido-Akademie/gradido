@@ -31,7 +31,9 @@ export default {
       return CONFIG.GMS_ACTIVE === true
     },
     isHumhubActive() {
-      return CONFIG.HUMHUB_ACTIVE === true
+      // TEMP (dark-mode preview): force-show the Kreise card so Bernd can see the
+      // dark watermark. Revert to `CONFIG.HUMHUB_ACTIVE === true` after the check.
+      return true
     },
   },
 }
