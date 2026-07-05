@@ -536,7 +536,8 @@ label {
     justify-content: center;
     text-decoration: none;
     font-size: 14px;
-    text-wrap: nowrap;
+    text-align: center;
+    line-height: 1.15;
     color: black !important;
     border-radius: 25px;
   }

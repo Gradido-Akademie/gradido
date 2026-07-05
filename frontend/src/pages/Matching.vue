@@ -312,7 +312,7 @@
           {{ $t('form.cancel') }}
         </BButton>
         <BButton variant="gradido" @click="confirmDelete">
-          {{ $t('form.ok') }}
+          {{ $t('matching.entries.delete') }}
         </BButton>
       </template>
     </BModal>

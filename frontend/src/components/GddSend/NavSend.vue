@@ -95,8 +95,7 @@ export default {
     justify-content: center;
     text-decoration: none;
     font-size: 14px;
-    text-align: center;
-    line-height: 1.15;
+    text-wrap: nowrap;
     color: black !important;
     border-radius: 25px;
   }
