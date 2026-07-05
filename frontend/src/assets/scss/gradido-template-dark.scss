@@ -113,7 +113,8 @@
   background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg') !important;
 }
 
-// Top decorative leaves image (Blaetter.png): keep it just a faint hint in dark.
+// Top decorative leaves image (Blaetter.png) is a brand accent -- keep it, only
+// take a touch of the edge off on the dark canvas.
 #app.dark-mode .sheet-img {
-  opacity: 0.12;
+  opacity: 0.85;
 }
