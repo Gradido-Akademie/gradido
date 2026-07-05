@@ -23,6 +23,16 @@ export default {
       return this.$store.state.darkMode
     },
   },
+  watch: {
+    // Teleported UI (modals, toasts) renders on <body>, outside #app, so mirror
+    // the dark-mode class there too.
+    darkMode: {
+      immediate: true,
+      handler(val) {
+        document.body.classList.toggle('dark-mode', val)
+      },
+    },
+  },
 }
 </script>
 

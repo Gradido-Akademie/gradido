@@ -5,7 +5,9 @@
 //     hardcoded colours (the bg-white card pattern etc.). This layer gets
 //     thinner as more surfaces move onto the tokens.
 
-#app.dark-mode {
+// Token values live on the .dark-mode class (set on both #app and <body>) so
+// teleported UI (modals, toasts) rendered on <body> resolves the dark values too.
+.dark-mode {
   --bg: #17181a;
   --surface: #212327;
   --surface-muted: #2a2c31;
@@ -63,6 +65,8 @@
   .border-bottom,
   .border-start,
   .border-end,
+  .modal-header,
+  .modal-footer,
   hr {
     border-color: var(--border) !important;
   }
@@ -136,4 +140,11 @@
   background-color: var(--surface-muted) !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
+}
+
+// Left sidebar menu: item text is hardcoded dark (#383838) -> light in dark mode.
+// The logout link keeps its own red (its span sets its own colour).
+#app.dark-mode #component-sidebar .nav-item > a,
+#app.dark-mode #component-sidebar .active-route {
+  color: var(--text) !important;
 }
