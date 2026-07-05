@@ -297,6 +297,25 @@
         </template>
       </template>
     </BModal>
+
+    <!-- Delete confirmation (replaces the browser confirm dialog) -->
+    <BModal v-model="showDelete" centered>
+      <template #title>
+        <span style="font-size: 18px">{{ $t('matching.entries.delete') }}</span>
+      </template>
+      <template #default>
+        <p class="mb-2">{{ $t('matching.entries.deleteConfirm') }}</p>
+        <p v-if="delEntry" class="fw-bold word-break mb-0">{{ delEntry.summary }}</p>
+      </template>
+      <template #footer>
+        <BButton variant="secondary" @click="showDelete = false">
+          {{ $t('form.cancel') }}
+        </BButton>
+        <BButton variant="gradido" @click="confirmDelete">
+          {{ $t('form.ok') }}
+        </BButton>
+      </template>
+    </BModal>
   </div>
 </template>
 
@@ -434,9 +453,17 @@ async function toggleActive(e) {
     toastError(error.message)
   }
 }
-async function del(e) {
-  // eslint-disable-next-line no-alert
-  if (!window.confirm(t('matching.entries.deleteConfirm'))) return
+// --- Delete confirmation modal (replaces the browser confirm dialog) ---
+const showDelete = ref(false)
+const delEntry = ref(null)
+function del(e) {
+  delEntry.value = e
+  showDelete.value = true
+}
+async function confirmDelete() {
+  const e = delEntry.value
+  if (!e) return
+  showDelete.value = false
   try {
     await removeEntry({ entryUuid: e.entryUuid })
     await refetchEntries()
