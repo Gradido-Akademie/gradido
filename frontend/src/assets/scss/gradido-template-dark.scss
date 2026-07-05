@@ -5,9 +5,11 @@
 //     hardcoded colours (the bg-white card pattern etc.). This layer gets
 //     thinner as more surfaces move onto the tokens.
 
-// Token values live on the .dark-mode class (set on both #app and <body>) so
-// teleported UI (modals, toasts) rendered on <body> resolves the dark values too.
-.dark-mode {
+// Token values live on both #app.dark-mode and body.dark-mode (App.vue sets the
+// class on both) so teleported UI (modals, toasts) rendered on <body> resolves
+// the dark values too.
+#app.dark-mode,
+body.dark-mode {
   --bg: #17181a;
   --surface: #212327;
   --surface-muted: #2a2c31;
