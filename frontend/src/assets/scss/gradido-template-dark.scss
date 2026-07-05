@@ -249,7 +249,7 @@ body.dark-mode {
 }
 
 .dark-mode .light-gray-text {
-  color: var(--text-muted) !important;
+  color: #6b6c6f !important; // fainter than --text-muted so expired links clearly recede
 }
 
 // Settings tabs (BTabs .nav-tabs): the strip's bottom border is light grey and
@@ -260,5 +260,53 @@ body.dark-mode {
 }
 
 #app.dark-mode .nav-tabs .nav-link:not(.active) {
+  color: var(--text) !important;
+}
+
+// Open-links header icon (BAvatar variant=light with a dark link glyph #32325d)
+// -> light glyph so it reads like the heading text.
+#app.dark-mode .transaction-slot-link .b-avatar,
+#app.dark-mode .transaction-slot-link .b-avatar svg {
+  color: var(--text) !important;
+  fill: var(--text) !important;
+}
+
+// Dropdown menus (the three-dot link menu etc.): items are dark text in light
+// mode -> light on the dark surface (the menu background is already covered).
+.dark-mode .dropdown-item {
+  color: var(--text);
+}
+
+.dark-mode .dropdown-item:hover,
+.dark-mode .dropdown-item:focus {
+  background-color: var(--surface-muted);
+  color: var(--text);
+}
+
+// "Load more links" button (BButton variant=outline-primary) -> Gradido link green.
+.dark-mode .btn-outline-primary {
+  --bs-btn-color: var(--link);
+  --bs-btn-border-color: var(--link);
+  --bs-btn-hover-bg: var(--link);
+  --bs-btn-hover-border-color: var(--link);
+  --bs-btn-hover-color: var(--bg);
+  --bs-btn-active-bg: var(--link);
+  --bs-btn-active-border-color: var(--link);
+  --bs-btn-active-color: var(--bg);
+}
+
+// Toggle switches (BFormCheckbox switch, Settings + Matching position): the OFF
+// state is a white track with a dark thumb -> dark track + light thumb. The ON
+// state (Bootstrap blue) is fine and left alone.
+.dark-mode .form-check-input:not(:checked) {
+  --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%239a9b9e'/%3e%3c/svg%3e");
+
+  background-color: var(--surface-muted);
+  border-color: var(--border);
+}
+
+// Matching position "Bin ich auffindbar?" label inherits a hardcoded #383838 from
+// the scoped matching styles -> light. (The hint below already uses text-muted.)
+#app.dark-mode .matching-page .fw-bold {
   color: var(--text) !important;
 }
