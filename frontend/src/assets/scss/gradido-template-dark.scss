@@ -57,4 +57,10 @@
   a:not(.btn) {
     color: var(--info);
   }
+
+  // Page watermark: swap the near-white leaves for a dark-anthracite variant so
+  // it stays a subtle watermark instead of a bright shape on the dark canvas.
+  .main-page {
+    background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg') !important;
+  }
 }
