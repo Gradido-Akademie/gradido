@@ -95,7 +95,7 @@ body.dark-mode {
   // /public under a constant name with a 7-day max-age, so earlier (lighter)
   // iterations otherwise linger. Bump the version when the SVG changes.
   .main-page {
-    background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=3') !important;
+    background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=4') !important;
   }
 }
 
@@ -124,7 +124,7 @@ body.dark-mode {
 // leaves SVG -> dark variant so they are not bright shapes on the dark canvas.
 #app.dark-mode .card-circles .card,
 #app.dark-mode .community-news .card {
-  background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=3') !important;
+  background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=4') !important;
 }
 
 // Top decorative leaves image (Blaetter.png) is a brand accent -- keep it, only
@@ -200,4 +200,41 @@ body.dark-mode {
 // (added in the component when amount > 0) -> gold too, matching the balances.
 .dark-mode .received-amount {
   color: var(--gold) !important;
+}
+
+// Top-right user name (.navbar-like-link) is the Bootstrap link green in light
+// mode -> Gradido gold in dark, matching the balances. The address line below it
+// carries .small and keeps the green link colour.
+#app.dark-mode .navbar-like-link:not(.small) {
+  color: var(--gold) !important;
+}
+
+// Contributions tab bar (NavContributions): same light-grey control (#d1d1d1)
+// with black inactive labels as the Matching / Send bars -> dark surface, light
+// inactive labels. The active tab keeps its teal router-link-active styling.
+#app.dark-mode .nav-contributions-btn-wrapper {
+  background-color: var(--surface-muted) !important;
+}
+
+#app.dark-mode .nav-contributions-btn-wrapper > :not(.router-link-active) {
+  color: var(--text) !important;
+}
+
+// Pagination (BPagination pills, used across the transaction and contribution
+// lists): light pills in light mode -> dark surface pills via the Bootstrap 5
+// pagination CSS variables. The active pill takes the teal used by the tab bars.
+.dark-mode .page-link {
+  --bs-pagination-bg: var(--surface-muted);
+  --bs-pagination-color: var(--text);
+  --bs-pagination-border-color: var(--border);
+  --bs-pagination-hover-bg: var(--border);
+  --bs-pagination-hover-color: var(--text);
+  --bs-pagination-hover-border-color: var(--border);
+  --bs-pagination-focus-bg: var(--border);
+  --bs-pagination-focus-color: var(--text);
+  --bs-pagination-active-bg: #178d81;
+  --bs-pagination-active-border-color: #178d81;
+  --bs-pagination-disabled-bg: var(--surface);
+  --bs-pagination-disabled-color: var(--text-muted);
+  --bs-pagination-disabled-border-color: var(--border);
 }
