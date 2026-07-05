@@ -80,14 +80,20 @@ body.dark-mode {
     border-color: var(--border);
   }
 
+  // Links follow the Gradido-green convention (light mode uses #047006); use the
+  // lighter dark-green token so they stay legible on the dark canvas -- not the
+  // info blue.
   a:not(.btn) {
-    color: var(--info);
+    color: var(--success);
   }
 
   // Page watermark: swap the near-white leaves for a dark-anthracite variant so
   // it stays a subtle watermark instead of a bright shape on the dark canvas.
+  // The ?v= query busts the browser image cache -- the file is served from
+  // /public under a constant name with a 7-day max-age, so earlier (lighter)
+  // iterations otherwise linger. Bump the version when the SVG changes.
   .main-page {
-    background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg') !important;
+    background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=2') !important;
   }
 }
 
@@ -116,7 +122,7 @@ body.dark-mode {
 // leaves SVG -> dark variant so they are not bright shapes on the dark canvas.
 #app.dark-mode .card-circles .card,
 #app.dark-mode .community-news .card {
-  background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg') !important;
+  background-image: url('/img/svg/Gradido_Blaetter_Mainpage_dark.svg?v=2') !important;
 }
 
 // Top decorative leaves image (Blaetter.png) is a brand accent -- keep it, only
@@ -149,4 +155,33 @@ body.dark-mode {
 #app.dark-mode #component-sidebar .nav-item > a,
 #app.dark-mode #component-sidebar .active-route {
   color: var(--text) !important;
+}
+
+// Secondary buttons (Reset in the Send form, Cancel in standard modals) use the
+// near-white $secondary (#f7fafc) in light mode -> give them a dark raised
+// surface with light text. Driving the Bootstrap 5 button CSS variables keeps
+// the hover / active states consistent.
+.dark-mode .btn-secondary {
+  --bs-btn-bg: var(--surface-muted);
+  --bs-btn-color: var(--text);
+  --bs-btn-border-color: var(--border);
+  --bs-btn-hover-bg: var(--border);
+  --bs-btn-hover-color: var(--text);
+  --bs-btn-hover-border-color: var(--border);
+  --bs-btn-active-bg: var(--border);
+  --bs-btn-active-color: var(--text);
+  --bs-btn-active-border-color: var(--border);
+}
+
+// Modal close control (x) is a black Bootstrap icon -> invert it to a light
+// glyph on the dark modal surface.
+.dark-mode .btn-close {
+  filter: invert(1) grayscale(1) brightness(1.6);
+}
+
+// Footer meta links (imprint / privacy / whitepaper / support) are hardcoded
+// #383838 in ContentFooter's scoped style -> barely legible on the dark canvas.
+// Lift them to muted text; #app.dark-mode outweighs the scoped !important rule.
+#app.dark-mode .footer .nav-link {
+  color: var(--text-muted) !important;
 }
