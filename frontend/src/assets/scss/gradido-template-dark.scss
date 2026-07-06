@@ -239,6 +239,15 @@ body.dark-mode {
   color: var(--text) !important;
 }
 
+// Inactive tab-bar icons are forced black via `filter: brightness(0) invert(0)`
+// (a mix of <b-img> and inline SVGs, so color/currentColor can't reach them). In
+// dark mode lift them to the light label text: invert(0.894) of black == #e4e4e4
+// == --text. Active icons stay white via the component's own invert(1) rule.
+#app.dark-mode .nav-send-btn-wrapper > :not(.router-link-active) .svg-icon,
+#app.dark-mode .nav-contributions-btn-wrapper > :not(.router-link-active) .svg-icon {
+  filter: brightness(0) invert(0.894) !important;
+}
+
 // Pagination (BPagination pills, used across the transaction and contribution
 // lists): light pills in light mode -> dark surface pills via the Bootstrap 5
 // pagination CSS variables. The active pill takes the teal used by the tab bars.
