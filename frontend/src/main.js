@@ -52,6 +52,10 @@ loadAllRules(i18n.global, apolloProvider.defaultClient)
 
 addNavigationGuards(router, store, apolloProvider.defaultClient)
 
+// Apply the device-local theme (system | light | dark) before mount so the first
+// paint already carries the correct light/dark class.
+store.dispatch('applyTheme')
+
 if (!store) {
   setTimeout(
     window.location.assign('https://github.com/gradido/gradido/tree/master/support#cookies'),

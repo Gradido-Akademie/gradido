@@ -179,9 +179,10 @@
     </BTabs>
 
     <BRow class="mt-3">
-      <BCol cols="12" md="6" lg="6">{{ $t('settings.darkMode') }}</BCol>
-      <BCol cols="12" md="6" lg="6" class="text-end">
-        <BFormCheckbox v-model="darkMode" name="dark-mode" switch></BFormCheckbox>
+      <BCol cols="12">
+        <div class="mb-2">{{ $t('settings.theme.title') }}</div>
+        <BFormRadioGroup v-model="themeMode" name="theme-mode" stacked :options="themeOptions" />
+        <div class="mt-2 text-muted small">{{ $t('settings.theme.hint') }}</div>
       </BCol>
     </BRow>
   </div>
@@ -212,7 +213,7 @@ import {
   BFormGroup,
   BForm,
   BButton,
-  BFormCheckbox,
+  BFormRadioGroup,
 } from 'bootstrap-vue-next'
 
 const props = defineProps({
@@ -226,7 +227,7 @@ const { toastError, toastSuccess } = useAppToast()
 const store = useStore()
 const state = store.state
 
-const darkMode = ref(state.darkMode)
+const themeMode = ref(state.themeMode)
 const firstName = ref(state.firstName || '')
 const email = ref(state.email || '')
 const newsletterState = ref(state.newsletterState)
@@ -277,10 +278,17 @@ const humhubStateSwitch = (eventData) => {
   humhubAllowed.value = eventData
 }
 
-// Dark mode: apply immediately via the store (App.vue toggles the .dark-mode
-// class). Session-level for now; persistence follows later.
-watch(darkMode, (val) => {
-  store.commit('setDarkMode', val)
+// Theme mode (system | light | dark): apply immediately, persisted device-local.
+// App.vue toggles the .dark-mode class from the effective value.
+const themeOptions = computed(() => [
+  { value: 'system', text: t('settings.theme.system') },
+  { value: 'light', text: t('settings.theme.light') },
+  { value: 'dark', text: t('settings.theme.dark') },
+])
+
+watch(themeMode, (val) => {
+  store.commit('setThemeMode', val)
+  store.dispatch('applyTheme')
 })
 </script>
 <style>
