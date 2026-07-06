@@ -379,8 +379,8 @@ body.dark-mode {
 // Login / auth page (AuthLayout). The brand logo sits on a white PNG "blob"
 // decoration (AuthNavbar background image) -> darken it. The blob filter creates
 // a stacking context that would otherwise paint the blob over the logo, so lift
-// the logo with z-index. AuthNavbar swaps in a transparent light-inked logo
-// (gradido-logo-dark.png) for dark mode, so the logo needs no filter here.
+// the logo with z-index. AuthNavbar swaps in a transparent white-inked logo
+// (gradido-logo-white.png) for dark mode, so the logo needs no filter here.
 #app.dark-mode .auth-header .navbar-brand img:not(.position-absolute) {
   filter: brightness(0.13);
 }
