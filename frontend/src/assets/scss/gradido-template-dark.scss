@@ -367,17 +367,46 @@ body.dark-mode {
 }
 
 // Login / auth page (AuthLayout). The brand logo sits on a white PNG "blob"
-// decoration (AuthNavbar background image) -> darken it. That filter creates a
-// stacking context that would otherwise paint the blob over the logo, so lift the
-// logo with z-index and give the dark-inked logo a dark-mode treatment (invert +
-// hue-rotate keeps the gold coin and turns the green wordmark light).
+// decoration (AuthNavbar background image) -> darken it. The blob filter creates
+// a stacking context that would otherwise paint the blob over the logo, so lift
+// the logo with z-index. AuthNavbar swaps in a transparent light-inked logo
+// (gradido-logo-dark.png) for dark mode, so the logo needs no filter here.
 #app.dark-mode .auth-header .navbar-brand img:not(.position-absolute) {
   filter: brightness(0.13);
 }
 
 #app.dark-mode .auth-header .navbar-brand img.position-absolute {
   z-index: 2;
-  filter: invert(1) hue-rotate(180deg);
+}
+
+// Auth nav links (Register / Login, top right). Light mode hardcodes them blue
+// (#0e79bc); keep the Gradido-green link colour on dark and brighten on hover
+// (the underline already comes from .auth-template a:hover). The active
+// (current-page) span is Bootstrap's near-black --bs-navbar-active-color, which
+// needs !important to become legible.
+/* stylelint-disable-next-line no-descending-specificity */
+#app.dark-mode .auth-navbar > a {
+  color: var(--link);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+#app.dark-mode .auth-navbar > a:hover {
+  color: var(--link);
+  filter: brightness(1.35);
+}
+
+#app.dark-mode .auth-navbar .nav-link.active {
+  color: var(--text) !important;
+}
+
+// Login font-size control ("Aa", type.svg) and the password-reveal eye are dark
+// glyphs -> lighten them on the dark canvas.
+#app.dark-mode .svg-type {
+  filter: invert(1);
+}
+
+#app.dark-mode .btn.btn-outline-light svg {
+  fill: var(--text);
 }
 
 // Autofilled inputs (e.g. saved login credentials) keep the browser's light
