@@ -75,7 +75,6 @@ export default {
 <style scoped lang="scss">
 .nav-contributions-btn-wrapper {
   background-color: #d1d1d1;
-  white-space: nowrap;
 
   > :deep(*) {
     width: calc(100% / 3);
@@ -84,6 +83,7 @@ export default {
     justify-content: center;
     text-decoration: none;
     font-size: 14px;
+    text-wrap: nowrap;
     color: black !important;
     border-radius: 25px;
   }
