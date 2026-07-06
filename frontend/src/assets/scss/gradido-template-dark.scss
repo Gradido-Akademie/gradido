@@ -409,6 +409,23 @@ body.dark-mode {
   fill: var(--text);
 }
 
+// Language switcher (LanguageSwitch2, used on the login page and in settings):
+// the dropdown list is a hardcoded white panel with a light hover and a
+// light-blue active row -> dark surface, muted hover, green-accented active item.
+#app.dark-mode .ls-menu {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+#app.dark-mode .ls-item:hover {
+  background: var(--surface-muted);
+}
+
+#app.dark-mode .ls-item-active {
+  background: var(--surface-muted);
+  color: var(--link);
+}
+
 // Autofilled inputs (e.g. saved login credentials) keep the browser's light
 // -webkit-autofill background, which overrides .form-control. Cover it with an
 // inset box-shadow in the surface colour and force light text. WebKit-only

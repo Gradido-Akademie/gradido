@@ -34,7 +34,7 @@ const backgroundHeader = '/img/template/gradido_background_header.png'
 // Dark mode uses a transparent, light-inked logo so it reads on the darkened
 // header blob; light mode keeps the original.
 const logo = computed(() =>
-  store.state.darkMode ? '/img/brand/gradido-logo-dark.png' : '/img/brand/gradido-logo_200x59.png',
+  store.state.darkMode ? '/img/brand/gradido-logo-white.png' : '/img/brand/gradido-logo_200x59.png',
 )
 const sheet = '/img/template/Blaetter.png'
 </script>
