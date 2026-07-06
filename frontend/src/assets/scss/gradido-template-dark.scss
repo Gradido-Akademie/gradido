@@ -405,8 +405,11 @@ body.dark-mode {
   filter: invert(1);
 }
 
-#app.dark-mode .btn.btn-outline-light svg {
-  fill: var(--text);
+// Eye toggles share the .eye-icon class (password reveal on login/settings +
+// balance hide/show on GDD/GDT) -> one legible light grey in dark mode; they were
+// dark / dark-blue before.
+#app.dark-mode .eye-icon {
+  color: var(--text-muted);
 }
 
 // Language switcher (LanguageSwitch2, used on the login page and in settings):
@@ -424,6 +427,32 @@ body.dark-mode {
 #app.dark-mode .ls-item-active {
   background: var(--surface-muted);
   color: var(--link);
+}
+
+// Collapse chevron (transaction rows, open links/QR list, decay): the "collapse"
+// (up) arrow is text-black -> lighten it on the dark canvas. The "expand" (down)
+// arrow is text-muted and already covered.
+#app.dark-mode .collapse-icon .text-black {
+  color: var(--text);
+}
+
+// Native date input (contribution form) calendar picker glyph is dark -> lighten.
+#app.dark-mode input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+// Matching entry details box + the "overregional" badge are light panels in light
+// mode -> dark surface / light-outlined with light text on the dark canvas. Paused
+// entries dim to grey via the existing .opacity-05 on the card.
+#app.dark-mode .details-box {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+#app.dark-mode .badge-soft {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 // Autofilled inputs (e.g. saved login credentials) keep the browser's light
