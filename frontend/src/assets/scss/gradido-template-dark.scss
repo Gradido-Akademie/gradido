@@ -133,6 +133,22 @@ body.dark-mode {
   opacity: 0.85;
 }
 
+// Mobile header bar + drawer (both only exist <=450px, which is why the desktop
+// dark pass never saw them). The fixed top navbar carries a light frosted
+// background (#f5f5f5e6, set inside a max-width:450px media query) and the
+// slide-in drawer wrapper is hardcoded white; both sit above the drawer's dim
+// overlay (z-index 99) on z 1000 / 1001, so they glare white when the menu opens.
+// Darken the navbar to the page background (same 0.9 alpha as the original) and
+// the drawer wrapper to the surface colour of the menu card it holds, for a
+// seamless dark panel.
+#app.dark-mode .navbar-element {
+  background-color: #17181ae6;
+}
+
+#app.dark-mode .mobile-sidebar-wrapper {
+  background-color: var(--surface);
+}
+
 // Send tab bar (TransactionForm .nav-send-btn-wrapper): same light-grey control
 // as the Matching bar -> dark surface + light inactive labels. The active tab
 // keeps its teal .router-link-active styling.
