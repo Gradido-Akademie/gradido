@@ -13,6 +13,7 @@ body.dark-mode {
   --bg: #17181a;
   --surface: #212327;
   --surface-muted: #2a2c31;
+  --nav-track: #33353c; // tab/segment control tracks (send/matching/contributions), a step above surface-muted so they don't read as near-black
   --text: #e4e4e4;
   --text-muted: #9a9b9e;
   --border: #34363b;
@@ -103,7 +104,7 @@ body.dark-mode {
 // text needs a dark surface and light text in dark mode. #app.dark-mode outweighs
 // the component's scoped !important; the active teal tab keeps its own styling.
 #app.dark-mode .matching-nav {
-  background-color: var(--surface-muted);
+  background-color: var(--nav-track);
 }
 
 #app.dark-mode .matching-nav-btn:not(.is-active) {
@@ -155,7 +156,7 @@ body.dark-mode {
 // as the Matching bar -> dark surface + light inactive labels. The active tab
 // keeps its teal .router-link-active styling.
 #app.dark-mode .nav-send-btn-wrapper {
-  background-color: var(--surface-muted) !important;
+  background-color: var(--nav-track) !important;
 }
 
 #app.dark-mode .nav-send-btn-wrapper > :not(.router-link-active) {
@@ -231,7 +232,7 @@ body.dark-mode {
 // with black inactive labels as the Matching / Send bars -> dark surface, light
 // inactive labels. The active tab keeps its teal router-link-active styling.
 #app.dark-mode .nav-contributions-btn-wrapper {
-  background-color: var(--surface-muted) !important;
+  background-color: var(--nav-track) !important;
 }
 
 #app.dark-mode .nav-contributions-btn-wrapper > :not(.router-link-active) {
@@ -412,6 +413,13 @@ body.dark-mode {
   color: var(--text-muted);
 }
 
+// Icon hover disc (.hover-icon, e.g. the GDT balance eye): a light #dcd8d9 hover
+// background. On touch devices the :hover state sticks after a tap until the user
+// taps elsewhere, flashing a white disc on the dark canvas -> dark surface instead.
+#app.dark-mode .hover-icon:hover {
+  background-color: var(--surface-muted);
+}
+
 // Language switcher (LanguageSwitch2, used on the login page and in settings):
 // the dropdown list is a hardcoded white panel with a light hover and a
 // light-blue active row -> dark surface, muted hover, green-accented active item.
@@ -430,10 +438,11 @@ body.dark-mode {
 }
 
 // Collapse chevron (transaction rows, open links/QR list, decay): the "collapse"
-// (up) arrow is text-black -> lighten it on the dark canvas. The "expand" (down)
-// arrow is text-muted and already covered.
+// (up) arrow is text-black. Bootstrap's .text-black carries !important, so this
+// override needs !important too -- higher specificity alone loses to it. Match the
+// "expand" (down) arrow (text-muted) so both chevrons read at the same weight.
 #app.dark-mode .collapse-icon .text-black {
-  color: var(--text);
+  color: var(--text-muted) !important;
 }
 
 // Native date input (contribution form) calendar picker glyph is dark -> lighten.
