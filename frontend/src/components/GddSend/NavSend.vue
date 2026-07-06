@@ -87,6 +87,7 @@ export default {
 <style scoped lang="scss">
 .nav-send-btn-wrapper {
   background-color: #d1d1d1;
+  white-space: nowrap;
 
   > :deep(*) {
     width: calc(100% / 3);
@@ -95,7 +96,6 @@ export default {
     justify-content: center;
     text-decoration: none;
     font-size: 14px;
-    white-space: nowrap;
     color: black !important;
     border-radius: 25px;
   }

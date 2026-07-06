@@ -528,6 +528,7 @@ label {
 
 .nav-send-btn-wrapper {
   background-color: #d1d1d1;
+  white-space: nowrap;
 
   > :deep(*) {
     width: calc(100% / 3);
