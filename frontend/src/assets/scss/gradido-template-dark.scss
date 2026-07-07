@@ -490,11 +490,6 @@ body.dark-mode {
   color: var(--text-muted) !important;
 }
 
-// Native date input (contribution form) calendar picker glyph is dark -> lighten.
-#app.dark-mode input[type='date']::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-}
-
 // Matching entry details box + the "overregional" badge are light panels in light
 // mode -> dark surface / light-outlined with light text on the dark canvas. Paused
 // entries dim to grey via the existing .opacity-05 on the card.
