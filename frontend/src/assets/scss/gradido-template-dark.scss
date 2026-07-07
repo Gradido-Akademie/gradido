@@ -25,6 +25,9 @@ body.dark-mode {
   --link: #0b9130; // Gradido green, cooler + lighter than light #047006 for dark legibility
   --gold: #c58d38; // Gradido gold (decay accent) for balances + received amounts
 
+  // Render native controls (the date-picker popup, scrollbars, form defaults) dark
+  // instead of the browser's light default.
+  color-scheme: dark;
   background-color: var(--bg);
   color: var(--text);
 }
@@ -176,6 +179,13 @@ body.dark-mode {
 #app.dark-mode #component-sidebar .nav-item > a,
 #app.dark-mode #component-sidebar .active-route {
   color: var(--text) !important;
+}
+
+// The active menu item colours its icon black via a filter (brightness(0) invert(0))
+// so it stands out on the light active background; in dark mode lift it to light so
+// the selected icon reads like the active label instead of vanishing.
+#app.dark-mode .active-route .svg-icon {
+  filter: brightness(0) invert(0.894); // brightness(0) blacks it, invert(a) => a*255 = #e4e4e4
 }
 
 // Secondary buttons (Reset in the Send form, Cancel in standard modals) use the
