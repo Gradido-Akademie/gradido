@@ -56,6 +56,15 @@ addNavigationGuards(router, store, apolloProvider.defaultClient)
 // paint already carries the correct light/dark class.
 store.dispatch('applyTheme')
 
+// Restore the persisted UI language before mount. vuex-persistedstate rehydrates
+// state.language without firing the `language` mutation (which is what sets the
+// i18n locale). This used to be masked by the login layout briefly rendering its
+// language switcher on boot; now that we mount straight into the target route, sync
+// the locale here so the app is not stuck on the default until Settings is opened.
+if (store.state.language) {
+  i18n.global.locale.value = store.state.language
+}
+
 if (!store) {
   setTimeout(
     window.location.assign('https://github.com/gradido/gradido/tree/master/support#cookies'),
