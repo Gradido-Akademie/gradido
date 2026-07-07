@@ -141,8 +141,14 @@ body.dark-mode {
 // hamburger drawer wrapper is a hardcoded white panel around the dark #side-menu
 // card -> surface colour for a seamless dark drawer. It only exists in the mobile
 // nav (below lg), so no width guard is needed.
+// The wrapper is absolutely positioned with top:0/bottom:0, so it spans the full
+// viewport height while the menu itself is only content-height. In light mode the
+// white overhang is invisible; in dark it leaves a large empty surface panel below
+// the menu (most noticeable on long pages). bottom:auto lets the wrapper wrap the
+// menu so the dark surface ends right below the last item.
 #app.dark-mode .mobile-sidebar-wrapper {
   background-color: var(--surface);
+  bottom: auto;
 }
 
 // The fixed top navbar only carries a light frosted background (#f5f5f5e6) inside
