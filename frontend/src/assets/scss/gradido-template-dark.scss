@@ -151,6 +151,18 @@ body.dark-mode {
   bottom: auto;
 }
 
+// The mobile drawer's dim scrim (.simple-overlay) starts at left:200px and only
+// spans the area to the right of the drawer, because in light mode the full-height
+// white drawer covers the left strip down to the bottom. With the dark drawer now
+// wrapping its menu (bottom:auto above), that left strip is exposed and undimmed
+// below the menu. Extend the scrim to the full viewport width in dark mode so the
+// whole page behind the floating menu is dimmed evenly; the menu card stays on top
+// via its higher z-index.
+#app.dark-mode .simple-overlay {
+  left: 0;
+  width: 100vw;
+}
+
 // The fixed top navbar only carries a light frosted background (#f5f5f5e6) inside
 // a max-width:450px media query; above 450px it is transparent (sticky) so the
 // page watermark shows through. Scope the dark override to the same breakpoint --
