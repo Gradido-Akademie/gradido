@@ -284,6 +284,24 @@ body.dark-mode {
   background-color: transparent !important;
 }
 
+// Loading skeletons (DashboardLayout's SkeletonOverview) default to a light
+// gray-200 placeholder and are shown on every authenticated page for up to ~1.5s
+// while data loads. In dark mode give them a dark surface and a fainter shimmer,
+// otherwise all panels flash light on load. The #app id beats the scoped component.
+#app.dark-mode .skeleton-loader {
+  background: var(--surface-muted);
+}
+
+#app.dark-mode .with-animation::after {
+  background: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0%) 0%,
+    rgb(255 255 255 / 4%) 40%,
+    rgb(255 255 255 / 9%) 60%,
+    rgb(255 255 255 / 0%) 100%
+  );
+}
+
 .dark-mode .light-gray-text {
   color: #6b6c6f !important; // fainter than --text-muted so expired links clearly recede
 }
