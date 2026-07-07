@@ -276,6 +276,14 @@ body.dark-mode {
   background-color: var(--surface) !important;
 }
 
+// The blanket .card-body rule paints an opaque dark surface; on this rounded card
+// the square body then hides the card's rounded bottom corners (the top stays round
+// because the header row is transparent). Keep the body transparent so the rounded
+// card surface shows through at the bottom too, just like in light mode.
+.dark-mode .gradido-custom-background .card-body {
+  background-color: transparent !important;
+}
+
 .dark-mode .light-gray-text {
   color: #6b6c6f !important; // fainter than --text-muted so expired links clearly recede
 }
