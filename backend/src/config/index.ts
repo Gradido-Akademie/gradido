@@ -115,6 +115,12 @@ const openai = {
   OPENAI_ASSISTANT_ID: process.env.OPENAI_ASSISTANT_ID ?? '',
 }
 
+const anthropic = {
+  ANTHROPIC_ACTIVE: process.env.ANTHROPIC_ACTIVE === 'true' || false,
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ?? '',
+  ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-5',
+}
+
 export const CONFIG = {
   ...logging,
   ...server,
@@ -128,5 +134,6 @@ export const CONFIG = {
   ...gms,
   ...humhub,
   ...openai,
+  ...anthropic,
 }
 validate(schema, CONFIG)
