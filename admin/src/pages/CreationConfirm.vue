@@ -190,6 +190,7 @@ const fields = computed(
         baseFields.contributionDate,
         baseFields.createdAt,
         baseFields.closedAt,
+        { key: 'creaEvaluate', label: t('crea.column') },
         { key: 'chatCreation', label: t('details') },
       ],
       // denied contributions
@@ -200,6 +201,7 @@ const fields = computed(
         baseFields.contributionDate,
         baseFields.createdAt,
         baseFields.closedAt,
+        { key: 'creaEvaluate', label: t('crea.column') },
         { key: 'chatCreation', label: t('details') },
       ],
       // deleted contributions
@@ -210,6 +212,7 @@ const fields = computed(
         baseFields.contributionDate,
         baseFields.createdAt,
         baseFields.closedAt,
+        { key: 'creaEvaluate', label: t('crea.column') },
         { key: 'chatCreation', label: t('details') },
       ],
       // all contributions
@@ -221,6 +224,7 @@ const fields = computed(
         baseFields.contributionDate,
         baseFields.createdAt,
         baseFields.closedAt,
+        { key: 'creaEvaluate', label: t('crea.column') },
         { key: 'chatCreation', label: t('details') },
       ],
     ][tabIndex.value],
