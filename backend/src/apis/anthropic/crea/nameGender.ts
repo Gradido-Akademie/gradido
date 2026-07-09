@@ -1,18 +1,24 @@
-// First-name → grammatical-gender heuristic for Crea's salutation (design doc
-// `G` ch. 4). The Gradido account has no gender field, so the code guesses
-// "Liebe/Lieber" from a curated list of common (mostly German) first names.
-// Names that are genuinely ambiguous (Andrea, Kim, Toni, Sascha, Alex, Chris,
-// Simone in IT, …) are DELIBERATELY absent so they fall through to the
-// uncertain path (neutral "Liebe," + a flag the moderator resolves, E-005).
+// First-name -> grammatical-gender heuristic for Crea's salutation (design doc
+// `G` ch. 4, E-013). The Gradido account has no gender field, so the code guesses
+// "Liebe/Lieber" from a name list. This is only the FIRST GUESS -- the moderator
+// corrects it via the salutation field / gender buttons (E-013). A wrong guess is
+// worse than a neutral one, so genuinely ambiguous names (Kim, Toni, ...) stay
+// uncertain and fall through to the neutral, flagged path (E-005).
 //
-// Extend freely: add the ASCII-normalised, lower-cased form to the right set.
-// Coverage need not be exhaustive — anything unlisted is handled safely by the
-// moderator, it just costs one click.
+// The list is a ~35k-entry dataset derived from nam_dict.txt (Joerg Michael), with
+// the German reading preferred and unisex / cross-locale-ambiguous names omitted
+// on purpose. Data + its GFDL licence: nameGenderData.ts / nameGenderData.GFDL.txt.
+//
+// PII stays local: the recipient's name is only used here to build the salutation;
+// it never reaches the Anthropic API (E-012).
+
+import { FEMALE_NAMES, MALE_NAMES } from './nameGenderData'
 
 export type NameGender = 'male' | 'female' | null
 
-// Normalise umlauts/ß to ASCII so "Günther" and "Guenther" both match, and to
-// keep the data umlaut-free in source (repo convention).
+// Normalise to the lookup key the dataset was built with: umlauts/ss to their
+// German ASCII form, then strip remaining diacritics and non-letters, so
+// "Guenther" / "Gunther" all reach the same key as "Guenther" from "Günther".
 export function normalizeName(name: string): string {
   return name
     .trim()
@@ -21,66 +27,31 @@ export function normalizeName(name: string): string {
     .replace(/ö/g, 'oe')
     .replace(/ü/g, 'ue')
     .replace(/ß/g, 'ss')
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/[^a-z]/g, '')
 }
 
-// biome-ignore format: keep the curated name list compact
-const MALE = [
-  'thomas', 'michael', 'andreas', 'peter', 'wolfgang', 'klaus', 'juergen', 'guenter', 'guenther',
-  'stefan', 'stephan', 'christian', 'uwe', 'werner', 'hans', 'manfred', 'helmut', 'frank', 'bernd',
-  'bernhard', 'dieter', 'rolf', 'rainer', 'reiner', 'karl', 'carl', 'heinz', 'horst', 'wilhelm',
-  'walter', 'walther', 'kurt', 'herbert', 'georg', 'gerhard', 'rudolf', 'rudi', 'josef', 'joseph',
-  'franz', 'otto', 'ernst', 'erwin', 'alfred', 'friedrich', 'fritz', 'paul', 'martin', 'markus',
-  'marcus', 'matthias', 'alexander', 'sebastian', 'daniel', 'tobias', 'florian', 'jan', 'jens',
-  'dirk', 'sven', 'torsten', 'thorsten', 'ralf', 'ralph', 'holger', 'norbert', 'reinhard', 'volker',
-  'lars', 'marco', 'marko', 'oliver', 'kai', 'nico', 'niko', 'patrick', 'philipp', 'philip', 'simon',
-  'jonas', 'lukas', 'lucas', 'leon', 'felix', 'maximilian', 'max', 'moritz', 'david', 'julian',
-  'benjamin', 'fabian', 'dominik', 'erik', 'erich', 'robert', 'richard', 'roland', 'ulrich', 'udo',
-  'detlef', 'harald', 'heiko', 'ingo', 'bruno', 'emil', 'ludwig', 'konrad', 'heinrich', 'wilfried',
-  'siegfried', 'gottfried', 'anton', 'johannes', 'johann', 'nils', 'niels', 'malte', 'tim', 'timo',
-  'till', 'noah', 'elias', 'ben', 'luis', 'louis', 'theo', 'oskar', 'oscar', 'hannes', 'jakob',
-  'jacob', 'vincent', 'mario', 'rene', 'hartmut', 'dietmar', 'joachim', 'jochen', 'eberhard', 'gerd',
-  'gert', 'willi', 'willy', 'kevin', 'dennis', 'denis', 'marcel', 'pascal',
-]
-
-// biome-ignore format: keep the curated name list compact
-const FEMALE = [
-  'maria', 'ursula', 'ingrid', 'renate', 'helga', 'gisela', 'elisabeth', 'erika', 'monika', 'christa',
-  'gertrud', 'gertrude', 'brigitte', 'hildegard', 'gerda', 'karin', 'ute', 'sabine', 'petra',
-  'susanne', 'claudia', 'birgit', 'martina', 'gabriele', 'gabriela', 'heike', 'angelika', 'barbara',
-  'christine', 'christina', 'cornelia', 'manuela', 'kerstin', 'katrin', 'kathrin', 'silke', 'anke',
-  'nicole', 'tanja', 'melanie', 'stefanie', 'stephanie', 'sandra', 'bettina', 'simone', 'daniela',
-  'antje', 'astrid', 'elke', 'doris', 'marion', 'beate', 'anja', 'kirsten', 'bianca', 'julia', 'anna',
-  'anne', 'laura', 'lena', 'lisa', 'sarah', 'sara', 'katharina', 'johanna', 'marie', 'sophie', 'sofie',
-  'sophia', 'sofia', 'charlotte', 'emma', 'mia', 'hannah', 'hanna', 'lea', 'leonie', 'amelie', 'clara',
-  'klara', 'franziska', 'vanessa', 'jasmin', 'jessica', 'nadine', 'verena', 'carina', 'karina',
-  'ramona', 'yvonne', 'sonja', 'regina', 'rita', 'rosa', 'rosemarie', 'waltraud', 'irmgard', 'edith',
-  'hedwig', 'frieda', 'frida', 'margarete', 'margarethe', 'margret', 'marlene', 'ilse', 'inge',
-  'ingeborg', 'irene', 'kaethe', 'lieselotte', 'annegret', 'annette', 'anette', 'baerbel', 'dagmar',
-  'heidi', 'heidrun', 'jutta', 'marianne', 'roswitha', 'sieglinde', 'ruth', 'hannelore', 'elfriede',
-  'elfi', 'wilma', 'herta', 'hertha', 'magdalena', 'agnes', 'silvia', 'sylvia', 'gudrun', 'greta',
-  'mathilde', 'adelheid', 'henriette', 'meike', 'wiebke', 'cordula', 'hella', 'elsa', 'else',
-]
-
-const MALE_SET = new Set(MALE)
-const FEMALE_SET = new Set(FEMALE)
+const MALE_SET = new Set(MALE_NAMES.split(','))
+const FEMALE_SET = new Set(FEMALE_NAMES.split(','))
 
 /**
  * Guesses the grammatical gender of a first name, or `null` when the name is
- * unknown or ambiguous. Uses the first whitespace-separated token, so full
- * names ("Anna Maria") resolve on the leading name.
+ * unknown or ambiguous. Uses the leading given name (split on space/hyphen), so
+ * "Anna-Lena" and "Anna Maria" resolve on the first name.
  */
 export function guessGender(firstName: string | null | undefined): NameGender {
   if (!firstName) {
     return null
   }
-  const first = normalizeName(firstName).split(/\s+/)[0]
-  if (!first) {
+  const key = normalizeName(firstName.split(/[\s-]+/)[0] ?? '')
+  if (!key) {
     return null
   }
-  if (MALE_SET.has(first)) {
+  if (MALE_SET.has(key)) {
     return 'male'
   }
-  if (FEMALE_SET.has(first)) {
+  if (FEMALE_SET.has(key)) {
     return 'female'
   }
   return null
