@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-1">
+  <div class="mt-1 message-body">
     <span v-for="({ type: messageType, text }, index) in parsedMessage" :key="index">
       <b-link v-if="messageType === 'link'" :href="text" target="_blank">{{ text }}</b-link>
       <span v-else-if="messageType === 'date'">
@@ -56,3 +56,11 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.message-body {
+  /* Preserve the line breaks typed into the message (or drafted by Crea); long
+     lines still wrap and runs of spaces still collapse -- chat-friendly. */
+  white-space: pre-line;
+}
+</style>
