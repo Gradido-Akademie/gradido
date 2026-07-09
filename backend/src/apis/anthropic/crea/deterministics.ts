@@ -60,6 +60,10 @@ export type SalutationResult = { salutation: string; uncertain: boolean }
 // with the real salutation so the recipient's name never reaches the API.
 export const SALUTATION_PLACEHOLDER = '[ANREDE]'
 
+// The signature placeholder Crea closes with; the code replaces it locally with
+// the moderator's own greeting so the moderator's name never reaches the API (E-013).
+export const SIGNATURE_PLACEHOLDER = '[SIGNATUR]'
+
 /**
  * Builds the salutation locally from the recipient's first name (E-012 — PII
  * stays local). Grammatical gender comes from the name heuristic; an unknown

@@ -49,6 +49,30 @@ export class CreaContributionInput {
   @IsString()
   moderatorName?: string | null
 
+  // The moderator's own greeting, filled locally into the [SIGNATUR] placeholder
+  // so the moderator's name never reaches the API (E-013).
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  moderatorSignature?: string | null
+
+  // Persistence metadata (E-007/E-010); the admin UI (DO-4) supplies these. When
+  // contributionRef is present, the resolver persists crea_records rows.
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  contributionRef?: string | null
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  communityUuid?: string | null
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  personPseudonym?: string | null
+
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()

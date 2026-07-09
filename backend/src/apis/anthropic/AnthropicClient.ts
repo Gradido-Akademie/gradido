@@ -10,6 +10,7 @@ import {
   resolveEnteredGdd,
   resolveEnteredHours,
   SALUTATION_PLACEHOLDER,
+  SIGNATURE_PLACEHOLDER,
   sumActivityHours,
 } from './crea/deterministics'
 import { CREA_OUTPUT_SCHEMA } from './crea/outputSchema'
@@ -109,6 +110,15 @@ export class AnthropicClient {
     if (uncertain) {
       evaluation.flags = [...(evaluation.flags ?? []), 'anrede_unsicher']
     }
+
+    // Fill the [SIGNATUR] placeholder with the moderator's own greeting (E-013);
+    // the moderator's name never reaches the API. Left in place when unset so the
+    // moderator notices and configures it once (DO-4).
+    if (input.moderatorSignature) {
+      evaluation.responseText = evaluation.responseText
+        .split(SIGNATURE_PLACEHOLDER)
+        .join(input.moderatorSignature)
+    }
     return evaluation
   }
 
@@ -149,7 +159,9 @@ export class AnthropicClient {
     lines.push(
       `- Anrede: mit dem Platzhalter ${SALUTATION_PLACEHOLDER} beginnen (der Code fuellt den Namen lokal ein)`,
     )
-    lines.push(`- Moderatorname: ${input.moderatorName ?? '[Moderatorname]'}`)
+    lines.push(
+      `- Grussformel: mit dem Platzhalter ${SIGNATURE_PLACEHOLDER} abschliessen (der Code fuellt die Moderator-Signatur lokal ein)`,
+    )
     if (input.date) {
       lines.push(`- Datum: ${input.date}`)
     }
