@@ -63,6 +63,30 @@
   },
   "copied-to-clipboard": "In die Zwischenablage kopiert",
   "copy-to-clipboard": "In die Zwischenablage kopieren",
+  "crea": {
+    "advisoryHint": "Crea berät nur – Bestätigen, Ablehnen und Senden bleiben Deine Entscheidung.",
+    "close": "Schließen",
+    "column": "Crea",
+    "copied": "Antwort kopiert",
+    "copy": "Antwort kopieren",
+    "copyFailed": "Kopieren fehlgeschlagen",
+    "flags": "Bitte prüfen",
+    "flags_map": {
+      "anrede_unsicher": "Anrede unsicher – bitte prüfen",
+      "discrepancy_recomputed": "Stundenangabe weicht ab – bitte prüfen"
+    },
+    "inactive": "Crea ist noch nicht aktiv – der API-Schlüssel fehlt (wird separat eingerichtet).",
+    "loading": "Crea liest den Beitrag …",
+    "openPoints": "Offene Punkte",
+    "reasoning": "Begründung",
+    "response": "Antwortvorschlag",
+    "title": "Creas Einschätzung",
+    "verdict": {
+      "confirm": "Bestätigen empfohlen",
+      "inquire": "Rückfrage empfohlen",
+      "label": "Empfehlung"
+    }
+  },
   "created": "Geschöpft",
   "createdAt": "Angelegt",
   "creation": "Schöpfung",

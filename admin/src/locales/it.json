@@ -63,6 +63,30 @@
   },
   "copied-to-clipboard": "Copiato negli appunti",
   "copy-to-clipboard": "Copia negli appunti",
+  "crea": {
+    "advisoryHint": "Crea only advises – confirming, denying and sending stay your decision.",
+    "close": "Close",
+    "column": "Crea",
+    "copied": "Reply copied",
+    "copy": "Copy reply",
+    "copyFailed": "Copy failed",
+    "flags": "Please review",
+    "flags_map": {
+      "anrede_unsicher": "Salutation uncertain – please check",
+      "discrepancy_recomputed": "Hours differ – please check"
+    },
+    "inactive": "Crea is not active yet – the API key is missing (set up separately).",
+    "loading": "Crea is reading the contribution …",
+    "openPoints": "Open points",
+    "reasoning": "Reasoning",
+    "response": "Suggested reply",
+    "title": "Crea's assessment",
+    "verdict": {
+      "confirm": "Confirm suggested",
+      "inquire": "Ask back suggested",
+      "label": "Recommendation"
+    }
+  },
   "created": "Creato",
   "createdAt": "Creato il",
   "creation": "Creazione",

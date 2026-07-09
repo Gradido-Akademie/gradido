@@ -59,6 +59,7 @@
       @reload-contribution="reloadContribution"
       @update-contributions="refetch"
       @search-for-email="query = $event"
+      @crea-evaluate="openCreaModal"
     />
 
     <BPagination
@@ -89,6 +90,7 @@
         </template>
       </Overlay>
     </div>
+    <CreaEvaluationModal :contribution="creaItem" />
   </div>
 </template>
 
@@ -97,11 +99,13 @@ import { ref, computed, watch } from 'vue'
 import { useQuery, useMutation } from '@vue/apollo-composable'
 import { useStore } from 'vuex'
 import { useI18n } from 'vue-i18n'
+import { useModal } from 'bootstrap-vue-next'
 
 import Overlay from '../components/Overlay'
 import OpenCreationsTable from '../components/Tables/OpenCreationsTable'
 import UserQuery from '../components/UserQuery'
 import AiChat from '../components/AiChat'
+import CreaEvaluationModal from '../components/CreaEvaluationModal'
 import { adminListContributions } from '../graphql/adminListContributions.graphql'
 import { adminDeleteContribution } from '../graphql/adminDeleteContribution'
 import { confirmContribution } from '../graphql/confirmContribution'
@@ -174,6 +178,7 @@ const fields = computed(
         baseFields.amount,
         baseFields.memo,
         baseFields.contributionDate,
+        { key: 'creaEvaluate', label: t('crea.column') },
         { key: 'editCreation', label: t('details') },
         { key: 'confirm', label: t('save') },
       ],
@@ -402,6 +407,13 @@ const showOverlay = (selectedItem, selectedVariant) => {
   overlay.value = true
   item.value = selectedItem
   variant.value = selectedVariant
+}
+
+const creaItem = ref(null)
+const { show: showCreaModal } = useModal('crea-evaluation-modal')
+const openCreaModal = (selectedItem) => {
+  creaItem.value = selectedItem
+  showCreaModal()
 }
 
 const updateStatus = (id) => {

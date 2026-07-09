@@ -50,6 +50,13 @@
           {{ getMemoComment(row.item) }}
         </small>
       </template>
+      <template #cell(creaEvaluate)="row">
+        <div v-if="!myself(row.item)">
+          <BButton variant="info" size="md" class="me-2" @click="$emit('crea-evaluate', row.item)">
+            <IBiRobot />
+          </BButton>
+        </div>
+      </template>
       <template #cell(editCreation)="row">
         <div v-if="!myself(row.item)">
           <BButton
@@ -190,6 +197,7 @@ export default {
     'update-status',
     'show-overlay',
     'search-for-email',
+    'crea-evaluate',
   ],
   data() {
     return {

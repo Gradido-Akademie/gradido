@@ -1,0 +1,181 @@
+<template>
+  <BModal
+    id="crea-evaluation-modal"
+    v-model="modalVisible"
+    size="lg"
+    ok-only
+    :ok-title="$t('crea.close')"
+    :title="$t('crea.title')"
+    @shown="runEvaluation"
+    @hidden="resetState"
+  >
+    <div v-if="loading" class="text-center py-4">
+      <BSpinner class="me-2" />
+      {{ $t('crea.loading') }}
+    </div>
+
+    <div v-else-if="inactive" class="alert alert-info mb-0">
+      {{ $t('crea.inactive') }}
+    </div>
+
+    <div v-else-if="errorMessage" class="alert alert-danger mb-0">
+      {{ errorMessage }}
+    </div>
+
+    <div v-else-if="evaluation">
+      <p class="mb-3">
+        <strong>{{ $t('crea.verdict.label') }}:</strong>
+        <BBadge :variant="verdictVariant(evaluation.overallVerdict)" class="ms-2">
+          <template v-if="evaluation.overallVerdict === 'confirm'">
+            {{ $t('crea.verdict.confirm') }}
+          </template>
+          <template v-else-if="evaluation.overallVerdict === 'inquire'">
+            {{ $t('crea.verdict.inquire') }}
+          </template>
+          <template v-else>{{ evaluation.overallVerdict }}</template>
+        </BBadge>
+      </p>
+
+      <p class="mb-1">
+        <strong>{{ $t('crea.reasoning') }}</strong>
+      </p>
+      <p class="mb-3 text-break">{{ evaluation.reasoning }}</p>
+
+      <div v-if="evaluation.flags.length" class="mb-3">
+        <p class="mb-1">
+          <strong class="text-danger">{{ $t('crea.flags') }}</strong>
+        </p>
+        <ul class="mb-0">
+          <li v-for="flag in evaluation.flags" :key="flag" class="text-danger">
+            <template v-if="flag === 'discrepancy_recomputed'">
+              {{ $t('crea.flags_map.discrepancy_recomputed') }}
+            </template>
+            <template v-else-if="flag === 'anrede_unsicher'">
+              {{ $t('crea.flags_map.anrede_unsicher') }}
+            </template>
+            <template v-else>{{ flag }}</template>
+          </li>
+        </ul>
+      </div>
+
+      <div v-if="evaluation.openPoints.length" class="mb-3">
+        <p class="mb-1">
+          <strong>{{ $t('crea.openPoints') }}</strong>
+        </p>
+        <ul class="mb-0">
+          <li v-for="(point, index) in evaluation.openPoints" :key="index">
+            {{ point.question }}
+            <small v-if="point.options.length" class="text-muted">
+              ({{ point.options.join(' / ') }})
+            </small>
+          </li>
+        </ul>
+      </div>
+
+      <p class="mb-1">
+        <strong>{{ $t('crea.response') }}</strong>
+      </p>
+      <BFormTextarea v-model="responseText" :rows="8" class="mb-2" />
+      <BButton variant="info" size="sm" @click="copyResponse">
+        {{ $t('crea.copy') }}
+      </BButton>
+
+      <p class="mt-3 mb-0 text-muted small">{{ $t('crea.advisoryHint') }}</p>
+    </div>
+  </BModal>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useMutation } from '@vue/apollo-composable'
+import { useI18n } from 'vue-i18n'
+import { useAppToast } from '@/composables/useToast'
+import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
+
+// Crea's evaluation modal for a single contribution (DO-4 v1 slice). Advisory
+// only: confirm/deny/send stay the existing table buttons; Crea recommends and
+// drafts a warm reply. The contribution is passed in as a prop; the evaluation
+// runs lazily when the modal is shown (anti-routine, cheaper).
+const props = defineProps({
+  contribution: {
+    type: Object,
+    default: null,
+  },
+})
+
+const { t, locale } = useI18n()
+const { toastSuccess, toastError } = useAppToast()
+
+const modalVisible = ref(false)
+const loading = ref(false)
+const inactive = ref(false)
+const errorMessage = ref('')
+const evaluation = ref(null)
+const responseText = ref('')
+
+const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)
+
+const buildInput = (contribution) => ({
+  text: contribution.memo ?? '',
+  // Only the GDD amount is on the row; the backend derives the hours (1 h = 20 GDD).
+  enteredGdd: contribution.amount != null ? Number(contribution.amount) : null,
+  // Presence of contributionRef makes the resolver persist crea_records (E-007).
+  contributionRef: String(contribution.id),
+  // Local only: fills the [ANREDE] placeholder, never forwarded to the API (E-012).
+  recipientFirstName: contribution.user?.firstName ?? null,
+  // Pseudonymous handle for the record — the user id, never a name (E-010).
+  personPseudonym: contribution.userId != null ? String(contribution.userId) : null,
+  date: contribution.contributionDate ?? null,
+  uiLanguage: locale.value,
+})
+
+const resetState = () => {
+  loading.value = false
+  inactive.value = false
+  errorMessage.value = ''
+  evaluation.value = null
+  responseText.value = ''
+}
+
+const runEvaluation = async () => {
+  if (!props.contribution) {
+    return
+  }
+  resetState()
+  loading.value = true
+  try {
+    const response = await evaluateMutation({ input: buildInput(props.contribution) })
+    evaluation.value = response.data.creaEvaluateContribution
+    responseText.value = evaluation.value.responseText
+  } catch (error) {
+    // Crea stays dormant on staging until the API key (DO-5) is set; the resolver
+    // then throws "Anthropic API is not enabled". Show a calm hint, not an error.
+    if (/not enabled/i.test(error.message)) {
+      inactive.value = true
+    } else {
+      errorMessage.value = error.message
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const verdictVariant = (verdict) => {
+  if (verdict === 'confirm') {
+    return 'success'
+  }
+  if (verdict === 'inquire') {
+    return 'warning'
+  }
+  return 'secondary'
+}
+
+const copyResponse = async () => {
+  try {
+    await navigator.clipboard.writeText(responseText.value)
+    toastSuccess(t('crea.copied'))
+  } catch {
+    toastError(t('crea.copyFailed'))
+  }
+}
+</script>
