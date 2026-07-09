@@ -23,6 +23,7 @@
     </div>
 
     <div v-else-if="evaluation">
+      <div v-if="stubPreview" class="alert alert-info">{{ $t('crea.previewBanner') }}</div>
       <p class="mb-3">
         <strong>{{ $t('crea.verdict.label') }}:</strong>
         <BBadge :variant="verdictVariant(evaluation.overallVerdict)" class="ms-2">
@@ -41,12 +42,12 @@
       </p>
       <p class="mb-3 text-break">{{ evaluation.reasoning }}</p>
 
-      <div v-if="evaluation.flags.length" class="mb-3">
+      <div v-if="visibleFlags.length" class="mb-3">
         <p class="mb-1">
           <strong class="text-danger">{{ $t('crea.flags') }}</strong>
         </p>
         <ul class="mb-0">
-          <li v-for="flag in evaluation.flags" :key="flag" class="text-danger">
+          <li v-for="flag in visibleFlags" :key="flag" class="text-danger">
             <template v-if="flag === 'discrepancy_recomputed'">
               {{ $t('crea.flags_map.discrepancy_recomputed') }}
             </template>
@@ -80,17 +81,40 @@
         {{ $t('crea.copy') }}
       </BButton>
 
+      <div class="mt-3">
+        <p class="mb-1">
+          <strong>{{ $t('crea.signature') }}</strong>
+        </p>
+        <BFormTextarea
+          v-model="moderatorSignature"
+          :rows="2"
+          :placeholder="$t('crea.signaturePlaceholder')"
+          class="mb-2"
+        />
+        <BButton variant="secondary" size="sm" @click="runEvaluation">
+          {{ $t('crea.regenerate') }}
+        </BButton>
+        <p class="mt-1 mb-0 text-muted small">{{ $t('crea.signatureHint') }}</p>
+      </div>
+
       <p class="mt-3 mb-0 text-muted small">{{ $t('crea.advisoryHint') }}</p>
     </div>
   </BModal>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useMutation } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
 import { useAppToast } from '@/composables/useToast'
 import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
+
+// Preview flag the backend stub carries so the modal shows a "no AI" banner and
+// hides it from the red review flags.
+const STUB_PREVIEW_FLAG = 'stub_preview'
+// The moderator's signature is kept in the browser for the v1 preview; the
+// persistent per-moderator field is a later step.
+const SIGNATURE_STORAGE_KEY = 'crea.moderatorSignature'
 
 // Crea's evaluation modal for a single contribution (DO-4 v1 slice). Advisory
 // only: confirm/deny/send stay the existing table buttons; Crea recommends and
@@ -113,6 +137,27 @@ const errorMessage = ref('')
 const evaluation = ref(null)
 const responseText = ref('')
 
+const loadSignature = () => {
+  try {
+    return localStorage.getItem(SIGNATURE_STORAGE_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+const moderatorSignature = ref(loadSignature())
+watch(moderatorSignature, (value) => {
+  try {
+    localStorage.setItem(SIGNATURE_STORAGE_KEY, value)
+  } catch {
+    // ignore storage failures (private mode etc.)
+  }
+})
+
+const stubPreview = computed(() => evaluation.value?.flags?.includes(STUB_PREVIEW_FLAG) ?? false)
+const visibleFlags = computed(() =>
+  (evaluation.value?.flags ?? []).filter((flag) => flag !== STUB_PREVIEW_FLAG),
+)
+
 const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)
 
 const buildInput = (contribution) => ({
@@ -125,6 +170,8 @@ const buildInput = (contribution) => ({
   recipientFirstName: contribution.user?.firstName ?? null,
   // Pseudonymous handle for the record — the user id, never a name (E-010).
   personPseudonym: contribution.userId != null ? String(contribution.userId) : null,
+  // Fills the [SIGNATUR] placeholder locally; the moderator's name never reaches the API (E-013).
+  moderatorSignature: moderatorSignature.value || null,
   date: contribution.contributionDate ?? null,
   uiLanguage: locale.value,
 })

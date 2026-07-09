@@ -119,6 +119,10 @@ const anthropic = {
   ANTHROPIC_ACTIVE: process.env.ANTHROPIC_ACTIVE === 'true' || false,
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ?? '',
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-5',
+  // FORK/STAGING PREVIEW: default ON so Crea's UI/DB path is explorable without a
+  // key (returns a canned evaluation, no API call — only reached when no key is
+  // set). The main-repo PR must default this to `=== 'true' || false`.
+  CREA_STUB: process.env.CREA_STUB !== 'false',
 }
 
 export const CONFIG = {

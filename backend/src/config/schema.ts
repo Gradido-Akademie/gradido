@@ -232,6 +232,12 @@ export const schema = Joi.object({
       'Claude model id for Crea (production floor claude-sonnet-5; claude-opus-4-8 for hard cases)',
     ),
 
+  CREA_STUB: Joi.boolean()
+    .default(false)
+    .description(
+      'FORK/STAGING PREVIEW ONLY: when Crea has no API key, return a canned evaluation (no API call) so the UI/DB/deterministics are testable without a key. The main-repo PR must keep this false.',
+    ),
+
   USE_CRYPTO_WORKER: Joi.boolean()
     .default(false)
     .description(

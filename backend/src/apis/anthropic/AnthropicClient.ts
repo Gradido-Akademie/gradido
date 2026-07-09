@@ -5,15 +5,13 @@ import { LOG4JS_BASE_CATEGORY_NAME } from '@/config/const'
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
 import type { CreaEvaluation } from '@/graphql/model/CreaEvaluation'
 import {
-  buildSalutation,
-  computeDiscrepancy,
   resolveEnteredGdd,
   resolveEnteredHours,
   SALUTATION_PLACEHOLDER,
   SIGNATURE_PLACEHOLDER,
-  sumActivityHours,
 } from './crea/deterministics'
 import { CREA_OUTPUT_SCHEMA } from './crea/outputSchema'
+import { applyCreaDeterministics } from './crea/postprocess'
 import { buildCreaSystemPrompt } from './crea/ruleset'
 
 const logger = getLogger(`${LOG4JS_BASE_CATEGORY_NAME}.apis.anthropic.AnthropicClient`)
@@ -77,49 +75,10 @@ export class AnthropicClient {
     )
 
     const evaluation = JSON.parse(this.firstTextBlock(message)) as CreaEvaluation
-    return this.applyDeterministics(input, evaluation)
-  }
-
-  /**
-   * Layer-3 post-check (design docs `G` ch. 5, E-012): the code owns the
-   * discrepancy flag. It recomputes the direction-aware discrepancy from Crea's
-   * extracted activity hours versus the entered hours and overwrites whatever
-   * the model proposed. A divergence is flagged (`discrepancy_recomputed`) so
-   * the UI can surface it to the moderator (E-005); the verdict and response
-   * text stay as Crea wrote them (no silent prose/flag mismatch).
-   */
-  private applyDeterministics(
-    input: CreaContributionInput,
-    evaluation: CreaEvaluation,
-  ): CreaEvaluation {
-    const enteredHours = resolveEnteredHours(input)
-    const extractedHours = sumActivityHours(evaluation)
-    const authoritative = computeDiscrepancy(extractedHours, enteredHours, input.memberStatus)
-    if (authoritative !== evaluation.discrepancy) {
-      logger.info(
-        `crea discrepancy corrected: model=${evaluation.discrepancy} code=${authoritative} (extracted=${extractedHours ?? 'n/a'} entered=${enteredHours ?? 'n/a'})`,
-      )
-      evaluation.flags = [...(evaluation.flags ?? []), 'discrepancy_recomputed']
-    }
-    evaluation.discrepancy = authoritative
-
-    // Fill the [ANREDE] placeholder locally so the recipient's name never
-    // reaches the API; flag an uncertain salutation for the moderator (E-005).
-    const { salutation, uncertain } = buildSalutation(input.recipientFirstName, input.salutation)
-    evaluation.responseText = evaluation.responseText.split(SALUTATION_PLACEHOLDER).join(salutation)
-    if (uncertain) {
-      evaluation.flags = [...(evaluation.flags ?? []), 'anrede_unsicher']
-    }
-
-    // Fill the [SIGNATUR] placeholder with the moderator's own greeting (E-013);
-    // the moderator's name never reaches the API. Left in place when unset so the
-    // moderator notices and configures it once (DO-4).
-    if (input.moderatorSignature) {
-      evaluation.responseText = evaluation.responseText
-        .split(SIGNATURE_PLACEHOLDER)
-        .join(input.moderatorSignature)
-    }
-    return evaluation
+    // Layer-3 post-processing (authoritative discrepancy + local [ANREDE] /
+    // [SIGNATUR] fill) is shared with the stub preview so both paths behave
+    // identically (E-012 / E-013).
+    return applyCreaDeterministics(input, evaluation)
   }
 
   private firstTextBlock(message: Anthropic.Message): string {

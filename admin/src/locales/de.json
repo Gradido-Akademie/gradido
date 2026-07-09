@@ -78,8 +78,13 @@
     "inactive": "Crea ist noch nicht aktiv – der API-Schlüssel fehlt (wird separat eingerichtet).",
     "loading": "Crea liest den Beitrag …",
     "openPoints": "Offene Punkte",
+    "previewBanner": "Vorschau ohne KI-Verbindung – ein Beispiel-Ergebnis. Optik, Datenbank und Anrede/Signatur sind echt.",
     "reasoning": "Begründung",
+    "regenerate": "Vorschlag neu erzeugen",
     "response": "Antwortvorschlag",
+    "signature": "Deine Signatur",
+    "signatureHint": "Wird in Deinem Browser gespeichert (Vorschau). Dauerhafte Speicherung folgt.",
+    "signaturePlaceholder": "z. B. Herzliche Grüße, Bernd 😊",
     "title": "Creas Einschätzung",
     "verdict": {
       "confirm": "Bestätigen empfohlen",
