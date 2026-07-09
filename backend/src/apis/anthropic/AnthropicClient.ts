@@ -4,6 +4,14 @@ import { CONFIG } from '@/config'
 import { LOG4JS_BASE_CATEGORY_NAME } from '@/config/const'
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
 import type { CreaEvaluation } from '@/graphql/model/CreaEvaluation'
+import {
+  buildSalutation,
+  computeDiscrepancy,
+  resolveEnteredGdd,
+  resolveEnteredHours,
+  SALUTATION_PLACEHOLDER,
+  sumActivityHours,
+} from './crea/deterministics'
 import { CREA_OUTPUT_SCHEMA } from './crea/outputSchema'
 import { buildCreaSystemPrompt } from './crea/ruleset'
 
@@ -67,7 +75,41 @@ export class AnthropicClient {
       `crea usage: input=${message.usage.input_tokens} cacheRead=${message.usage.cache_read_input_tokens} cacheWrite=${message.usage.cache_creation_input_tokens} output=${message.usage.output_tokens}`,
     )
 
-    return JSON.parse(this.firstTextBlock(message)) as CreaEvaluation
+    const evaluation = JSON.parse(this.firstTextBlock(message)) as CreaEvaluation
+    return this.applyDeterministics(input, evaluation)
+  }
+
+  /**
+   * Layer-3 post-check (design docs `G` ch. 5, E-012): the code owns the
+   * discrepancy flag. It recomputes the direction-aware discrepancy from Crea's
+   * extracted activity hours versus the entered hours and overwrites whatever
+   * the model proposed. A divergence is flagged (`discrepancy_recomputed`) so
+   * the UI can surface it to the moderator (E-005); the verdict and response
+   * text stay as Crea wrote them (no silent prose/flag mismatch).
+   */
+  private applyDeterministics(
+    input: CreaContributionInput,
+    evaluation: CreaEvaluation,
+  ): CreaEvaluation {
+    const enteredHours = resolveEnteredHours(input)
+    const extractedHours = sumActivityHours(evaluation)
+    const authoritative = computeDiscrepancy(extractedHours, enteredHours, input.memberStatus)
+    if (authoritative !== evaluation.discrepancy) {
+      logger.info(
+        `crea discrepancy corrected: model=${evaluation.discrepancy} code=${authoritative} (extracted=${extractedHours ?? 'n/a'} entered=${enteredHours ?? 'n/a'})`,
+      )
+      evaluation.flags = [...(evaluation.flags ?? []), 'discrepancy_recomputed']
+    }
+    evaluation.discrepancy = authoritative
+
+    // Fill the [ANREDE] placeholder locally so the recipient's name never
+    // reaches the API; flag an uncertain salutation for the moderator (E-005).
+    const { salutation, uncertain } = buildSalutation(input.recipientFirstName, input.salutation)
+    evaluation.responseText = evaluation.responseText.split(SALUTATION_PLACEHOLDER).join(salutation)
+    if (uncertain) {
+      evaluation.flags = [...(evaluation.flags ?? []), 'anrede_unsicher']
+    }
+    return evaluation
   }
 
   private firstTextBlock(message: Anthropic.Message): string {
@@ -87,11 +129,14 @@ export class AnthropicClient {
       '',
       '## Fakten aus dem System',
     ]
-    if (input.enteredHours != null) {
-      lines.push(`- Eingetragene Stunden (dieser Beitrag): ${input.enteredHours}`)
+    // The code supplies both figures (1 h = 20 GDD); Crea never back-calculates.
+    const enteredHours = resolveEnteredHours(input)
+    const enteredGdd = resolveEnteredGdd(input)
+    if (enteredHours != null) {
+      lines.push(`- Eingetragene Stunden (dieser Beitrag): ${enteredHours}`)
     }
-    if (input.enteredGdd != null) {
-      lines.push(`- Eingetragener GDD-Betrag (dieser Beitrag): ${input.enteredGdd}`)
+    if (enteredGdd != null) {
+      lines.push(`- Eingetragener GDD-Betrag (dieser Beitrag): ${enteredGdd}`)
     }
     if (input.monthlyHours != null) {
       lines.push(
@@ -101,11 +146,9 @@ export class AnthropicClient {
     if (input.memberStatus) {
       lines.push(`- Mitglieds-Status: ${input.memberStatus}`)
     }
-    if (input.salutation) {
-      lines.push(`- Anrede: ${input.salutation}`)
-    } else {
-      lines.push('- Anrede: unbekannt (Flag anrede_unsicher setzen)')
-    }
+    lines.push(
+      `- Anrede: mit dem Platzhalter ${SALUTATION_PLACEHOLDER} beginnen (der Code fuellt den Namen lokal ein)`,
+    )
     lines.push(`- Moderatorname: ${input.moderatorName ?? '[Moderatorname]'}`)
     if (input.date) {
       lines.push(`- Datum: ${input.date}`)

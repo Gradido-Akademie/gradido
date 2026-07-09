@@ -31,6 +31,14 @@ export class CreaContributionInput {
   @IsString()
   memberStatus?: string | null
 
+  // The recipient's first name — used ONLY locally to build the salutation and
+  // fill the [ANREDE] placeholder; never forwarded to the Anthropic API (PII
+  // stays local, E-012). `salutation` below is an optional pre-built override.
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  recipientFirstName?: string | null
+
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
