@@ -32,6 +32,7 @@
               v-model="form.text"
               :placeholder="$t('contributionLink.memo')"
               rows="3"
+              @keydown="onTextKeydown"
             />
           </BTab>
           <BTab>
@@ -46,6 +47,7 @@
               v-model="form.text"
               :placeholder="$t('moderator.notice')"
               rows="3"
+              @keydown="onTextKeydown"
             />
           </BTab>
           <BTab>
@@ -60,6 +62,7 @@
               v-model="form.memo"
               :placeholder="$t('contributionLink.memo')"
               rows="3"
+              @keydown="onMemoKeydown"
             />
           </BTab>
         </BTabs>
@@ -94,6 +97,7 @@ import TimePicker from '@/components/input/TimePicker'
 import { adminCreateContributionMessage } from '@/graphql/adminCreateContributionMessage'
 import { adminUpdateContribution } from '@/graphql/adminUpdateContribution'
 import { useAppToast } from '@/composables/useToast'
+import { useBoldShortcut } from '@/composables/useBoldShortcut'
 
 const props = defineProps({
   contributionId: {
@@ -130,6 +134,20 @@ const form = ref({
   memo: props.contributionMemo,
 })
 const loading = ref(false)
+
+// Cmd/Ctrl+B bold shortcut for the moderator message fields (rendered on display).
+const { onKeydown: onTextKeydown } = useBoldShortcut(
+  () => form.value.text,
+  (value) => {
+    form.value.text = value
+  },
+)
+const { onKeydown: onMemoKeydown } = useBoldShortcut(
+  () => form.value.memo,
+  (value) => {
+    form.value.memo = value
+  },
+)
 
 const localInputResubmissionDate = props.inputResubmissionDate
   ? new Date(props.inputResubmissionDate)

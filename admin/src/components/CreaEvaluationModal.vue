@@ -76,7 +76,7 @@
       <p class="mb-1">
         <strong>{{ $t('crea.response') }}</strong>
       </p>
-      <BFormTextarea v-model="responseText" :rows="8" class="mb-2" />
+      <BFormTextarea v-model="responseText" :rows="8" class="mb-2" @keydown="onResponseKeydown" />
       <BButton variant="info" size="sm" @click="copyResponse">
         {{ $t('crea.copy') }}
       </BButton>
@@ -108,6 +108,7 @@ import { useMutation } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
 import { useAppToast } from '@/composables/useToast'
 import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
+import { useBoldShortcut } from '@/composables/useBoldShortcut'
 
 // Preview flag the backend stub carries so the modal shows a "no AI" banner and
 // hides it from the red review flags.
@@ -144,6 +145,15 @@ const rawResponseText = ref('')
 
 const applySignature = (text, signature) =>
   signature ? text.split(SIGNATURE_PLACEHOLDER).join(signature) : text
+
+// Cmd/Ctrl+B wraps the selected text in ** so the moderator gets the familiar
+// bold shortcut in the editable draft (rendered bold once the reply is sent).
+const { onKeydown: onResponseKeydown } = useBoldShortcut(
+  () => responseText.value,
+  (value) => {
+    responseText.value = value
+  },
+)
 
 const loadSignature = () => {
   try {

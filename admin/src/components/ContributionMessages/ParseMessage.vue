@@ -10,7 +10,7 @@
         <br />
         {{ `${$n(Number(text), 'decimal')} GDD` }}
       </span>
-      <span v-else>{{ text }}</span>
+      <span v-else v-html="renderBold(text)"></span>
     </span>
   </div>
 </template>
@@ -52,6 +52,15 @@ export default {
       if (string.length > 0) linkified.push({ type: 'text', text: string })
       if (amount) linkified.push({ type: 'amount', text: amount })
       return linkified
+    },
+  },
+  methods: {
+    // Render a minimal, safe subset of markdown: **bold**. The text is
+    // HTML-escaped first, then only the bold markers become <strong>, so a
+    // message can never inject markup (messages come from users too).
+    renderBold(text) {
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     },
   },
 }

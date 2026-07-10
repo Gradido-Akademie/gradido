@@ -27,8 +27,8 @@ export function buildStubEvaluation(input: CreaContributionInput): CreaEvaluatio
     : 'Vorschau ohne KI: ein Beispiel-Ergebnis zum Testen der Oberflaeche, der Datenbank und der Anrede-/Signatur-Logik. Sobald der KI-Schluessel gesetzt ist, steht hier Creas echte Begruendung.'
 
   const body = isEn
-    ? 'thank you very much for your contribution to the common good. (This is a preview reply — the real wording will come from Crea once the AI is connected.)'
-    : 'vielen Dank fuer Deinen Gemeinwohl-Beitrag. (Dies ist ein Vorschau-Text — die echte Formulierung kommt von Crea, sobald die KI verbunden ist.)'
+    ? 'thank you very much for **your valuable contribution to the common good**. (This is a preview reply — the real wording will come from Crea once the AI is connected.)'
+    : 'vielen Dank fuer **Deinen wertvollen Gemeinwohl-Beitrag**. (Dies ist ein Vorschau-Text — die echte Formulierung kommt von Crea, sobald die KI verbunden ist.)'
 
   const raw: CreaEvaluation = {
     beitragRef: input.contributionRef ?? '',
