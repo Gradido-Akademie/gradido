@@ -83,7 +83,7 @@
     "regenerate": "Regenerate suggestion",
     "response": "Suggested reply",
     "signature": "Your signature",
-    "signatureHint": "Saved in your browser (preview). Persistent storage will follow.",
+    "signatureHint": "Saved in your browser and added to the end of the reply automatically.",
     "signaturePlaceholder": "e.g. Warm regards, Bernd 😊",
     "title": "Crea's assessment",
     "verdict": {

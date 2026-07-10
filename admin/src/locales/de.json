@@ -83,7 +83,7 @@
     "regenerate": "Vorschlag neu erzeugen",
     "response": "Antwortvorschlag",
     "signature": "Deine Signatur",
-    "signatureHint": "Wird in Deinem Browser gespeichert (Vorschau). Dauerhafte Speicherung folgt.",
+    "signatureHint": "Wird in Deinem Browser gespeichert und automatisch ans Ende des Vorschlags gesetzt.",
     "signaturePlaceholder": "z. B. Herzliche Grüße, Bernd 😊",
     "title": "Creas Einschätzung",
     "verdict": {

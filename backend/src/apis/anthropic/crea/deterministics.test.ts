@@ -79,13 +79,13 @@ describe('crea deterministics — salutation (PII stays local)', () => {
     expect(buildSalutation('Jürgen')).toEqual({ salutation: 'Lieber Jürgen', uncertain: false })
   })
 
-  it('keeps an ambiguous name but flags it uncertain for the moderator', () => {
-    expect(buildSalutation('Kim')).toEqual({ salutation: 'Liebe Kim', uncertain: true })
+  it('keeps an ambiguous name but defaults to the neutral "Hallo" and flags it (E-014)', () => {
+    expect(buildSalutation('Kim')).toEqual({ salutation: 'Hallo Kim', uncertain: true })
   })
 
-  it('falls back to a neutral salutation with no name', () => {
-    expect(buildSalutation(null)).toEqual({ salutation: 'Liebe', uncertain: true })
-    expect(buildSalutation('')).toEqual({ salutation: 'Liebe', uncertain: true })
+  it('falls back to the neutral "Hallo" with no name', () => {
+    expect(buildSalutation(null)).toEqual({ salutation: 'Hallo', uncertain: true })
+    expect(buildSalutation('')).toEqual({ salutation: 'Hallo', uncertain: true })
   })
 
   it('lets an explicit override win over the heuristic', () => {

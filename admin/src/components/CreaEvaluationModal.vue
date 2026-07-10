@@ -112,9 +112,11 @@ import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
 // Preview flag the backend stub carries so the modal shows a "no AI" banner and
 // hides it from the red review flags.
 const STUB_PREVIEW_FLAG = 'stub_preview'
-// The moderator's signature is kept in the browser for the v1 preview; the
-// persistent per-moderator field is a later step.
+// The moderator's signature lives only in the browser (E-014 — no DB field). It is
+// filled into the reply locally, so the moderator's name never reaches the server.
 const SIGNATURE_STORAGE_KEY = 'crea.moderatorSignature'
+// The placeholder Crea closes its reply with; filled in locally with the signature.
+const SIGNATURE_PLACEHOLDER = '[SIGNATUR]'
 
 // Crea's evaluation modal for a single contribution (DO-4 v1 slice). Advisory
 // only: confirm/deny/send stay the existing table buttons; Crea recommends and
@@ -136,6 +138,12 @@ const inactive = ref(false)
 const errorMessage = ref('')
 const evaluation = ref(null)
 const responseText = ref('')
+// The backend reply still carries the [SIGNATUR] placeholder; the signature is
+// filled in locally and reactively, so it appears the moment it is entered or changed.
+const rawResponseText = ref('')
+
+const applySignature = (text, signature) =>
+  signature ? text.split(SIGNATURE_PLACEHOLDER).join(signature) : text
 
 const loadSignature = () => {
   try {
@@ -145,11 +153,15 @@ const loadSignature = () => {
   }
 }
 const moderatorSignature = ref(loadSignature())
-watch(moderatorSignature, (value) => {
+watch(moderatorSignature, (value, previous) => {
   try {
     localStorage.setItem(SIGNATURE_STORAGE_KEY, value)
   } catch {
     // ignore storage failures (private mode etc.)
+  }
+  // Keep the draft's signature in sync as long as the moderator hasn't hand-edited it.
+  if (evaluation.value && responseText.value === applySignature(rawResponseText.value, previous)) {
+    responseText.value = applySignature(rawResponseText.value, value)
   }
 })
 
@@ -170,8 +182,6 @@ const buildInput = (contribution) => ({
   recipientFirstName: contribution.user?.firstName ?? null,
   // Pseudonymous handle for the record — the user id, never a name (E-010).
   personPseudonym: contribution.userId != null ? String(contribution.userId) : null,
-  // Fills the [SIGNATUR] placeholder locally; the moderator's name never reaches the API (E-013).
-  moderatorSignature: moderatorSignature.value || null,
   date: contribution.contributionDate ?? null,
   uiLanguage: locale.value,
 })
@@ -182,6 +192,7 @@ const resetState = () => {
   errorMessage.value = ''
   evaluation.value = null
   responseText.value = ''
+  rawResponseText.value = ''
 }
 
 const runEvaluation = async () => {
@@ -193,7 +204,8 @@ const runEvaluation = async () => {
   try {
     const response = await evaluateMutation({ input: buildInput(props.contribution) })
     evaluation.value = response.data.creaEvaluateContribution
-    responseText.value = evaluation.value.responseText
+    rawResponseText.value = evaluation.value.responseText
+    responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
   } catch (error) {
     // Crea stays dormant on staging until the API key (DO-5) is set; the resolver
     // then throws "Anthropic API is not enabled". Show a calm hint, not an error.

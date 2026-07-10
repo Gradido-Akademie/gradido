@@ -80,7 +80,7 @@ export function buildSalutation(
   }
   const name = firstName?.trim()
   if (!name) {
-    return { salutation: 'Liebe', uncertain: true }
+    return { salutation: 'Hallo', uncertain: true }
   }
   const gender = guessGender(name)
   if (gender === 'male') {
@@ -89,8 +89,9 @@ export function buildSalutation(
   if (gender === 'female') {
     return { salutation: `Liebe ${name}`, uncertain: false }
   }
-  // Name known, gender not: keep the name, default to "Liebe", flag for review.
-  return { salutation: `Liebe ${name}`, uncertain: true }
+  // Name known, gender not: keep the name, default to the neutral "Hallo", flag
+  // for review — never a risky "Liebe/Lieber" guess (E-014).
+  return { salutation: `Hallo ${name}`, uncertain: true }
 }
 
 function isNoHoursInquiryStatus(memberStatus?: string | null): boolean {
