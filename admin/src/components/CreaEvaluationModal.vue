@@ -73,16 +73,59 @@
         </ul>
       </div>
 
+      <!-- Your decision (E-017): Crea's own recommendation is preselected, so
+           "follow" means leaving it. Switching is pure UI state and costs nothing;
+           only "write for my decision" (shown when you deviate) calls Crea again. -->
+      <div class="mb-3">
+        <p class="mb-1">
+          <strong>{{ $t('crea.deviation') }}</strong>
+        </p>
+        <div class="btn-group" role="group">
+          <BButton
+            :variant="chosenDecision === 'confirm' ? 'success' : 'outline-success'"
+            size="sm"
+            @click="chosenDecision = 'confirm'"
+          >
+            {{ $t('crea.decision.confirm') }}
+          </BButton>
+          <BButton
+            :variant="chosenDecision === 'inquire' ? 'warning' : 'outline-warning'"
+            size="sm"
+            @click="chosenDecision = 'inquire'"
+          >
+            {{ $t('crea.decision.inquire') }}
+          </BButton>
+          <BButton
+            :variant="chosenDecision === 'deny' ? 'danger' : 'outline-danger'"
+            size="sm"
+            @click="chosenDecision = 'deny'"
+          >
+            {{ $t('crea.decision.deny') }}
+          </BButton>
+        </div>
+
+        <div v-if="isDeviation" class="mt-2">
+          <BFormTextarea
+            v-model="moderatorContext"
+            :rows="2"
+            :placeholder="$t('crea.contextPlaceholder')"
+            class="mb-2"
+          />
+          <BButton variant="primary" size="sm" :disabled="rewriting" @click="rewriteForDecision">
+            <BSpinner v-if="rewriting" small class="me-1" />
+            {{ $t('crea.rewrite') }}
+          </BButton>
+          <p class="mt-1 mb-0 text-muted small">{{ $t('crea.contextLabel') }}</p>
+        </div>
+      </div>
+
       <p class="mb-1">
         <strong>{{ $t('crea.response') }}</strong>
       </p>
       <BFormTextarea v-model="responseText" :rows="16" class="mb-2" @keydown="onResponseKeydown" />
-      <!-- Both actions belong to the draft above, so they sit on one line right below
-           it. The hint further down explains the signature field, not these buttons. -->
-      <div class="d-flex justify-content-between">
-        <BButton variant="secondary" size="sm" @click="runEvaluation">
-          {{ $t('crea.regenerate') }}
-        </BButton>
+      <!-- A new draft comes only from a deviation (the decision buttons above), not
+           from a context-free "regenerate" (E-017). So just the copy action here. -->
+      <div class="d-flex justify-content-end">
         <BButton variant="info" size="sm" @click="copyResponse">
           {{ $t('crea.copy') }}
         </BButton>
@@ -112,6 +155,7 @@ import { useMutation } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
 import { useAppToast } from '@/composables/useToast'
 import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
+import { creaRewriteResponse } from '@/graphql/creaRewriteResponse'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
 
 // Preview flag the backend stub carries so the modal shows a "no AI" banner and
@@ -146,6 +190,12 @@ const responseText = ref('')
 // The backend reply still carries the [SIGNATUR] placeholder; the signature is
 // filled in locally and reactively, so it appears the moment it is entered or changed.
 const rawResponseText = ref('')
+// The moderator's chosen outcome (E-017). Preselected to Crea's own recommendation
+// when the evaluation arrives, so "follow" = leave it. Pure UI state until the
+// moderator hits "write for my decision".
+const chosenDecision = ref(null)
+const moderatorContext = ref('')
+const rewriting = ref(false)
 
 const applySignature = (text, signature) =>
   signature ? text.split(SIGNATURE_PLACEHOLDER).join(signature) : text
@@ -183,8 +233,13 @@ const stubPreview = computed(() => evaluation.value?.flags?.includes(STUB_PREVIE
 const visibleFlags = computed(() =>
   (evaluation.value?.flags ?? []).filter((flag) => flag !== STUB_PREVIEW_FLAG),
 )
+// The moderator has picked an outcome other than Crea's recommendation.
+const isDeviation = computed(
+  () => evaluation.value != null && chosenDecision.value !== evaluation.value.overallVerdict,
+)
 
 const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)
+const { mutate: rewriteMutation } = useMutation(creaRewriteResponse)
 
 const buildInput = (contribution) => ({
   text: contribution.memo ?? '',
@@ -207,6 +262,9 @@ const resetState = () => {
   evaluation.value = null
   responseText.value = ''
   rawResponseText.value = ''
+  chosenDecision.value = null
+  moderatorContext.value = ''
+  rewriting.value = false
 }
 
 const runEvaluation = async () => {
@@ -220,6 +278,9 @@ const runEvaluation = async () => {
     evaluation.value = response.data.creaEvaluateContribution
     rawResponseText.value = evaluation.value.responseText
     responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
+    // Preselect Crea's own recommendation, so switching away = deviating.
+    chosenDecision.value = evaluation.value.overallVerdict
+    moderatorContext.value = ''
   } catch (error) {
     // Crea stays dormant on staging until the API key (DO-5) is set; the resolver
     // then throws "Anthropic API is not enabled". Show a calm hint, not an error.
@@ -230,6 +291,32 @@ const runEvaluation = async () => {
     }
   } finally {
     loading.value = false
+  }
+}
+
+// The moderator deviated: ask Crea for a fresh reply text for the chosen outcome
+// (+ optional context). Only the reply text changes — Crea's frozen assessment
+// (badge, reasoning, open points) stays put, so `rewriting` is separate from
+// `loading` (which would hide that whole block). Does not persist (E-017).
+const rewriteForDecision = async () => {
+  if (!props.contribution || !isDeviation.value) {
+    return
+  }
+  rewriting.value = true
+  try {
+    const response = await rewriteMutation({
+      input: {
+        ...buildInput(props.contribution),
+        moderatorDecision: chosenDecision.value,
+        moderatorContext: moderatorContext.value.trim() || null,
+      },
+    })
+    rawResponseText.value = response.data.creaRewriteResponse
+    responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
+  } catch (error) {
+    toastError(error.message)
+  } finally {
+    rewriting.value = false
   }
 }
 

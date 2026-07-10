@@ -67,9 +67,17 @@
     "advisoryHint": "Crea berät nur – Bestätigen, Ablehnen und Senden bleiben Deine Entscheidung.",
     "close": "Schließen",
     "column": "Crea",
+    "contextLabel": "Zusatzinfo für Crea (optional)",
+    "contextPlaceholder": "z. B. Ich kenne diese Person und ihren Beitrag genauer.",
     "copied": "Antwort kopiert",
     "copy": "Antwort kopieren",
     "copyFailed": "Kopieren fehlgeschlagen",
+    "decision": {
+      "confirm": "Bestätigen",
+      "deny": "Ablehnen",
+      "inquire": "Rückfrage"
+    },
+    "deviation": "Deine Entscheidung",
     "flags": "Bitte prüfen",
     "flags_map": {
       "anrede_unsicher": "Anrede unsicher – bitte prüfen",
@@ -80,8 +88,8 @@
     "openPoints": "Offene Punkte",
     "previewBanner": "Vorschau ohne KI-Verbindung – ein Beispiel-Ergebnis. Optik, Datenbank und Anrede/Signatur sind echt.",
     "reasoning": "Begründung",
-    "regenerate": "Vorschlag neu erzeugen",
     "response": "Antwortvorschlag",
+    "rewrite": "Für meine Entscheidung schreiben",
     "signature": "Deine Signatur",
     "signatureHint": "Wird in Deinem Browser gespeichert und automatisch ans Ende des Vorschlags gesetzt.",
     "signaturePlaceholder": "z. B. Herzliche Grüße, Bernd 😊",
