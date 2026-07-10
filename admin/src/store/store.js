@@ -27,7 +27,13 @@ export const actions = {
   logout: ({ commit, state }) => {
     commit('token', null)
     commit('moderator', null)
+    // Preserve the moderator's Crea signature across logout (E-014: browser-only,
+    // no DB field) — a full clear() would otherwise wipe it on every logout.
+    const creaSignature = window.localStorage.getItem('crea.moderatorSignature')
     window.localStorage.clear()
+    if (creaSignature !== null) {
+      window.localStorage.setItem('crea.moderatorSignature', creaSignature)
+    }
   },
 }
 

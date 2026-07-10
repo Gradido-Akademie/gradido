@@ -3,7 +3,7 @@
     <small class="ps-2 pt-3">{{ $t('form.reply') }}</small>
     <div>
       <BForm @submit.prevent="onSubmit" @reset="onReset">
-        <BFormTextarea id="textarea" v-model="formText" :placeholder="$t('form.memo')" :rows="3" />
+        <BFormTextarea id="textarea" v-model="formText" :placeholder="$t('form.memo')" :rows="8" />
         <BRow class="mt-4 mb-4">
           <BCol>
             <BButton type="reset" variant="secondary">{{ $t('form.cancel') }}</BButton>

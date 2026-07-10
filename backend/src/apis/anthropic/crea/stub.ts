@@ -24,11 +24,11 @@ export function buildStubEvaluation(input: CreaContributionInput): CreaEvaluatio
 
   const reasoning = isEn
     ? 'Preview without AI: a sample result to test the interface, the database and the salutation/signature handling. Once the API key is set, Crea’s real assessment appears here.'
-    : 'Vorschau ohne KI: ein Beispiel-Ergebnis zum Testen der Oberflaeche, der Datenbank und der Anrede-/Signatur-Logik. Sobald der KI-Schluessel gesetzt ist, steht hier Creas echte Begruendung.'
+    : 'Vorschau ohne KI: ein Beispiel-Ergebnis zum Testen der Oberfläche, der Datenbank und der Anrede-/Signatur-Logik. Sobald der KI-Schlüssel gesetzt ist, steht hier Creas echte Begründung.'
 
   const body = isEn
     ? 'thank you very much for **your valuable contribution to the common good**. (This is a preview reply — the real wording will come from Crea once the AI is connected.)'
-    : 'vielen Dank fuer **Deinen wertvollen Gemeinwohl-Beitrag**. (Dies ist ein Vorschau-Text — die echte Formulierung kommt von Crea, sobald die KI verbunden ist.)'
+    : 'vielen Dank für **Deinen wertvollen Gemeinwohl-Beitrag**. (Dies ist ein Vorschau-Text — die echte Formulierung kommt von Crea, sobald die KI verbunden ist.)'
 
   const raw: CreaEvaluation = {
     beitragRef: input.contributionRef ?? '',

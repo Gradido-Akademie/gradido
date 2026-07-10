@@ -31,7 +31,7 @@
               id="textarea"
               v-model="form.text"
               :placeholder="$t('contributionLink.memo')"
-              rows="3"
+              rows="8"
               @keydown="onTextKeydown"
             />
           </BTab>
@@ -46,7 +46,7 @@
               id="textarea"
               v-model="form.text"
               :placeholder="$t('moderator.notice')"
-              rows="3"
+              rows="8"
               @keydown="onTextKeydown"
             />
           </BTab>
@@ -61,7 +61,7 @@
               id="textarea"
               v-model="form.memo"
               :placeholder="$t('contributionLink.memo')"
-              rows="3"
+              rows="8"
               @keydown="onMemoKeydown"
             />
           </BTab>

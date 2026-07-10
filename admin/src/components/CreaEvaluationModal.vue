@@ -76,7 +76,7 @@
       <p class="mb-1">
         <strong>{{ $t('crea.response') }}</strong>
       </p>
-      <BFormTextarea v-model="responseText" :rows="8" class="mb-2" @keydown="onResponseKeydown" />
+      <BFormTextarea v-model="responseText" :rows="16" class="mb-2" @keydown="onResponseKeydown" />
       <BButton variant="info" size="sm" @click="copyResponse">
         {{ $t('crea.copy') }}
       </BButton>
