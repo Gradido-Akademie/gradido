@@ -6,7 +6,7 @@
     ok-only
     :ok-title="$t('crea.close')"
     :title="$t('crea.title')"
-    @shown="runEvaluation"
+    @shown="onShown"
     @hidden="resetState"
   >
     <div v-if="loading" class="text-center py-4">
@@ -76,7 +76,15 @@
       <p class="mb-1">
         <strong>{{ $t('crea.response') }}</strong>
       </p>
-      <BFormTextarea v-model="responseText" :rows="16" class="mb-2" @keydown="onResponseKeydown" />
+      <!-- min-height wins over any inherited height; `rows` alone does not take
+           effect inside the teleported modal (same issue as the matching textarea). -->
+      <BFormTextarea
+        v-model="responseText"
+        :rows="16"
+        style="min-height: 24em"
+        class="mb-2"
+        @keydown="onResponseKeydown"
+      />
       <BButton variant="info" size="sm" @click="copyResponse">
         {{ $t('crea.copy') }}
       </BButton>
@@ -227,6 +235,14 @@ const runEvaluation = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// The modal stays mounted, so re-read the signature from the browser every time
+// it opens. Reading it only once at setup meant a signature stored in an earlier
+// session (or after a re-login) never showed up without a full page reload.
+const onShown = () => {
+  moderatorSignature.value = loadSignature()
+  runEvaluation()
 }
 
 const verdictVariant = (verdict) => {

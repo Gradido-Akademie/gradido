@@ -32,6 +32,7 @@
               v-model="form.text"
               :placeholder="$t('contributionLink.memo')"
               rows="8"
+              style="min-height: 12em"
               @keydown="onTextKeydown"
             />
           </BTab>
@@ -47,6 +48,7 @@
               v-model="form.text"
               :placeholder="$t('moderator.notice')"
               rows="8"
+              style="min-height: 12em"
               @keydown="onTextKeydown"
             />
           </BTab>
@@ -62,6 +64,7 @@
               v-model="form.memo"
               :placeholder="$t('contributionLink.memo')"
               rows="8"
+              style="min-height: 12em"
               @keydown="onMemoKeydown"
             />
           </BTab>
