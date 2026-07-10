@@ -140,3 +140,16 @@ export const CREA_OUTPUT_SCHEMA = {
     'flags',
   ],
 } as const
+
+// Slim schema for the rewrite call (E-017): when the moderator deviates, Crea only
+// re-writes the reply text for the chosen outcome — it does NOT re-evaluate. So the
+// follow-up call returns just the new responseText, not the full judgement object.
+// This keeps "deny" out of the verdict enum and saves output tokens.
+export const CREA_REWRITE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    responseText: { type: 'string' },
+  },
+  required: ['responseText'],
+} as const

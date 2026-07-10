@@ -1,6 +1,6 @@
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
 import { SALUTATION_PLACEHOLDER, SIGNATURE_PLACEHOLDER } from './deterministics'
-import { buildStubEvaluation, CREA_STUB_FLAG } from './stub'
+import { buildStubEvaluation, buildStubRewrite, CREA_STUB_FLAG } from './stub'
 
 const stubInput = (over: Partial<CreaContributionInput> = {}): CreaContributionInput =>
   ({ text: 'Ich habe im Tierheim geholfen.', ...over }) as CreaContributionInput
@@ -39,5 +39,34 @@ describe('crea stub preview evaluation', () => {
     expect(result.overallVerdict).toBe('confirm')
     expect(result.activities[0].categoryKey).toBe('other')
     expect(result.activities[0].outputType).toBe('service')
+  })
+})
+
+describe('crea stub rewrite (moderator deviates, E-017)', () => {
+  it('fills the salutation and keeps the signature placeholder for the client', () => {
+    const text = buildStubRewrite(
+      stubInput({ moderatorDecision: 'confirm', recipientFirstName: 'Bernd' }),
+    )
+    expect(text).toContain('Lieber Bernd')
+    expect(text).not.toContain(SALUTATION_PLACEHOLDER)
+    expect(text).toContain(SIGNATURE_PLACEHOLDER)
+  })
+
+  it('gives a distinct reply per target decision', () => {
+    const confirm = buildStubRewrite(stubInput({ moderatorDecision: 'confirm' }))
+    const inquire = buildStubRewrite(stubInput({ moderatorDecision: 'inquire' }))
+    const deny = buildStubRewrite(stubInput({ moderatorDecision: 'deny' }))
+    expect(confirm).not.toBe(inquire)
+    expect(inquire).not.toBe(deny)
+  })
+
+  it('mentions that the hours become free again on a rejection (verified against creations.ts)', () => {
+    expect(buildStubRewrite(stubInput({ moderatorDecision: 'deny' }))).toContain('wieder frei')
+  })
+
+  it('points to the common-good page on an inquiry', () => {
+    expect(buildStubRewrite(stubInput({ moderatorDecision: 'inquire' }))).toContain(
+      'gradido.net/gemeinwohl-was-ist-das',
+    )
   })
 })

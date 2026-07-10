@@ -10,6 +10,20 @@ import {
 } from './deterministics'
 
 /**
+ * Fills the [ANREDE] placeholder locally from the recipient's first name (E-012 —
+ * PII stays local). Shared by the full evaluation, the rewrite call and the stub,
+ * so all paths build the salutation identically. Returns the filled text plus
+ * whether the salutation is uncertain (so callers can flag it, E-005).
+ */
+export function fillSalutation(
+  input: CreaContributionInput,
+  text: string,
+): { text: string; uncertain: boolean } {
+  const { salutation, uncertain } = buildSalutation(input.recipientFirstName, input.salutation)
+  return { text: text.split(SALUTATION_PLACEHOLDER).join(salutation), uncertain }
+}
+
+/**
  * Layer-3 post-processing, shared by the live Anthropic client and the stub
  * preview (design docs `G` ch. 5-6, E-009 / E-012 / E-013). The CODE owns the
  * discrepancy flag and fills the [ANREDE] / [SIGNATUR] placeholders locally, so
@@ -35,8 +49,8 @@ export function applyCreaDeterministics(
 
   // Fill [ANREDE] locally from the recipient's first name; flag an uncertain
   // salutation for the moderator (E-005).
-  const { salutation, uncertain } = buildSalutation(input.recipientFirstName, input.salutation)
-  evaluation.responseText = evaluation.responseText.split(SALUTATION_PLACEHOLDER).join(salutation)
+  const { text, uncertain } = fillSalutation(input, evaluation.responseText)
+  evaluation.responseText = text
   if (uncertain) {
     evaluation.flags = [...(evaluation.flags ?? []), 'anrede_unsicher']
   }

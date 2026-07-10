@@ -87,4 +87,21 @@ export class CreaContributionInput {
   @IsOptional()
   @IsString()
   uiLanguage?: string | null
+
+  // The moderator's target decision when deviating from Crea's own recommendation
+  // (E-017). Only set on the rewrite call (creaRewriteResponse): confirm | inquire
+  // | deny. "deny" is a moderator instruction, never one of Crea's own verdicts
+  // (E-008), so it deliberately stays out of the evaluation verdict enum.
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  moderatorDecision?: string | null
+
+  // One or two sentences the moderator adds when deviating — context Crea lacked
+  // (e.g. "these are her daily inspirational messages, freely shared"). Treated as
+  // true, feeds both the tone and the reason for the new text.
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  moderatorContext?: string | null
 }

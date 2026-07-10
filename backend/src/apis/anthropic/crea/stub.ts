@@ -5,7 +5,7 @@ import {
   SALUTATION_PLACEHOLDER,
   SIGNATURE_PLACEHOLDER,
 } from './deterministics'
-import { applyCreaDeterministics } from './postprocess'
+import { applyCreaDeterministics, fillSalutation } from './postprocess'
 
 // Flag the stub carries so the admin UI shows a clear "preview, no AI" banner
 // (E-005 — never let a canned result look like a real evaluation).
@@ -53,4 +53,32 @@ export function buildStubEvaluation(input: CreaContributionInput): CreaEvaluatio
     flags: [CREA_STUB_FLAG],
   }
   return applyCreaDeterministics(input, raw)
+}
+
+/**
+ * Canned rewrite for the staging preview (E-017): mirrors rewriteResponse without
+ * calling the API. Returns a fixed reply text for the moderator's target decision,
+ * with [ANREDE] filled locally and [SIGNATUR] left for the client. Only reached
+ * when no real client is configured (no key).
+ */
+export function buildStubRewrite(input: CreaContributionInput): string {
+  const isEn = (input.uiLanguage ?? 'de').startsWith('en')
+  const bodies = isEn
+    ? {
+        confirm:
+          'thank you so much — I will gladly credit **your contribution to the common good**.',
+        inquire:
+          'thank you for your contribution! Could you tell me a little more about it? (More on the common good: https://gradido.net/gemeinwohl-was-ist-das/)',
+        deny: 'thank you for your effort. This contribution cannot be credited this time — but the hours become free again, so you are welcome to submit new contributions.',
+      }
+    : {
+        confirm: 'vielen Dank — ich schreibe Dir **Deinen Gemeinwohl-Beitrag** sehr gerne gut.',
+        inquire:
+          'vielen Dank für Deinen Beitrag! Magst Du mir noch ein wenig mehr dazu erzählen? (Mehr zum Gemeinwohl: https://gradido.net/gemeinwohl-was-ist-das/)',
+        deny: 'danke für Deinen Einsatz. Diesen Beitrag kann ich Dir diesmal leider nicht gutschreiben — die Stunden werden dadurch aber wieder frei, und Du kannst gerne neue Beiträge einreichen.',
+      }
+  const key = (input.moderatorDecision ?? 'confirm') as keyof typeof bodies
+  const body = bodies[key] ?? bodies.confirm
+  const text = `${SALUTATION_PLACEHOLDER},\n\n${body}\n\n${SIGNATURE_PLACEHOLDER}`
+  return fillSalutation(input, text).text
 }

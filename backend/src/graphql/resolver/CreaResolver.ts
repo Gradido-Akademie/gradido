@@ -3,7 +3,7 @@ import { CreaEvaluation } from '@model/CreaEvaluation'
 import { Arg, Authorized, Mutation, Resolver } from 'type-graphql'
 import { AnthropicClient } from '@/apis/anthropic/AnthropicClient'
 import { metaFromInput, persistCreaRecords } from '@/apis/anthropic/crea/records'
-import { buildStubEvaluation } from '@/apis/anthropic/crea/stub'
+import { buildStubEvaluation, buildStubRewrite } from '@/apis/anthropic/crea/stub'
 import { RIGHTS } from '@/auth/RIGHTS'
 import { CONFIG } from '@/config'
 
@@ -31,5 +31,28 @@ export class CreaResolver {
       await persistCreaRecords(evaluation, metaFromInput(input, CONFIG.ANTHROPIC_MODEL))
     }
     return evaluation
+  }
+
+  /**
+   * Rewrites only the reply text when the moderator deviates from Crea's own
+   * recommendation (E-017): a fresh responseText for the moderator's target
+   * decision + optional context. Deliberately does NOT persist — the statistically
+   * valid record is Crea's first, uninfluenced judgement written by
+   * creaEvaluateContribution; this follow-up would otherwise double it.
+   */
+  @Authorized([RIGHTS.AI_SEND_MESSAGE])
+  @Mutation(() => String)
+  async creaRewriteResponse(@Arg('input') input: CreaContributionInput): Promise<string> {
+    if (!input.moderatorDecision) {
+      throw new Error('moderatorDecision is required to rewrite the response')
+    }
+    const client = AnthropicClient.getInstance()
+    if (client) {
+      return client.rewriteResponse(input)
+    }
+    if (CONFIG.CREA_STUB) {
+      return buildStubRewrite(input)
+    }
+    throw new Error('Anthropic API is not enabled')
   }
 }

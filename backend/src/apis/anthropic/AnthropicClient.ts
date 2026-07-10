@@ -10,9 +10,9 @@ import {
   SALUTATION_PLACEHOLDER,
   SIGNATURE_PLACEHOLDER,
 } from './crea/deterministics'
-import { CREA_OUTPUT_SCHEMA } from './crea/outputSchema'
-import { applyCreaDeterministics } from './crea/postprocess'
-import { buildCreaSystemPrompt } from './crea/ruleset'
+import { CREA_OUTPUT_SCHEMA, CREA_REWRITE_SCHEMA } from './crea/outputSchema'
+import { applyCreaDeterministics, fillSalutation } from './crea/postprocess'
+import { buildCreaSystemPrompt, moderatorDecisionLabel } from './crea/ruleset'
 
 const logger = getLogger(`${LOG4JS_BASE_CATEGORY_NAME}.apis.anthropic.AnthropicClient`)
 
@@ -81,6 +81,41 @@ export class AnthropicClient {
     return applyCreaDeterministics(input, evaluation)
   }
 
+  /**
+   * Rewrites only the reply text when the moderator deviates from Crea's own
+   * recommendation (E-017). This is NOT a second evaluation: the moderator's
+   * target decision and optional context steer a fresh responseText for that
+   * outcome. Uses the slim rewrite schema (just responseText), so "deny" stays
+   * out of the verdict enum and output stays cheap. The cached rules prefix is
+   * reused (cache read), so only the small output is billed anew. No persistence.
+   */
+  public async rewriteResponse(input: CreaContributionInput): Promise<string> {
+    const message = await this.anthropic.messages.create({
+      model: CONFIG.ANTHROPIC_MODEL,
+      max_tokens: CREA_MAX_TOKENS,
+      thinking: { type: 'disabled' },
+      system: [
+        {
+          type: 'text',
+          text: buildCreaSystemPrompt(),
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
+      messages: [{ role: 'user', content: this.buildRewriteUserMessage(input) }],
+      output_config: { format: { type: 'json_schema', schema: CREA_REWRITE_SCHEMA } },
+    })
+
+    logger.info(
+      `crea rewrite usage: input=${message.usage.input_tokens} cacheRead=${message.usage.cache_read_input_tokens} output=${message.usage.output_tokens}`,
+    )
+
+    const { responseText } = JSON.parse(this.firstTextBlock(message)) as { responseText: string }
+    // Fill [ANREDE] locally (PII stays local); [SIGNATUR] is left for the client
+    // to fill reactively (E-013 / E-014). No discrepancy recompute: the rewrite
+    // does not re-judge, it only reformulates for the chosen outcome.
+    return fillSalutation(input, responseText).text
+  }
+
   private firstTextBlock(message: Anthropic.Message): string {
     const block = message.content.find((content) => content.type === 'text')
     if (!block || block.type !== 'text') {
@@ -91,13 +126,45 @@ export class AnthropicClient {
   }
 
   private buildUserMessage(input: CreaContributionInput): string {
-    const lines: string[] = [
+    return [
       '## Aktuell zu bewerten (ein Beitrag)',
       '',
       input.text,
       '',
-      '## Fakten aus dem System',
+      ...this.systemFacts(input),
+    ].join('\n')
+  }
+
+  /**
+   * Rewrite prompt (E-017): same contribution + system facts, plus the moderator's
+   * target decision and optional context. Crea reformulates only the reply text
+   * for that outcome (rule chapter 11); it does not re-evaluate.
+   */
+  private buildRewriteUserMessage(input: CreaContributionInput): string {
+    const lines: string[] = [
+      '## Beitrag (unveraendert)',
+      '',
+      input.text,
+      '',
+      ...this.systemFacts(input),
+      '',
+      '## Moderator-Vorgabe (weicht von Deiner Empfehlung ab)',
+      `- Zielentscheidung: ${moderatorDecisionLabel(input.moderatorDecision)}`,
     ]
+    if (input.moderatorContext?.trim()) {
+      lines.push(
+        `- Zusatzinfo des Moderators (wahr, er kennt den Fall): ${input.moderatorContext.trim()}`,
+      )
+    }
+    lines.push(
+      '- Schreibe NUR den neuen Antwortvorschlag fuer diese Zielentscheidung; bewerte nicht neu.',
+    )
+    return lines.join('\n')
+  }
+
+  /** The "## Fakten aus dem System" block, shared by the evaluate and rewrite prompts. */
+  private systemFacts(input: CreaContributionInput): string[] {
+    const lines: string[] = ['## Fakten aus dem System']
     // The code supplies both figures (1 h = 20 GDD); Crea never back-calculates.
     const enteredHours = resolveEnteredHours(input)
     const enteredGdd = resolveEnteredGdd(input)
@@ -130,6 +197,6 @@ export class AnthropicClient {
     lines.push(
       `- Eingestellte Software-Sprache (fuer reasoning/appliedRule): ${input.uiLanguage ?? 'de'}`,
     )
-    return lines.join('\n')
+    return lines
   }
 }
