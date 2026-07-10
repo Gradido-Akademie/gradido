@@ -77,9 +77,16 @@
         <strong>{{ $t('crea.response') }}</strong>
       </p>
       <BFormTextarea v-model="responseText" :rows="16" class="mb-2" @keydown="onResponseKeydown" />
-      <BButton variant="info" size="sm" @click="copyResponse">
-        {{ $t('crea.copy') }}
-      </BButton>
+      <!-- Both actions belong to the draft above, so they sit on one line right below
+           it. The hint further down explains the signature field, not these buttons. -->
+      <div class="d-flex justify-content-between">
+        <BButton variant="secondary" size="sm" @click="runEvaluation">
+          {{ $t('crea.regenerate') }}
+        </BButton>
+        <BButton variant="info" size="sm" @click="copyResponse">
+          {{ $t('crea.copy') }}
+        </BButton>
+      </div>
 
       <div class="mt-3">
         <p class="mb-1">
@@ -91,9 +98,6 @@
           :placeholder="$t('crea.signaturePlaceholder')"
           class="mb-2"
         />
-        <BButton variant="secondary" size="sm" @click="runEvaluation">
-          {{ $t('crea.regenerate') }}
-        </BButton>
         <p class="mt-1 mb-0 text-muted small">{{ $t('crea.signatureHint') }}</p>
       </div>
 
