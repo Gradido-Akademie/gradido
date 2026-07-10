@@ -131,10 +131,17 @@ export const actions = {
     commit('userLocation', null)
     commit('redirectPath', '/overview')
     const themeMode = state.themeMode
+    // The admin interface is served from the same origin and therefore shares this
+    // localStorage. Its moderator signature is browser-only by design, so preserve
+    // it here too -- otherwise merely visiting the wallet wipes it.
+    const creaSignature = localStorage.getItem('crea.moderatorSignature')
     localStorage.clear()
     // localStorage.clear() wiped the persisted theme; keep the device-local
     // choice so the login page and the next session stay in the chosen theme.
     commit('setThemeMode', themeMode)
+    if (creaSignature !== null) {
+      localStorage.setItem('crea.moderatorSignature', creaSignature)
+    }
     dispatch('applyTheme')
   },
   // Compute the effective dark mode from the device-local themeMode

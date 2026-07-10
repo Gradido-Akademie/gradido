@@ -76,15 +76,7 @@
       <p class="mb-1">
         <strong>{{ $t('crea.response') }}</strong>
       </p>
-      <!-- min-height wins over any inherited height; `rows` alone does not take
-           effect inside the teleported modal (same issue as the matching textarea). -->
-      <BFormTextarea
-        v-model="responseText"
-        :rows="16"
-        style="min-height: 24em"
-        class="mb-2"
-        @keydown="onResponseKeydown"
-      />
+      <BFormTextarea v-model="responseText" :rows="16" class="mb-2" @keydown="onResponseKeydown" />
       <BButton variant="info" size="sm" @click="copyResponse">
         {{ $t('crea.copy') }}
       </BButton>

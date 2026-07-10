@@ -3,12 +3,15 @@
     <small class="ps-2 pt-3">{{ $t('form.reply') }}</small>
     <div>
       <BForm @submit.prevent="onSubmit" @reset="onReset">
+        <!-- The template's `.form-control { height: 50px }` overrides `rows` on a
+             textarea. Releasing the height lets `rows` size the field again, so the
+             reply box invites more than the two lines that 50px allowed. -->
         <BFormTextarea
           id="textarea"
           v-model="formText"
           :placeholder="$t('form.memo')"
           :rows="8"
-          style="min-height: 12em"
+          style="height: auto"
         />
         <BRow class="mt-4 mb-4">
           <BCol>

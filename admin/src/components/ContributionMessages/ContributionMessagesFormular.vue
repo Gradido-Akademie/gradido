@@ -31,8 +31,7 @@
               id="textarea"
               v-model="form.text"
               :placeholder="$t('contributionLink.memo')"
-              rows="8"
-              style="min-height: 12em"
+              rows="12"
               @keydown="onTextKeydown"
             />
           </BTab>
@@ -47,8 +46,7 @@
               id="textarea"
               v-model="form.text"
               :placeholder="$t('moderator.notice')"
-              rows="8"
-              style="min-height: 12em"
+              rows="12"
               @keydown="onTextKeydown"
             />
           </BTab>
@@ -63,8 +61,7 @@
               id="textarea"
               v-model="form.memo"
               :placeholder="$t('contributionLink.memo')"
-              rows="8"
-              style="min-height: 12em"
+              rows="12"
               @keydown="onMemoKeydown"
             />
           </BTab>

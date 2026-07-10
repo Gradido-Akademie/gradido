@@ -201,9 +201,35 @@ describe('Vuex store', () => {
         const clearStorageMock = vi.fn()
         vi.stubGlobal('localStorage', {
           clear: clearStorageMock,
+          getItem: vi.fn(() => null),
+          setItem: vi.fn(),
         })
         logout({ commit, state, dispatch })
         expect(clearStorageMock).toHaveBeenCalled()
+        vi.unstubAllGlobals()
+      })
+
+      it('restores the admin crea signature after clear()', () => {
+        const setItemMock = vi.fn()
+        vi.stubGlobal('localStorage', {
+          clear: vi.fn(),
+          getItem: vi.fn(() => 'Liebe Gruesse, Bernd'),
+          setItem: setItemMock,
+        })
+        logout({ commit, state, dispatch })
+        expect(setItemMock).toHaveBeenCalledWith('crea.moderatorSignature', 'Liebe Gruesse, Bernd')
+        vi.unstubAllGlobals()
+      })
+
+      it('writes no crea signature back when none was stored', () => {
+        const setItemMock = vi.fn()
+        vi.stubGlobal('localStorage', {
+          clear: vi.fn(),
+          getItem: vi.fn(() => null),
+          setItem: setItemMock,
+        })
+        logout({ commit, state, dispatch })
+        expect(setItemMock).not.toHaveBeenCalled()
         vi.unstubAllGlobals()
       })
     })

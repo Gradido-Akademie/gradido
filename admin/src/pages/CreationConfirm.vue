@@ -167,68 +167,80 @@ const baseFields = {
   },
 }
 
-const fields = computed(
-  () =>
+const roles = computed(() => store.state.moderator?.roles ?? [])
+const isAdmin = computed(() => roles.value.includes('ADMIN'))
+const isAiUser = computed(() => isAdmin.value || roles.value.includes('MODERATOR_AI'))
+// Who sees the Crea button: AI moderators on open contributions, administrators on
+// every tab as well, so they can test Crea against the whole pool. Plain moderators
+// hold no AI_SEND_MESSAGE right and see no button at all. This only guides the UI --
+// the resolver's @Authorized guard is what actually enforces the right.
+const showCreaColumn = computed(() => (tabIndex.value === 0 ? isAiUser.value : isAdmin.value))
+
+const fields = computed(() => {
+  const tabFields = [
+    // open contributions
     [
-      // open contributions
-      [
-        { key: 'bookmark', label: t('delete') },
-        { key: 'deny', label: t('deny') },
-        baseFields.name,
-        baseFields.amount,
-        baseFields.memo,
-        baseFields.contributionDate,
-        { key: 'creaEvaluate', label: t('crea.column') },
-        { key: 'editCreation', label: t('details') },
-        { key: 'confirm', label: t('save') },
-      ],
-      // confirmed contributions
-      [
-        baseFields.name,
-        baseFields.amount,
-        baseFields.memo,
-        baseFields.contributionDate,
-        baseFields.createdAt,
-        baseFields.closedAt,
-        { key: 'creaEvaluate', label: t('crea.column') },
-        { key: 'chatCreation', label: t('details') },
-      ],
-      // denied contributions
-      [
-        baseFields.name,
-        baseFields.amount,
-        baseFields.memo,
-        baseFields.contributionDate,
-        baseFields.createdAt,
-        baseFields.closedAt,
-        { key: 'creaEvaluate', label: t('crea.column') },
-        { key: 'chatCreation', label: t('details') },
-      ],
-      // deleted contributions
-      [
-        baseFields.name,
-        baseFields.amount,
-        baseFields.memo,
-        baseFields.contributionDate,
-        baseFields.createdAt,
-        baseFields.closedAt,
-        { key: 'creaEvaluate', label: t('crea.column') },
-        { key: 'chatCreation', label: t('details') },
-      ],
-      // all contributions
-      [
-        { key: 'contributionStatus', label: t('status') },
-        baseFields.name,
-        baseFields.amount,
-        baseFields.memo,
-        baseFields.contributionDate,
-        baseFields.createdAt,
-        baseFields.closedAt,
-        { key: 'creaEvaluate', label: t('crea.column') },
-        { key: 'chatCreation', label: t('details') },
-      ],
-    ][tabIndex.value],
-)
+      { key: 'bookmark', label: t('delete') },
+      { key: 'deny', label: t('deny') },
+      baseFields.name,
+      baseFields.amount,
+      baseFields.memo,
+      baseFields.contributionDate,
+      { key: 'creaEvaluate', label: t('crea.column') },
+      { key: 'editCreation', label: t('details') },
+      { key: 'confirm', label: t('save') },
+    ],
+    // confirmed contributions
+    [
+      baseFields.name,
+      baseFields.amount,
+      baseFields.memo,
+      baseFields.contributionDate,
+      baseFields.createdAt,
+      baseFields.closedAt,
+      { key: 'creaEvaluate', label: t('crea.column') },
+      { key: 'chatCreation', label: t('details') },
+    ],
+    // denied contributions
+    [
+      baseFields.name,
+      baseFields.amount,
+      baseFields.memo,
+      baseFields.contributionDate,
+      baseFields.createdAt,
+      baseFields.closedAt,
+      { key: 'creaEvaluate', label: t('crea.column') },
+      { key: 'chatCreation', label: t('details') },
+    ],
+    // deleted contributions
+    [
+      baseFields.name,
+      baseFields.amount,
+      baseFields.memo,
+      baseFields.contributionDate,
+      baseFields.createdAt,
+      baseFields.closedAt,
+      { key: 'creaEvaluate', label: t('crea.column') },
+      { key: 'chatCreation', label: t('details') },
+    ],
+    // all contributions
+    [
+      { key: 'contributionStatus', label: t('status') },
+      baseFields.name,
+      baseFields.amount,
+      baseFields.memo,
+      baseFields.contributionDate,
+      baseFields.createdAt,
+      baseFields.closedAt,
+      { key: 'creaEvaluate', label: t('crea.column') },
+      { key: 'chatCreation', label: t('details') },
+    ],
+  ][tabIndex.value]
+
+  return showCreaColumn.value
+    ? tabFields
+    : tabFields.filter((field) => field.key !== 'creaEvaluate')
+})
 
 const statusFilter = computed(() => [...FILTER_TAB_MAP[tabIndex.value]])
 
@@ -264,10 +276,6 @@ const showResubmissionCheckbox = computed(() => tabIndex.value === 0)
 const hideResubmission = computed(() =>
   showResubmissionCheckbox.value ? hideResubmissionModel.value : false,
 )
-const isAiUser = computed(() =>
-  store.state.moderator?.roles.some((role) => ['ADMIN', 'MODERATOR_AI'].includes(role)),
-)
-
 watch(tabIndex, () => {
   currentPage.value = 1
   items.value = []
