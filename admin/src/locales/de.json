@@ -71,6 +71,7 @@
     "contextLabel": "Zusatzinfo für Crea (optional)",
     "contextPlaceholder": "z. B. Ich kenne diese Person und ihren Beitrag genauer.",
     "contribution": "Beitrag",
+    "contributions": "Beiträge",
     "copied": "Antwort kopiert",
     "copy": "Antwort kopieren",
     "copyFailed": "Kopieren fehlgeschlagen",
@@ -80,6 +81,7 @@
       "inquire": "Rückfrage"
     },
     "deviation": "Deine Entscheidung",
+    "evaluate": "Bewerten",
     "flags": "Bitte prüfen",
     "flags_map": {
       "anrede_unsicher": "Anrede unsicher – bitte prüfen",
@@ -95,6 +97,7 @@
     "reasoning": "Begründung",
     "response": "Antwortvorschlag",
     "rewrite": "Für meine Entscheidung schreiben",
+    "selectHint": "Wähle die Beiträge, die Crea zusammen bewerten soll.",
     "signature": "Deine Signatur",
     "signatureHint": "Wird in Deinem Browser gespeichert und automatisch ans Ende des Vorschlags gesetzt.",
     "signaturePlaceholder": "z. B. Herzliche Grüße, Bernd 😊",

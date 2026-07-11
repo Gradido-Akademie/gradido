@@ -71,6 +71,7 @@
     "contextLabel": "Extra info for Crea (optional)",
     "contextPlaceholder": "e.g. I know this member and their contribution.",
     "contribution": "Contribution",
+    "contributions": "Contributions",
     "copied": "Reply copied",
     "copy": "Copy reply",
     "copyFailed": "Copy failed",
@@ -80,6 +81,7 @@
       "inquire": "Inquire"
     },
     "deviation": "Your decision",
+    "evaluate": "Evaluate",
     "flags": "Please review",
     "flags_map": {
       "anrede_unsicher": "Salutation uncertain – please check",
@@ -95,6 +97,7 @@
     "reasoning": "Reasoning",
     "response": "Suggested reply",
     "rewrite": "Write for my decision",
+    "selectHint": "Select the contributions Crea should evaluate together.",
     "signature": "Your signature",
     "signatureHint": "Saved in your browser (preview). Persistent storage will follow.",
     "signaturePlaceholder": "e.g. Warm regards, Bernd 😊",

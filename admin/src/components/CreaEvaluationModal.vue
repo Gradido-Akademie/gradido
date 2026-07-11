@@ -12,17 +12,53 @@
     <!-- The contribution itself, shown at the top from the prop so it is visible the
          moment the modal opens - before Crea's evaluation returns. The large modal hides
          the row behind it, so without this the moderator cannot see what Crea judges. -->
-    <div v-if="contributionMemo" class="border rounded p-2 mb-3">
+    <div v-if="contributionMemo || isBatch" class="border rounded p-2 mb-3">
       <div class="d-flex justify-content-between align-items-baseline mb-1">
         <strong>
-          {{ contributionUserName || $t('crea.contribution') }}
+          <template v-if="contributionUserName">{{ contributionUserName }}</template>
+          <template v-else-if="isBatch">{{ $t('crea.contributions') }}</template>
+          <template v-else>{{ $t('crea.contribution') }}</template>
           <small v-if="contributionTenure" class="text-muted fw-normal">
             ({{ contributionTenure }})
           </small>
         </strong>
-        <span v-if="contributionMeta" class="text-muted small ms-3">{{ contributionMeta }}</span>
+        <span v-if="!isBatch && contributionMeta" class="text-muted small ms-3">
+          {{ contributionMeta }}
+        </span>
       </div>
-      <p class="mb-0 text-break crea-original">{{ contributionMemo }}</p>
+
+      <!-- Batch mode (E-020): the participant's open contributions as a checklist, all
+           preselected; unchecking one leaves it out. Nothing runs until "Bewerten". -->
+      <template v-if="isBatch">
+        <p class="mb-2 text-muted small">{{ $t('crea.selectHint') }}</p>
+        <div v-for="c in contributions" :key="c.id" class="form-check mb-2">
+          <input
+            :id="`crea-pick-${c.id}`"
+            v-model="selectedIds"
+            :value="c.id"
+            type="checkbox"
+            class="form-check-input"
+          />
+          <label :for="`crea-pick-${c.id}`" class="form-check-label d-block">
+            <span v-if="contributionMetaOf(c)" class="text-muted small d-block">
+              {{ contributionMetaOf(c) }}
+            </span>
+            <span class="text-break crea-original">{{ c.memo }}</span>
+          </label>
+        </div>
+        <BButton
+          variant="primary"
+          size="sm"
+          class="mt-1"
+          :disabled="loading || selectedIds.length === 0"
+          @click="runBatchEvaluation"
+        >
+          {{ $t('crea.evaluate') }}
+        </BButton>
+      </template>
+
+      <!-- Single mode: the one contribution verbatim, as before. -->
+      <p v-else class="mb-0 text-break crea-original">{{ contributionMemo }}</p>
     </div>
 
     <div v-if="loading" class="text-center py-4">
@@ -91,8 +127,9 @@
 
       <!-- Your decision (E-017): Crea's own recommendation is preselected, so
            "follow" means leaving it. Switching is pure UI state and costs nothing;
-           only "write for my decision" (shown when you deviate) calls Crea again. -->
-      <div class="mb-3">
+           only "write for my decision" (shown when you deviate) calls Crea again.
+           Single mode only - the batch path has no per-contribution rewrite (E-020). -->
+      <div v-if="!isBatch" class="mb-3">
         <p class="mb-1">
           <strong>{{ $t('crea.deviation') }}</strong>
         </p>
@@ -178,9 +215,11 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useMutation } from '@vue/apollo-composable'
+import { useApolloClient, useMutation } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
 import { useAppToast } from '@/composables/useToast'
+import { adminListContributions } from '@/graphql/adminListContributions.graphql'
+import { creaEvaluateBatch } from '@/graphql/creaEvaluateBatch'
 import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
 import { creaRewriteResponse } from '@/graphql/creaRewriteResponse'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
@@ -229,6 +268,13 @@ const rewriting = ref(false)
 // The public note Crea drafts for the contribution memo on a confirm rewrite (E-019).
 // Editable; empty unless the moderator confirmed a deviation and Crea returned one.
 const supplementText = ref('')
+
+// Batch mode (E-020): the participant's open contributions, loaded when the modal
+// opens. Two or more -> batch mode (checklist + "Bewerten"); fewer -> the single
+// contribution path as before. selectedIds holds the ticked ones (all preselected).
+const contributions = ref([])
+const selectedIds = ref([])
+const isBatch = computed(() => contributions.value.length >= 2)
 
 const applySignature = (text, signature) =>
   signature ? text.split(SIGNATURE_PLACEHOLDER).join(signature) : text
@@ -300,8 +346,7 @@ const contributionMemo = computed(() => props.contribution?.memo ?? '')
 // Hours (1 h = 20 GDD), the entered GDD and the date, shown next to the heading so the
 // moderator sees the contribution's key facts at a glance. Parts join only when present,
 // so a missing field simply drops out.
-const contributionMeta = computed(() => {
-  const c = props.contribution
+const contributionMetaOf = (c) => {
   if (!c) {
     return ''
   }
@@ -320,7 +365,8 @@ const contributionMeta = computed(() => {
     }
   }
   return parts.join(' · ')
-})
+}
+const contributionMeta = computed(() => contributionMetaOf(props.contribution))
 
 // The participant's full name + registration date, shown as the box heading instead of
 // a generic label. Display only: the name stays in our system (like the local [ANREDE]
@@ -359,6 +405,11 @@ const contributionTenure = computed(() => {
 
 const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)
 const { mutate: rewriteMutation } = useMutation(creaRewriteResponse)
+const { mutate: evaluateBatchMutation } = useMutation(creaEvaluateBatch)
+// Not destructured: useApolloClient() is undefined when no Apollo provider is present
+// (e.g. in the CreationConfirm unit tests that mount this modal), and destructuring
+// undefined at setup would throw. loadSiblings guards on it before use.
+const apolloClient = useApolloClient()
 
 const buildInput = (contribution) => ({
   text: contribution.memo ?? '',
@@ -385,6 +436,8 @@ const resetState = () => {
   moderatorContext.value = ''
   rewriting.value = false
   supplementText.value = ''
+  contributions.value = []
+  selectedIds.value = []
 }
 
 const runEvaluation = async () => {
@@ -404,6 +457,66 @@ const runEvaluation = async () => {
   } catch (error) {
     // Crea stays dormant on staging until the API key (DO-5) is set; the resolver
     // then throws "Anthropic API is not enabled". Show a calm hint, not an error.
+    if (/not enabled/i.test(error.message)) {
+      inactive.value = true
+    } else {
+      errorMessage.value = error.message
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+// Loads the participant's open contributions (E-020). Batch mode judges them
+// together; loaded by user id via the existing filter, independent of the list's
+// paging/tab. A generous page size covers the (practically never) >25 case.
+const loadSiblings = async () => {
+  const userId = props.contribution?.userId
+  if (userId == null || !apolloClient) {
+    return []
+  }
+  const { data } = await apolloClient.resolveClient().query({
+    query: adminListContributions,
+    variables: {
+      filter: { statusFilter: ['IN_PROGRESS', 'PENDING'], userId },
+      paginated: { currentPage: 1, pageSize: 50, order: 'DESC' },
+    },
+    fetchPolicy: 'no-cache',
+  })
+  return data?.adminListContributions?.contributionList ?? []
+}
+
+const buildBatchInput = () => ({
+  contributions: contributions.value
+    .filter((c) => selectedIds.value.includes(c.id))
+    .map((c) => ({
+      text: c.memo ?? '',
+      enteredGdd: c.amount != null ? Number(c.amount) : null,
+      date: c.contributionDate ?? null,
+    })),
+  // Local only: fills [ANREDE], never forwarded to the API (E-012). All contributions
+  // belong to the same participant, so one first name covers them.
+  recipientFirstName: props.contribution?.user?.firstName ?? null,
+  uiLanguage: locale.value,
+})
+
+// Batch evaluation: judge the ticked contributions together into ONE verdict + ONE
+// reply. Runs only on the "Bewerten" click (and re-runs after the selection changes),
+// so the moderator can prune first. No persistence (E-020).
+const runBatchEvaluation = async () => {
+  if (selectedIds.value.length === 0) {
+    return
+  }
+  loading.value = true
+  inactive.value = false
+  errorMessage.value = ''
+  evaluation.value = null
+  try {
+    const response = await evaluateBatchMutation({ input: buildBatchInput() })
+    evaluation.value = response.data.creaEvaluateBatch
+    rawResponseText.value = evaluation.value.responseText
+    responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
+  } catch (error) {
     if (/not enabled/i.test(error.message)) {
       inactive.value = true
     } else {
@@ -447,9 +560,24 @@ const rewriteForDecision = async () => {
 // The modal stays mounted, so re-read the signature from the browser every time
 // it opens. Reading it only once at setup meant a signature stored in an earlier
 // session (or after a re-login) never showed up without a full page reload.
-const onShown = () => {
+const onShown = async () => {
   moderatorSignature.value = loadSignature()
-  runEvaluation()
+  // Load the participant's open contributions: two or more -> batch checklist (no
+  // auto-evaluate; the moderator prunes then presses "Bewerten"). Otherwise the single
+  // contribution is evaluated right away, as before. Fall back to single on any error.
+  let siblings = []
+  try {
+    siblings = await loadSiblings()
+  } catch {
+    siblings = []
+  }
+  if (siblings.length >= 2) {
+    contributions.value = siblings
+    selectedIds.value = siblings.map((c) => c.id)
+  } else {
+    contributions.value = []
+    runEvaluation()
+  }
 }
 
 const verdictVariant = (verdict) => {
