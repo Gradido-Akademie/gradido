@@ -4,6 +4,11 @@ import { nextTick } from 'vue'
 import ContributionMessagesFormular from './ContributionMessagesFormular'
 import { BButton, BForm } from 'bootstrap-vue-next'
 import { useCreaClipboard } from '@/composables/useCreaClipboard'
+import { useCreaSupplement } from '@/composables/useCreaSupplement'
+
+vi.mock('vuex', () => ({
+  useStore: () => ({ state: { moderator: { firstName: 'Bernd' } } }),
+}))
 
 const mockToastError = vi.fn()
 vi.mock('@/composables/useToast', () => ({
@@ -67,6 +72,7 @@ describe('ContributionMessagesFormular', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     useCreaClipboard().setLastResponse('')
+    useCreaSupplement().setLastSupplement('')
   })
 
   it('renders the component', () => {
@@ -187,5 +193,24 @@ describe('ContributionMessagesFormular', () => {
     wrapper.vm.tabindex = 2
     await nextTick()
     expect(wrapper.vm.showCreaInsert).toBe(false)
+  })
+
+  it('appends the Crea supplement to the memo with the marker and switches to the memo tab (E-019)', () => {
+    useCreaSupplement().setLastSupplement('Genehmigt, da frei geteilte Impulse.')
+    wrapper = createWrapper()
+    wrapper.vm.form.memo = 'Impulse geschrieben'
+    wrapper.vm.appendCreaSupplement()
+    expect(wrapper.vm.form.memo.startsWith('Impulse geschrieben')).toBe(true)
+    expect(wrapper.vm.form.memo).toContain('💬 Bernd: Genehmigt, da frei geteilte Impulse.')
+    // append-only: the original text is preserved untouched before the marker.
+    expect(wrapper.vm.tabindex).toBe(2)
+  })
+
+  it('shows the Crea append button only when a supplement is held', async () => {
+    wrapper = createWrapper()
+    expect(wrapper.vm.showCreaAppend).toBe(false)
+    useCreaSupplement().setLastSupplement('a note')
+    await nextTick()
+    expect(wrapper.vm.showCreaAppend).toBe(true)
   })
 })

@@ -135,6 +135,17 @@
         </div>
       </div>
 
+      <!-- E-019: on a confirm deviation Crea also drafts a short public note for the
+           contribution memo. Editable here; the "Text ergänzen" button in the reply
+           form appends it (with the 💬 + first-name marker added locally by the code). -->
+      <div v-if="supplementText" class="mb-3">
+        <p class="mb-1">
+          <strong>{{ $t('crea.supplement') }}</strong>
+        </p>
+        <BFormInput v-model="supplementText" size="sm" />
+        <p class="mt-1 mb-0 text-muted small">{{ $t('crea.supplementHint') }}</p>
+      </div>
+
       <p class="mb-1">
         <strong>{{ $t('crea.response') }}</strong>
       </p>
@@ -174,6 +185,7 @@ import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
 import { creaRewriteResponse } from '@/graphql/creaRewriteResponse'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
 import { useCreaClipboard } from '@/composables/useCreaClipboard'
+import { useCreaSupplement } from '@/composables/useCreaSupplement'
 import { tenureBucket } from '@/utils/tenure'
 
 // Preview flag the backend stub carries so the modal shows a "no AI" banner and
@@ -214,6 +226,9 @@ const rawResponseText = ref('')
 const chosenDecision = ref(null)
 const moderatorContext = ref('')
 const rewriting = ref(false)
+// The public note Crea drafts for the contribution memo on a confirm rewrite (E-019).
+// Editable; empty unless the moderator confirmed a deviation and Crea returned one.
+const supplementText = ref('')
 
 const applySignature = (text, signature) =>
   signature ? text.split(SIGNATURE_PLACEHOLDER).join(signature) : text
@@ -235,6 +250,16 @@ const { setLastResponse } = useCreaClipboard()
 watch(responseText, (value) => {
   if (evaluation.value && value) {
     setLastResponse(value)
+  }
+})
+
+// Same bridge for the memo supplement (E-019): hold Crea's note (with the moderator's
+// edits) in the browser so the "Text ergänzen" button in the reply form can append it.
+// Guard on a non-empty value so closing/resetting the modal never wipes the stored note.
+const { setLastSupplement } = useCreaSupplement()
+watch(supplementText, (value) => {
+  if (value) {
+    setLastSupplement(value)
   }
 })
 
@@ -359,6 +384,7 @@ const resetState = () => {
   chosenDecision.value = null
   moderatorContext.value = ''
   rewriting.value = false
+  supplementText.value = ''
 }
 
 const runEvaluation = async () => {
@@ -405,8 +431,12 @@ const rewriteForDecision = async () => {
         moderatorContext: moderatorContext.value.trim() || null,
       },
     })
-    rawResponseText.value = response.data.creaRewriteResponse
+    const result = response.data.creaRewriteResponse
+    rawResponseText.value = result.responseText
     responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
+    // A confirm rewrite also carries the public memo note (E-019); inquire/deny return
+    // null. Surfacing it fills the editable field above and the "Text ergänzen" button.
+    supplementText.value = result.memoSupplement ?? ''
   } catch (error) {
     toastError(error.message)
   } finally {

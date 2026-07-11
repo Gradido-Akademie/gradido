@@ -1,9 +1,14 @@
 import gql from 'graphql-tag'
 
-// Rewrite only the reply text when the moderator deviates from Crea's recommendation
-// (E-017). Returns just the new text (String) — no re-evaluation, no persistence.
+// Rewrite the reply text when the moderator deviates from Crea's recommendation
+// (E-017). A confirm rewrite also returns memoSupplement — the short public note the
+// moderator appends to the contribution ("Text ergänzen", E-019); null otherwise.
+// No re-evaluation, no persistence.
 export const creaRewriteResponse = gql`
   mutation ($input: CreaContributionInput!) {
-    creaRewriteResponse(input: $input)
+    creaRewriteResponse(input: $input) {
+      responseText
+      memoSupplement
+    }
   }
 `

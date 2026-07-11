@@ -19,14 +19,24 @@
             <time-picker v-model="resubmissionTime" class="ms-2" />
           </div>
         </BFormGroup>
-        <div v-if="showCreaInsert" class="mt-3">
+        <div v-if="showCreaInsert || showCreaAppend" class="mt-3 d-flex gap-2">
           <BButton
+            v-if="showCreaInsert"
             variant="outline-info"
             size="sm"
             data-test="crea-insert-draft"
             @click="insertCreaDraft"
           >
             {{ $t('crea.insertDraft') }}
+          </BButton>
+          <BButton
+            v-if="showCreaAppend"
+            variant="outline-info"
+            size="sm"
+            data-test="crea-append-memo"
+            @click="appendCreaSupplement"
+          >
+            {{ $t('crea.appendToMemo') }}
           </BButton>
         </div>
         <BTabs v-model="tabindex" class="mt-3" content-class="mt-3" data-test="message-type-tabs">
@@ -76,6 +86,9 @@
               rows="12"
               @keydown="onMemoKeydown"
             />
+            <p v-if="memoTooLong" class="mt-1 mb-0 text-danger small">
+              {{ $t('crea.memoTooLong', { max: MEMO_MAX_LENGTH }) }}
+            </p>
           </BTab>
         </BTabs>
         <BRow class="mt-4 mb-6">
@@ -101,6 +114,7 @@
 
 <script setup>
 import { ref, computed, nextTick } from 'vue'
+import { useStore } from 'vuex'
 import { useDateLocale } from '@/composables/useDateLocale'
 import { useMutation } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
@@ -111,6 +125,17 @@ import { adminUpdateContribution } from '@/graphql/adminUpdateContribution'
 import { useAppToast } from '@/composables/useToast'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
 import { useCreaClipboard } from '@/composables/useCreaClipboard'
+import { useCreaSupplement } from '@/composables/useCreaSupplement'
+
+// The memo (the public contribution text) is limited to 512 chars in the backend
+// (migration 0093). We warn and block the save past it rather than auto-cutting — per
+// E-019 the moderator shortens the original himself (append-only, no auto-truncation).
+const MEMO_MAX_LENGTH = 512
+// The moderator comment marker appended to the public contribution (E-019). The 💬 and
+// the dash are content, not code; the dash sets the note off within the running text
+// (Bernd: these memos use no blank lines).
+const MEMO_MARKER = '💬'
+const MEMO_SEPARATOR = ' – '
 
 const props = defineProps({
   contributionId: {
@@ -140,6 +165,7 @@ const emit = defineEmits([
 ])
 
 const { t } = useI18n()
+const store = useStore()
 const dateLocale = useDateLocale()
 const { toastError, toastSuccess } = useAppToast()
 const form = ref({
@@ -218,9 +244,36 @@ const insertCreaDraft = async () => {
   }
 }
 
+// Crea's public note for a confirmed contribution (E-019) drops into the memo (the
+// community-visible "Text ändern" tab) with one click. Twin of insertCreaDraft: shown
+// whenever a note is stored, on any tab (it switches to the memo tab itself).
+const { lastSupplement } = useCreaSupplement()
+const showCreaAppend = computed(() => Boolean(lastSupplement.value))
+const appendCreaSupplement = () => {
+  const supplement = lastSupplement.value
+  if (!supplement) {
+    return
+  }
+  // The 💬 + first-name marker is built here, locally — the moderator's name never
+  // reached the AI (like [ANREDE]/[SIGNATUR]). append-only: the original text is untouched.
+  const firstName = store.state.moderator?.firstName ?? ''
+  const marker = firstName
+    ? `${MEMO_MARKER} ${firstName}: ${supplement}`
+    : `${MEMO_MARKER} ${supplement}`
+  const current = form.value.memo.trim()
+  form.value.memo = current ? `${current}${MEMO_SEPARATOR}${marker}` : marker
+  // Switch to the memo tab so the moderator reads the result in place and saves it (E-005).
+  tabindex.value = 2
+}
+
 const isTextTabValid = computed(() => form.value.text !== '')
 
-const isMemoTabValid = computed(() => form.value.memo.length >= 5)
+// Also block the save past the memo limit so the moderator shortens before saving
+// (the warning under the field explains why); no auto-truncation (E-019).
+const memoTooLong = computed(() => form.value.memo.length > MEMO_MAX_LENGTH)
+const isMemoTabValid = computed(
+  () => form.value.memo.length >= 5 && form.value.memo.length <= MEMO_MAX_LENGTH,
+)
 
 const disabled = computed(
   () =>

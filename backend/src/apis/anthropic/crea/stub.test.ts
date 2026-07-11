@@ -42,31 +42,41 @@ describe('crea stub preview evaluation', () => {
   })
 })
 
-describe('crea stub rewrite (moderator deviates, E-017)', () => {
+describe('crea stub rewrite (moderator deviates, E-017 / E-019)', () => {
   it('fills the salutation and keeps the signature placeholder for the client', () => {
-    const text = buildStubRewrite(
+    const { responseText } = buildStubRewrite(
       stubInput({ moderatorDecision: 'confirm', recipientFirstName: 'Bernd' }),
     )
-    expect(text).toContain('Lieber Bernd')
-    expect(text).not.toContain(SALUTATION_PLACEHOLDER)
-    expect(text).toContain(SIGNATURE_PLACEHOLDER)
+    expect(responseText).toContain('Lieber Bernd')
+    expect(responseText).not.toContain(SALUTATION_PLACEHOLDER)
+    expect(responseText).toContain(SIGNATURE_PLACEHOLDER)
   })
 
   it('gives a distinct reply per target decision', () => {
-    const confirm = buildStubRewrite(stubInput({ moderatorDecision: 'confirm' }))
-    const inquire = buildStubRewrite(stubInput({ moderatorDecision: 'inquire' }))
-    const deny = buildStubRewrite(stubInput({ moderatorDecision: 'deny' }))
+    const confirm = buildStubRewrite(stubInput({ moderatorDecision: 'confirm' })).responseText
+    const inquire = buildStubRewrite(stubInput({ moderatorDecision: 'inquire' })).responseText
+    const deny = buildStubRewrite(stubInput({ moderatorDecision: 'deny' })).responseText
     expect(confirm).not.toBe(inquire)
     expect(inquire).not.toBe(deny)
   })
 
   it('mentions that the hours become free again on a rejection (verified against creations.ts)', () => {
-    expect(buildStubRewrite(stubInput({ moderatorDecision: 'deny' }))).toContain('wieder frei')
+    expect(buildStubRewrite(stubInput({ moderatorDecision: 'deny' })).responseText).toContain(
+      'wieder frei',
+    )
   })
 
   it('points to the common-good page on an inquiry', () => {
-    expect(buildStubRewrite(stubInput({ moderatorDecision: 'inquire' }))).toContain(
+    expect(buildStubRewrite(stubInput({ moderatorDecision: 'inquire' })).responseText).toContain(
       'gradido.net/gemeinwohl-was-ist-das',
     )
+  })
+
+  it('adds a memo supplement only when confirming (E-019)', () => {
+    expect(
+      buildStubRewrite(stubInput({ moderatorDecision: 'confirm' })).memoSupplement,
+    ).toBeTruthy()
+    expect(buildStubRewrite(stubInput({ moderatorDecision: 'inquire' })).memoSupplement).toBeNull()
+    expect(buildStubRewrite(stubInput({ moderatorDecision: 'deny' })).memoSupplement).toBeNull()
   })
 })

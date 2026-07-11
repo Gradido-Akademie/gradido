@@ -65,6 +65,7 @@
   "copy-to-clipboard": "Copia negli appunti",
   "crea": {
     "advisoryHint": "Crea only advises – confirming, denying and sending stay your decision.",
+    "appendToMemo": "Add to contribution",
     "close": "Close",
     "column": "Crea",
     "contextLabel": "Extra info for Crea (optional)",
@@ -88,6 +89,7 @@
     "inactive": "Crea is not active yet – the API key is missing (set up separately).",
     "insertDraft": "Insert draft",
     "loading": "Crea is reading the contribution …",
+    "memoTooLong": "The contribution text is too long (max. {max} characters) – please shorten it a little.",
     "openPoints": "Open points",
     "previewBanner": "Preview without AI connection – a sample result. Layout, database and salutation/signature are real.",
     "reasoning": "Reasoning",
@@ -96,6 +98,8 @@
     "signature": "Your signature",
     "signatureHint": "Saved in your browser (preview). Persistent storage will follow.",
     "signaturePlaceholder": "e.g. Warm regards, Bernd 😊",
+    "supplement": "Note for the contribution",
+    "supplementHint": "Short public note on why the contribution is approved – you can adjust it.",
     "tenure": {
       "day": "for one day",
       "days": "for {count} days",

@@ -1,5 +1,6 @@
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
 import type { CreaEvaluation } from '@/graphql/model/CreaEvaluation'
+import type { CreaRewriteResult } from '@/graphql/model/CreaRewriteResult'
 import {
   resolveEnteredHours,
   SALUTATION_PLACEHOLDER,
@@ -56,12 +57,13 @@ export function buildStubEvaluation(input: CreaContributionInput): CreaEvaluatio
 }
 
 /**
- * Canned rewrite for the staging preview (E-017): mirrors rewriteResponse without
- * calling the API. Returns a fixed reply text for the moderator's target decision,
- * with [ANREDE] filled locally and [SIGNATUR] left for the client. Only reached
- * when no real client is configured (no key).
+ * Canned rewrite for the staging preview (E-017 / E-019): mirrors rewriteResponse
+ * without calling the API. Returns a fixed reply text for the moderator's target
+ * decision (with [ANREDE] filled locally and [SIGNATUR] left for the client), plus —
+ * only on a confirm rewrite — a canned memoSupplement so the preview exercises the
+ * whole "Text ergaenzen" append path. Only reached when no real client is configured.
  */
-export function buildStubRewrite(input: CreaContributionInput): string {
+export function buildStubRewrite(input: CreaContributionInput): CreaRewriteResult {
   const isEn = (input.uiLanguage ?? 'de').startsWith('en')
   const bodies = isEn
     ? {
@@ -80,5 +82,11 @@ export function buildStubRewrite(input: CreaContributionInput): string {
   const key = (input.moderatorDecision ?? 'confirm') as keyof typeof bodies
   const body = bodies[key] ?? bodies.confirm
   const text = `${SALUTATION_PLACEHOLDER},\n\n${body}\n\n${SIGNATURE_PLACEHOLDER}`
-  return fillSalutation(input, text).text
+  const memoSupplement =
+    key === 'confirm'
+      ? isEn
+        ? 'Approved as a genuine contribution to the common good (preview note).'
+        : 'Als echter Gemeinwohl-Beitrag genehmigt (Vorschau-Hinweis).'
+      : null
+  return { responseText: fillSalutation(input, text).text, memoSupplement }
 }

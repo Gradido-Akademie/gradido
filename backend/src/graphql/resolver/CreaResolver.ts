@@ -1,5 +1,6 @@
 import { CreaContributionInput } from '@input/CreaContributionInput'
 import { CreaEvaluation } from '@model/CreaEvaluation'
+import { CreaRewriteResult } from '@model/CreaRewriteResult'
 import { Arg, Authorized, Mutation, Resolver } from 'type-graphql'
 import { AnthropicClient } from '@/apis/anthropic/AnthropicClient'
 import { metaFromInput, persistCreaRecords } from '@/apis/anthropic/crea/records'
@@ -34,15 +35,18 @@ export class CreaResolver {
   }
 
   /**
-   * Rewrites only the reply text when the moderator deviates from Crea's own
+   * Rewrites the reply text when the moderator deviates from Crea's own
    * recommendation (E-017): a fresh responseText for the moderator's target
-   * decision + optional context. Deliberately does NOT persist — the statistically
-   * valid record is Crea's first, uninfluenced judgement written by
-   * creaEvaluateContribution; this follow-up would otherwise double it.
+   * decision + optional context, plus — on a confirm rewrite — the memoSupplement
+   * appended to the public contribution (E-019). Deliberately does NOT persist —
+   * the statistically valid record is Crea's first, uninfluenced judgement written
+   * by creaEvaluateContribution; this follow-up would otherwise double it.
    */
   @Authorized([RIGHTS.AI_SEND_MESSAGE])
-  @Mutation(() => String)
-  async creaRewriteResponse(@Arg('input') input: CreaContributionInput): Promise<string> {
+  @Mutation(() => CreaRewriteResult)
+  async creaRewriteResponse(
+    @Arg('input') input: CreaContributionInput,
+  ): Promise<CreaRewriteResult> {
     if (!input.moderatorDecision) {
       throw new Error('moderatorDecision is required to rewrite the response')
     }

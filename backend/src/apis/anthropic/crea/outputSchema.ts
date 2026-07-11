@@ -145,11 +145,18 @@ export const CREA_OUTPUT_SCHEMA = {
 // re-writes the reply text for the chosen outcome — it does NOT re-evaluate. So the
 // follow-up call returns just the new responseText, not the full judgement object.
 // This keeps "deny" out of the verdict enum and saves output tokens.
+//
+// memoSupplement (E-019, "Text ergaenzen"): the third Crea output — a short, public
+// note the moderator appends to the community-visible contribution to explain why it
+// was approved. Optional (not required): Crea fills it ONLY when the target decision is
+// "confirm"; for inquire/deny it omits the field. The 💬 marker + moderator first name
+// are added locally by the client, so the name never reaches the API.
 export const CREA_REWRITE_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   properties: {
     responseText: { type: 'string' },
+    memoSupplement: { type: 'string' },
   },
   required: ['responseText'],
 } as const

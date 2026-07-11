@@ -4,6 +4,7 @@ import { CONFIG } from '@/config'
 import { LOG4JS_BASE_CATEGORY_NAME } from '@/config/const'
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
 import type { CreaEvaluation } from '@/graphql/model/CreaEvaluation'
+import type { CreaRewriteResult } from '@/graphql/model/CreaRewriteResult'
 import {
   resolveEnteredGdd,
   resolveEnteredHours,
@@ -87,14 +88,16 @@ export class AnthropicClient {
   }
 
   /**
-   * Rewrites only the reply text when the moderator deviates from Crea's own
+   * Rewrites the reply text when the moderator deviates from Crea's own
    * recommendation (E-017). This is NOT a second evaluation: the moderator's
    * target decision and optional context steer a fresh responseText for that
-   * outcome. Uses the slim rewrite schema (just responseText), so "deny" stays
-   * out of the verdict enum and output stays cheap. The cached rules prefix is
-   * reused (cache read), so only the small output is billed anew. No persistence.
+   * outcome. A confirm rewrite additionally yields memoSupplement (E-019) — the
+   * short public note appended to the contribution. Uses the slim rewrite schema,
+   * so "deny" stays out of the verdict enum and output stays cheap. The cached
+   * rules prefix is reused (cache read), so only the small output is billed anew.
+   * No persistence.
    */
-  public async rewriteResponse(input: CreaContributionInput): Promise<string> {
+  public async rewriteResponse(input: CreaContributionInput): Promise<CreaRewriteResult> {
     const message = await this.anthropic.messages.create({
       model: CONFIG.ANTHROPIC_MODEL,
       max_tokens: CREA_MAX_TOKENS,
@@ -115,11 +118,19 @@ export class AnthropicClient {
     )
 
     this.assertNotTruncated(message)
-    const { responseText } = JSON.parse(this.firstTextBlock(message)) as { responseText: string }
-    // Fill [ANREDE] locally (PII stays local); [SIGNATUR] is left for the client
-    // to fill reactively (E-013 / E-014). No discrepancy recompute: the rewrite
-    // does not re-judge, it only reformulates for the chosen outcome.
-    return fillSalutation(input, responseText).text
+    const parsed = JSON.parse(this.firstTextBlock(message)) as {
+      responseText: string
+      memoSupplement?: string | null
+    }
+    // Fill [ANREDE] locally on the reply (PII stays local); [SIGNATUR] is left for
+    // the client to fill reactively (E-013 / E-014). No discrepancy recompute: the
+    // rewrite does not re-judge, it only reformulates for the chosen outcome.
+    // memoSupplement is the plain note only — the 💬 marker + moderator first name
+    // are added locally by the client, so that name never reaches the API either.
+    return {
+      responseText: fillSalutation(input, parsed.responseText).text,
+      memoSupplement: parsed.memoSupplement?.trim() || null,
+    }
   }
 
   // A truncated response (max_tokens hit) leaves incomplete JSON, which would fail as a
