@@ -14,7 +14,12 @@
          the row behind it, so without this the moderator cannot see what Crea judges. -->
     <div v-if="contributionMemo" class="border rounded p-2 mb-3">
       <div class="d-flex justify-content-between align-items-baseline mb-1">
-        <strong>{{ $t('crea.contribution') }}</strong>
+        <strong>
+          {{ contributionUserName || $t('crea.contribution') }}
+          <small v-if="contributionRegistered" class="text-muted fw-normal">
+            ({{ $t('crea.registeredSince', { date: contributionRegistered }) }})
+          </small>
+        </strong>
         <span v-if="contributionMeta" class="text-muted small ms-3">{{ contributionMeta }}</span>
       </div>
       <p class="mb-0 text-break crea-original">{{ contributionMemo }}</p>
@@ -289,6 +294,22 @@ const contributionMeta = computed(() => {
     }
   }
   return parts.join(' · ')
+})
+
+// The participant's full name + registration date, shown as the box heading instead of
+// a generic label. Display only: the name stays in our system (like the local [ANREDE]
+// fill), never reaches the API, and the persisted record stays pseudonymous.
+const contributionUserName = computed(() => {
+  const u = props.contribution?.user
+  return u ? [u.firstName, u.lastName].filter(Boolean).join(' ') : ''
+})
+const contributionRegistered = computed(() => {
+  const created = props.contribution?.user?.createdAt
+  if (!created) {
+    return ''
+  }
+  const date = new Date(created)
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(locale.value)
 })
 
 const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)

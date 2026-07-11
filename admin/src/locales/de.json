@@ -91,6 +91,7 @@
     "openPoints": "Offene Punkte",
     "previewBanner": "Vorschau ohne KI-Verbindung – ein Beispiel-Ergebnis. Optik, Datenbank und Anrede/Signatur sind echt.",
     "reasoning": "Begründung",
+    "registeredSince": "seit {date}",
     "response": "Antwortvorschlag",
     "rewrite": "Für meine Entscheidung schreiben",
     "signature": "Deine Signatur",
