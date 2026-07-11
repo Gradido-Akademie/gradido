@@ -13,9 +13,10 @@
          moment the modal opens - before Crea's evaluation returns. The large modal hides
          the row behind it, so without this the moderator cannot see what Crea judges. -->
     <div v-if="contributionMemo" class="border rounded p-2 mb-3">
-      <p class="mb-1">
+      <div class="d-flex justify-content-between align-items-baseline mb-1">
         <strong>{{ $t('crea.contribution') }}</strong>
-      </p>
+        <span v-if="contributionMeta" class="text-muted small ms-3">{{ contributionMeta }}</span>
+      </div>
       <p class="mb-0 text-break crea-original">{{ contributionMemo }}</p>
     </div>
 
@@ -264,6 +265,31 @@ const isDeviation = computed(
 // (independent of the evaluation call). Later, judging several contributions at once,
 // this becomes a list separated by thin rules; for now it is the single contribution.
 const contributionMemo = computed(() => props.contribution?.memo ?? '')
+
+// Hours (1 h = 20 GDD), the entered GDD and the date, shown next to the heading so the
+// moderator sees the contribution's key facts at a glance. Parts join only when present,
+// so a missing field simply drops out.
+const contributionMeta = computed(() => {
+  const c = props.contribution
+  if (!c) {
+    return ''
+  }
+  const parts = []
+  if (c.amount != null) {
+    const gdd = Number(c.amount)
+    const hours = gdd / 20
+    const hoursText = hours.toLocaleString(locale.value, { maximumFractionDigits: 1 })
+    parts.push(`${hoursText} ${t('crea.hoursUnit')}`)
+    parts.push(`${gdd.toLocaleString(locale.value)} GDD`)
+  }
+  if (c.contributionDate) {
+    const date = new Date(c.contributionDate)
+    if (!Number.isNaN(date.getTime())) {
+      parts.push(date.toLocaleDateString(locale.value))
+    }
+  }
+  return parts.join(' · ')
+})
 
 const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)
 const { mutate: rewriteMutation } = useMutation(creaRewriteResponse)

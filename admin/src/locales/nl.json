@@ -84,6 +84,7 @@
       "anrede_unsicher": "Salutation uncertain – please check",
       "discrepancy_recomputed": "Hours differ – please check"
     },
+    "hoursUnit": "h",
     "inactive": "Crea is not active yet – the API key is missing (set up separately).",
     "insertDraft": "Insert draft",
     "loading": "Crea is reading the contribution …",

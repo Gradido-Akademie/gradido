@@ -69,7 +69,7 @@
     "column": "Crea",
     "contextLabel": "Zusatzinfo für Crea (optional)",
     "contextPlaceholder": "z. B. Ich kenne diese Person und ihren Beitrag genauer.",
-    "contribution": "Beitrag im Wortlaut",
+    "contribution": "Beitrag",
     "copied": "Antwort kopiert",
     "copy": "Antwort kopieren",
     "copyFailed": "Kopieren fehlgeschlagen",
@@ -84,6 +84,7 @@
       "anrede_unsicher": "Anrede unsicher – bitte prüfen",
       "discrepancy_recomputed": "Stundenangabe weicht ab – bitte prüfen"
     },
+    "hoursUnit": "Std",
     "inactive": "Crea ist noch nicht aktiv – der API-Schlüssel fehlt (wird separat eingerichtet).",
     "insertDraft": "Vorschlag einfügen",
     "loading": "Crea liest den Beitrag …",
