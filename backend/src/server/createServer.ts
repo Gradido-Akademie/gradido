@@ -16,6 +16,7 @@ import { gmsWebhook } from '@/webhook/gms'
 import { context as serverContext } from './context'
 import { cors } from './cors'
 import { plugins } from './plugins'
+import { getBuildInfo } from './version'
 
 // TODO implement
 // import queryComplexity, { simpleEstimator, fieldConfigEstimator } from "graphql-query-complexity";
@@ -86,6 +87,13 @@ export const createServer = async (
   // OpenID Connect
   app.get(`/realms/${GRADIDO_REALM}/.well-known/openid-configuration`, openidConfiguration)
   app.get(`/realms/${GRADIDO_REALM}/protocol/openid-connect/certs`, jwks)
+
+  // Build version of the running backend. Public, no auth: it exposes only the commit
+  // SHA (the repo is open source) and lets backend-only deploys be verified from outside
+  // with a plain curl — the admin bundle hash cannot show them (LOG-054).
+  app.get('/version', (_req, res) => {
+    res.json(getBuildInfo())
+  })
 
   // Apollo Server
   const apollo = new ApolloServer({
