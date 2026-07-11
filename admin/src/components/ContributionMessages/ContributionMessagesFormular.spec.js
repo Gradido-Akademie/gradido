@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { nextTick } from 'vue'
 import ContributionMessagesFormular from './ContributionMessagesFormular'
 import { BButton, BForm } from 'bootstrap-vue-next'
+import { useCreaClipboard } from '@/composables/useCreaClipboard'
 
 const mockToastError = vi.fn()
 vi.mock('@/composables/useToast', () => ({
@@ -65,6 +66,7 @@ describe('ContributionMessagesFormular', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    useCreaClipboard().setLastResponse('')
   })
 
   it('renders the component', () => {
@@ -158,5 +160,32 @@ describe('ContributionMessagesFormular', () => {
     await nextTick()
 
     expect(mockToastError).toHaveBeenCalledWith('OUCH!')
+  })
+
+  it('fills the empty message field with the Crea draft', async () => {
+    useCreaClipboard().setLastResponse('Liebe Anna, danke!')
+    wrapper = createWrapper()
+    wrapper.vm.form.text = ''
+    await wrapper.vm.insertCreaDraft()
+    expect(wrapper.vm.form.text).toBe('Liebe Anna, danke!')
+  })
+
+  it('appends the Crea draft when the field already has text and was not focused', async () => {
+    useCreaClipboard().setLastResponse('draft')
+    wrapper = createWrapper()
+    wrapper.vm.form.text = 'typed'
+    await wrapper.vm.insertCreaDraft()
+    expect(wrapper.vm.form.text).toBe('typed\ndraft')
+  })
+
+  it('shows the Crea insert button only with a held draft and not on the memo tab', async () => {
+    wrapper = createWrapper()
+    expect(wrapper.vm.showCreaInsert).toBe(false)
+    useCreaClipboard().setLastResponse('draft')
+    await nextTick()
+    expect(wrapper.vm.showCreaInsert).toBe(true)
+    wrapper.vm.tabindex = 2
+    await nextTick()
+    expect(wrapper.vm.showCreaInsert).toBe(false)
   })
 })

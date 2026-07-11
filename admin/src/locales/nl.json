@@ -84,6 +84,7 @@
       "discrepancy_recomputed": "Hours differ – please check"
     },
     "inactive": "Crea is not active yet – the API key is missing (set up separately).",
+    "insertDraft": "Insert draft",
     "loading": "Crea is reading the contribution …",
     "openPoints": "Open points",
     "previewBanner": "Preview without AI connection – a sample result. Layout, database and salutation/signature are real.",

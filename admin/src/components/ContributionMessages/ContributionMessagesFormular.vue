@@ -19,6 +19,16 @@
             <time-picker v-model="resubmissionTime" class="ms-2" />
           </div>
         </BFormGroup>
+        <div v-if="showCreaInsert" class="mt-3">
+          <BButton
+            variant="outline-info"
+            size="sm"
+            data-test="crea-insert-draft"
+            @click="insertCreaDraft"
+          >
+            {{ $t('crea.insertDraft') }}
+          </BButton>
+        </div>
         <BTabs v-model="tabindex" class="mt-3" content-class="mt-3" data-test="message-type-tabs">
           <BTab active>
             <template #title>
@@ -33,6 +43,7 @@
               :placeholder="$t('contributionLink.memo')"
               rows="12"
               @keydown="onTextKeydown"
+              @focus="captureCreaField"
             />
           </BTab>
           <BTab>
@@ -48,6 +59,7 @@
               :placeholder="$t('moderator.notice')"
               rows="12"
               @keydown="onTextKeydown"
+              @focus="captureCreaField"
             />
           </BTab>
           <BTab>
@@ -88,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useDateLocale } from '@/composables/useDateLocale'
 import { useMutation } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
@@ -98,6 +110,7 @@ import { adminCreateContributionMessage } from '@/graphql/adminCreateContributio
 import { adminUpdateContribution } from '@/graphql/adminUpdateContribution'
 import { useAppToast } from '@/composables/useToast'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
+import { useCreaClipboard } from '@/composables/useCreaClipboard'
 
 const props = defineProps({
   contributionId: {
@@ -166,6 +179,43 @@ const tabindex = ref(0) // 0 = Chat, 1 = Notice, 2 = Memo
 const messageType = {
   DIALOG: 'DIALOG',
   MODERATOR: 'MODERATOR',
+}
+
+// Crea's last reply draft (held in the browser) drops into the message field with one
+// click - no OS clipboard needed inside the admin. Only on the message/note tabs
+// (tabs 0/1 both bind form.text); the memo tab (2) edits the member's own text.
+const { lastResponse } = useCreaClipboard()
+const creaTextAreaEl = ref(null)
+const captureCreaField = (event) => {
+  creaTextAreaEl.value = event.target
+}
+const showCreaInsert = computed(() => Boolean(lastResponse.value) && tabindex.value !== 2)
+const insertCreaDraft = async () => {
+  const draft = lastResponse.value
+  if (!draft) {
+    return
+  }
+  const current = form.value.text
+  const el = creaTextAreaEl.value
+  if (!current) {
+    // Empty field: just fill it.
+    form.value.text = draft
+    return
+  }
+  if (el) {
+    // Non-empty: splice in at the caret. A textarea keeps its selection even after the
+    // button takes focus, so the moderator's cursor position still applies.
+    const start = el.selectionStart ?? current.length
+    const end = el.selectionEnd ?? start
+    form.value.text = current.slice(0, start) + draft + current.slice(end)
+    await nextTick()
+    const caret = start + draft.length
+    el.focus()
+    el.setSelectionRange(caret, caret)
+  } else {
+    // Never focused: append below what is there.
+    form.value.text = `${current}\n${draft}`
+  }
 }
 
 const isTextTabValid = computed(() => form.value.text !== '')

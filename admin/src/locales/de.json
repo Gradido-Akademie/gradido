@@ -84,6 +84,7 @@
       "discrepancy_recomputed": "Stundenangabe weicht ab – bitte prüfen"
     },
     "inactive": "Crea ist noch nicht aktiv – der API-Schlüssel fehlt (wird separat eingerichtet).",
+    "insertDraft": "Vorschlag einfügen",
     "loading": "Crea liest den Beitrag …",
     "openPoints": "Offene Punkte",
     "previewBanner": "Vorschau ohne KI-Verbindung – ein Beispiel-Ergebnis. Optik, Datenbank und Anrede/Signatur sind echt.",

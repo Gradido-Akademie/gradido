@@ -157,6 +157,7 @@ import { useAppToast } from '@/composables/useToast'
 import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
 import { creaRewriteResponse } from '@/graphql/creaRewriteResponse'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
+import { useCreaClipboard } from '@/composables/useCreaClipboard'
 
 // Preview flag the backend stub carries so the modal shows a "no AI" banner and
 // hides it from the red review flags.
@@ -208,6 +209,17 @@ const { onKeydown: onResponseKeydown } = useBoldShortcut(
     responseText.value = value
   },
 )
+
+// Hold Crea's current draft (with the moderator's edits) in the browser so it can be
+// inserted into the reply field with one click — no OS clipboard needed inside the
+// admin. Guard on a real, non-empty evaluation so closing the modal (which clears
+// responseText via resetState) never wipes the stored proposal.
+const { setLastResponse } = useCreaClipboard()
+watch(responseText, (value) => {
+  if (evaluation.value && value) {
+    setLastResponse(value)
+  }
+})
 
 const loadSignature = () => {
   try {
