@@ -12,10 +12,10 @@ export interface BuildInfo {
 let cached: BuildInfo | undefined
 
 /**
- * Resolves the running backend's commit once and caches it, so `GET /version` can
- * report which build is live. Backend-only deploys are otherwise invisible from the
- * outside — the admin bundle hash only tracks admin builds (LOG-054) — so this makes
- * them verifiable with a plain curl.
+ * Resolves the running backend's commit once and caches it, so the public `version`
+ * GraphQL query can report which build is live. Backend-only deploys are otherwise
+ * invisible from the outside — the admin bundle hash only tracks admin builds
+ * (LOG-054) — so this makes them verifiable with a plain POST to /graphql.
  *
  * On ki-playground the backend runs straight from the git checkout, so
  * `git rev-parse HEAD` returns the deployed commit. A real production container has no

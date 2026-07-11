@@ -19,6 +19,7 @@ import { StatisticsResolver } from './resolver/StatisticsResolver'
 import { TransactionLinkResolver } from './resolver/TransactionLinkResolver'
 import { TransactionResolver } from './resolver/TransactionResolver'
 import { UserResolver } from './resolver/UserResolver'
+import { VersionResolver } from './resolver/VersionResolver'
 import { DurationScalar } from './scalar/Duration'
 import { LocationScalar } from './scalar/Location'
 
@@ -40,6 +41,7 @@ export const schema = async (): Promise<GraphQLSchema> => {
       TransactionLinkResolver,
       TransactionResolver,
       UserResolver,
+      VersionResolver,
     ],
     authChecker: isAuthorized,
     scalarsMap: [
