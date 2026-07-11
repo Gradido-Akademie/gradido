@@ -2,7 +2,9 @@ import Anthropic from '@anthropic-ai/sdk'
 import { getLogger } from 'log4js'
 import { CONFIG } from '@/config'
 import { LOG4JS_BASE_CATEGORY_NAME } from '@/config/const'
+import type { CreaBatchInput } from '@/graphql/input/CreaBatchInput'
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
+import type { CreaBatchEvaluation } from '@/graphql/model/CreaBatchEvaluation'
 import type { CreaEvaluation } from '@/graphql/model/CreaEvaluation'
 import type { CreaRewriteResult } from '@/graphql/model/CreaRewriteResult'
 import {
@@ -11,7 +13,7 @@ import {
   SALUTATION_PLACEHOLDER,
   SIGNATURE_PLACEHOLDER,
 } from './crea/deterministics'
-import { CREA_OUTPUT_SCHEMA, CREA_REWRITE_SCHEMA } from './crea/outputSchema'
+import { CREA_BATCH_SCHEMA, CREA_OUTPUT_SCHEMA, CREA_REWRITE_SCHEMA } from './crea/outputSchema'
 import { applyCreaDeterministics, fillSalutation } from './crea/postprocess'
 import { buildCreaSystemPrompt, moderatorDecisionLabel } from './crea/ruleset'
 
@@ -133,6 +135,47 @@ export class AnthropicClient {
     }
   }
 
+  /**
+   * Evaluates several open contributions of ONE participant together (E-020) and
+   * returns a slim result: ONE overall verdict + ONE reply for all of them, so the
+   * participant gets a single message instead of many identical mails. Batch mode is
+   * lean - no per-activity records, no per-contribution discrepancy (like the old
+   * copy-paste flow). Reuses the cached rules prefix; [ANREDE] is filled locally and
+   * [SIGNATUR] left for the client (E-012 / E-014).
+   */
+  public async evaluateBatch(input: CreaBatchInput): Promise<CreaBatchEvaluation> {
+    const message = await this.anthropic.messages.create({
+      model: CONFIG.ANTHROPIC_MODEL,
+      max_tokens: CREA_MAX_TOKENS,
+      thinking: { type: 'disabled' },
+      system: [
+        {
+          type: 'text',
+          text: buildCreaSystemPrompt(),
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
+      messages: [{ role: 'user', content: this.buildBatchUserMessage(input) }],
+      output_config: { format: { type: 'json_schema', schema: CREA_BATCH_SCHEMA } },
+    })
+
+    logger.info(
+      `crea batch usage: input=${message.usage.input_tokens} cacheRead=${message.usage.cache_read_input_tokens} output=${message.usage.output_tokens}`,
+    )
+
+    this.assertNotTruncated(message)
+    const parsed = JSON.parse(this.firstTextBlock(message)) as Omit<CreaBatchEvaluation, 'flags'>
+    // Fill [ANREDE] locally (PII stays local); [SIGNATUR] stays for the client to fill
+    // reactively (E-013 / E-014). No discrepancy recompute: batch mode carries no
+    // per-activity hours, so there is nothing to check the entered hours against.
+    const { text, uncertain } = fillSalutation(input, parsed.responseText)
+    return {
+      ...parsed,
+      responseText: text,
+      flags: uncertain ? ['anrede_unsicher'] : [],
+    }
+  }
+
   // A truncated response (max_tokens hit) leaves incomplete JSON, which would fail as a
   // cryptic parse error. Catch it explicitly so the log names the cause and the moderator
   // gets a clear message rather than a JSON crash.
@@ -187,6 +230,38 @@ export class AnthropicClient {
     }
     lines.push(
       '- Schreibe NUR den neuen Antwortvorschlag fuer diese Zielentscheidung; bewerte nicht neu.',
+    )
+    return lines.join('\n')
+  }
+
+  /**
+   * Batch prompt (E-020): several contributions of the same participant as separately
+   * labelled blocks, with the instruction to form ONE overall verdict and ONE reply.
+   * The batch instruction goes into the USER message (not the cached system prefix) so
+   * the cached rules prefix stays byte-identical and keeps hitting the cache.
+   */
+  private buildBatchUserMessage(input: CreaBatchInput): string {
+    const lines: string[] = [
+      '## Mehrere Beitraege desselben Teilnehmers (Sammel-Bewertung)',
+      'Es folgen mehrere Beitraege DERSELBEN Person. Bilde EIN Gesamturteil und schreibe EINE Antwort, die alle Beitraege gemeinsam wuerdigt (nicht je Beitrag getrennt). Beziehe Dich, wo hilfreich, auf einzelne Beitraege. Faellt ein einzelner Beitrag aus der Reihe, sprich ihn in der Antwort an.',
+      '',
+    ]
+    input.contributions.forEach((contribution, index) => {
+      const meta: string[] = []
+      if (contribution.date) {
+        meta.push(contribution.date)
+      }
+      if (contribution.enteredGdd != null) {
+        meta.push(`${contribution.enteredGdd} GDD`)
+      }
+      const heading = `### Beitrag ${index + 1}${meta.length ? ` (${meta.join(', ')})` : ''}`
+      lines.push(heading, contribution.text, '')
+    })
+    lines.push(
+      '## Fakten aus dem System',
+      `- Anrede: mit dem Platzhalter ${SALUTATION_PLACEHOLDER} beginnen (der Code fuellt den Namen lokal ein)`,
+      `- Grussformel: mit dem Platzhalter ${SIGNATURE_PLACEHOLDER} abschliessen (der Code fuellt die Moderator-Signatur lokal ein)`,
+      `- Eingestellte Software-Sprache (fuer reasoning): ${input.uiLanguage ?? 'de'}`,
     )
     return lines.join('\n')
   }

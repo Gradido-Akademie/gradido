@@ -1,4 +1,6 @@
+import type { CreaBatchInput } from '@/graphql/input/CreaBatchInput'
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
+import type { CreaBatchEvaluation } from '@/graphql/model/CreaBatchEvaluation'
 import type { CreaEvaluation } from '@/graphql/model/CreaEvaluation'
 import type { CreaRewriteResult } from '@/graphql/model/CreaRewriteResult'
 import {
@@ -89,4 +91,31 @@ export function buildStubRewrite(input: CreaContributionInput): CreaRewriteResul
         : 'Als echter Gemeinwohl-Beitrag genehmigt (Vorschau-Hinweis).'
       : null
   return { responseText: fillSalutation(input, text).text, memoSupplement }
+}
+
+/**
+ * Canned batch evaluation for the staging preview (E-020): mirrors evaluateBatch
+ * without calling the API. One overall verdict + one reply for all contributions,
+ * with [ANREDE] filled locally and [SIGNATUR] left for the client. Only reached when
+ * no real client is configured (no key).
+ */
+export function buildStubBatch(input: CreaBatchInput): CreaBatchEvaluation {
+  const isEn = (input.uiLanguage ?? 'de').startsWith('en')
+  const count = input.contributions.length
+  const reasoning = isEn
+    ? `Preview without AI: a sample overall assessment of ${count} contributions to test the interface. Once the API key is set, Crea’s real assessment appears here.`
+    : `Vorschau ohne KI: eine Beispiel-Gesamtbewertung von ${count} Beiträgen zum Testen der Oberfläche. Sobald der API-Schlüssel gesetzt ist, steht hier Creas echte Begründung.`
+  const body = isEn
+    ? 'thank you very much for **your contributions to the common good**. (This is a preview reply — the real wording will come from Crea once the AI is connected.)'
+    : 'vielen Dank für **Deine Gemeinwohl-Beiträge**. (Dies ist ein Vorschau-Text — die echte Formulierung kommt von Crea, sobald die KI verbunden ist.)'
+  const raw = `${SALUTATION_PLACEHOLDER},\n\n${body}\n\n${SIGNATURE_PLACEHOLDER}`
+  const { text, uncertain } = fillSalutation(input, raw)
+  return {
+    overallVerdict: 'confirm',
+    confidence: 'medium',
+    reasoning,
+    responseText: text,
+    openPoints: [],
+    flags: uncertain ? [CREA_STUB_FLAG, 'anrede_unsicher'] : [CREA_STUB_FLAG],
+  }
 }

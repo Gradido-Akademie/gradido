@@ -1,10 +1,12 @@
+import { CreaBatchInput } from '@input/CreaBatchInput'
 import { CreaContributionInput } from '@input/CreaContributionInput'
+import { CreaBatchEvaluation } from '@model/CreaBatchEvaluation'
 import { CreaEvaluation } from '@model/CreaEvaluation'
 import { CreaRewriteResult } from '@model/CreaRewriteResult'
 import { Arg, Authorized, Mutation, Resolver } from 'type-graphql'
 import { AnthropicClient } from '@/apis/anthropic/AnthropicClient'
 import { metaFromInput, persistCreaRecords } from '@/apis/anthropic/crea/records'
-import { buildStubEvaluation, buildStubRewrite } from '@/apis/anthropic/crea/stub'
+import { buildStubBatch, buildStubEvaluation, buildStubRewrite } from '@/apis/anthropic/crea/stub'
 import { RIGHTS } from '@/auth/RIGHTS'
 import { CONFIG } from '@/config'
 
@@ -56,6 +58,26 @@ export class CreaResolver {
     }
     if (CONFIG.CREA_STUB) {
       return buildStubRewrite(input)
+    }
+    throw new Error('Anthropic API is not enabled')
+  }
+
+  /**
+   * Evaluates several open contributions of one participant together (E-020): ONE
+   * overall verdict + ONE reply, so the participant gets a single message instead of
+   * many identical mails. Batch mode is deliberately lean and does NOT persist records
+   * (no single contributionRef; the fine-grained per-contribution records stay with
+   * the single-contribution path, nachruestbar later).
+   */
+  @Authorized([RIGHTS.AI_SEND_MESSAGE])
+  @Mutation(() => CreaBatchEvaluation)
+  async creaEvaluateBatch(@Arg('input') input: CreaBatchInput): Promise<CreaBatchEvaluation> {
+    const client = AnthropicClient.getInstance()
+    if (client) {
+      return client.evaluateBatch(input)
+    }
+    if (CONFIG.CREA_STUB) {
+      return buildStubBatch(input)
     }
     throw new Error('Anthropic API is not enabled')
   }

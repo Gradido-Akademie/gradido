@@ -1,6 +1,7 @@
+import type { CreaBatchInput } from '@/graphql/input/CreaBatchInput'
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
 import { SALUTATION_PLACEHOLDER, SIGNATURE_PLACEHOLDER } from './deterministics'
-import { buildStubEvaluation, buildStubRewrite, CREA_STUB_FLAG } from './stub'
+import { buildStubBatch, buildStubEvaluation, buildStubRewrite, CREA_STUB_FLAG } from './stub'
 
 const stubInput = (over: Partial<CreaContributionInput> = {}): CreaContributionInput =>
   ({ text: 'Ich habe im Tierheim geholfen.', ...over }) as CreaContributionInput
@@ -78,5 +79,37 @@ describe('crea stub rewrite (moderator deviates, E-017 / E-019)', () => {
     ).toBeTruthy()
     expect(buildStubRewrite(stubInput({ moderatorDecision: 'inquire' })).memoSupplement).toBeNull()
     expect(buildStubRewrite(stubInput({ moderatorDecision: 'deny' })).memoSupplement).toBeNull()
+  })
+})
+
+describe('crea stub batch evaluation (E-020)', () => {
+  const batchInput = (over: Partial<CreaBatchInput> = {}): CreaBatchInput =>
+    ({
+      contributions: [{ text: 'Ich habe im Tierheim geholfen.' }, { text: 'Chor-Probe geleitet.' }],
+      ...over,
+    }) as CreaBatchInput
+
+  it('carries the stub_preview flag so the UI labels it as a preview', () => {
+    expect(buildStubBatch(batchInput()).flags).toContain(CREA_STUB_FLAG)
+  })
+
+  it('returns ONE overall verdict + ONE reply that mentions the contribution count', () => {
+    const result = buildStubBatch(batchInput())
+    expect(result.overallVerdict).toBe('confirm')
+    expect(typeof result.responseText).toBe('string')
+    expect(result.reasoning).toContain('2')
+  })
+
+  it('fills the salutation locally and keeps the signature placeholder for the client', () => {
+    const result = buildStubBatch(batchInput({ recipientFirstName: 'Bernd' }))
+    expect(result.responseText).toContain('Lieber Bernd')
+    expect(result.responseText).not.toContain(SALUTATION_PLACEHOLDER)
+    expect(result.responseText).toContain(SIGNATURE_PLACEHOLDER)
+  })
+
+  it('flags an uncertain salutation for an unknown name (E-005)', () => {
+    expect(buildStubBatch(batchInput({ recipientFirstName: 'Xyzzy' })).flags).toContain(
+      'anrede_unsicher',
+    )
   })
 })

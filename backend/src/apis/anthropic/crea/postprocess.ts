@@ -11,15 +11,20 @@ import {
 
 /**
  * Fills the [ANREDE] placeholder locally from the recipient's first name (E-012 —
- * PII stays local). Shared by the full evaluation, the rewrite call and the stub,
- * so all paths build the salutation identically. Returns the filled text plus
- * whether the salutation is uncertain (so callers can flag it, E-005).
+ * PII stays local). Shared by the full evaluation, the rewrite call, the batch call
+ * and the stub, so all paths build the salutation identically. Takes only the
+ * salutation fields (not the whole input) so the batch input can reuse it. Returns
+ * the filled text plus whether the salutation is uncertain (so callers can flag it,
+ * E-005).
  */
 export function fillSalutation(
-  input: CreaContributionInput,
+  recipient: { recipientFirstName?: string | null; salutation?: string | null },
   text: string,
 ): { text: string; uncertain: boolean } {
-  const { salutation, uncertain } = buildSalutation(input.recipientFirstName, input.salutation)
+  const { salutation, uncertain } = buildSalutation(
+    recipient.recipientFirstName,
+    recipient.salutation,
+  )
   return { text: text.split(SALUTATION_PLACEHOLDER).join(salutation), uncertain }
 }
 

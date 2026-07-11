@@ -160,3 +160,34 @@ export const CREA_REWRITE_SCHEMA = {
   },
   required: ['responseText'],
 } as const
+
+// Slim schema for the batch call (E-020): several open contributions of ONE
+// participant judged together into ONE overall verdict + ONE reply. Batch mode keeps
+// no per-activity records and runs no per-contribution discrepancy check (like the old
+// copy-paste flow that never wrote records) - so there are no `activities` /
+// `appliedRule` / `discrepancy` here, just the shared judgement and the one reply.
+// Field names match CREA_OUTPUT_SCHEMA so the admin modal renders both the same way.
+export const CREA_BATCH_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    overallVerdict: { type: 'string', enum: [...VERDICTS] },
+    confidence: { type: 'string', enum: [...CONFIDENCES] },
+    reasoning: { type: 'string' },
+    responseText: { type: 'string' },
+    openPoints: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          question: { type: 'string' },
+          options: { type: 'array', items: { type: 'string' } },
+          relatesTo: { type: 'string' },
+        },
+        required: ['question', 'options', 'relatesTo'],
+      },
+    },
+  },
+  required: ['overallVerdict', 'confidence', 'reasoning', 'responseText', 'openPoints'],
+} as const
