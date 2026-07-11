@@ -91,12 +91,22 @@
     "openPoints": "Offene Punkte",
     "previewBanner": "Vorschau ohne KI-Verbindung – ein Beispiel-Ergebnis. Optik, Datenbank und Anrede/Signatur sind echt.",
     "reasoning": "Begründung",
-    "registeredSince": "seit {date}",
     "response": "Antwortvorschlag",
     "rewrite": "Für meine Entscheidung schreiben",
     "signature": "Deine Signatur",
     "signatureHint": "Wird in Deinem Browser gespeichert und automatisch ans Ende des Vorschlags gesetzt.",
     "signaturePlaceholder": "z. B. Herzliche Grüße, Bernd 😊",
+    "tenure": {
+      "day": "seit einem Tag",
+      "days": "seit {count} Tagen",
+      "month": "seit einem Monat",
+      "months": "seit {count} Monaten",
+      "today": "seit heute",
+      "week": "seit einer Woche",
+      "weeks": "seit {count} Wochen",
+      "year": "seit einem Jahr",
+      "years": "seit {count} Jahren"
+    },
     "title": "Creas Einschätzung",
     "verdict": {
       "confirm": "Bestätigen empfohlen",

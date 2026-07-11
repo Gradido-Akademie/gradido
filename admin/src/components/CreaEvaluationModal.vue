@@ -16,8 +16,8 @@
       <div class="d-flex justify-content-between align-items-baseline mb-1">
         <strong>
           {{ contributionUserName || $t('crea.contribution') }}
-          <small v-if="contributionRegistered" class="text-muted fw-normal">
-            ({{ $t('crea.registeredSince', { date: contributionRegistered }) }})
+          <small v-if="contributionTenure" class="text-muted fw-normal">
+            ({{ contributionTenure }})
           </small>
         </strong>
         <span v-if="contributionMeta" class="text-muted small ms-3">{{ contributionMeta }}</span>
@@ -174,6 +174,7 @@ import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
 import { creaRewriteResponse } from '@/graphql/creaRewriteResponse'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
 import { useCreaClipboard } from '@/composables/useCreaClipboard'
+import { tenureBucket } from '@/utils/tenure'
 
 // Preview flag the backend stub carries so the modal shows a "no AI" banner and
 // hides it from the red review flags.
@@ -303,13 +304,32 @@ const contributionUserName = computed(() => {
   const u = props.contribution?.user
   return u ? [u.firstName, u.lastName].filter(Boolean).join(' ') : ''
 })
-const contributionRegistered = computed(() => {
+// Relative tenure ("seit drei Wochen") instead of an absolute date - quicker to grasp and
+// no year mix-ups. The bucket picks the coarse unit; the singular/plural key is chosen
+// explicitly (static keys, so the i18n linter sees each one as used).
+const contributionTenure = computed(() => {
   const created = props.contribution?.user?.createdAt
   if (!created) {
     return ''
   }
-  const date = new Date(created)
-  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(locale.value)
+  const bucket = tenureBucket(created)
+  if (!bucket) {
+    return ''
+  }
+  const { unit, count } = bucket
+  if (unit === 'today') {
+    return t('crea.tenure.today')
+  }
+  if (unit === 'days') {
+    return count === 1 ? t('crea.tenure.day') : t('crea.tenure.days', { count })
+  }
+  if (unit === 'weeks') {
+    return count === 1 ? t('crea.tenure.week') : t('crea.tenure.weeks', { count })
+  }
+  if (unit === 'months') {
+    return count === 1 ? t('crea.tenure.month') : t('crea.tenure.months', { count })
+  }
+  return count === 1 ? t('crea.tenure.year') : t('crea.tenure.years', { count })
 })
 
 const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)

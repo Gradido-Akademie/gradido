@@ -91,12 +91,22 @@
     "openPoints": "Open points",
     "previewBanner": "Preview without AI connection – a sample result. Layout, database and salutation/signature are real.",
     "reasoning": "Reasoning",
-    "registeredSince": "since {date}",
     "response": "Suggested reply",
     "rewrite": "Write for my decision",
     "signature": "Your signature",
     "signatureHint": "Saved in your browser (preview). Persistent storage will follow.",
     "signaturePlaceholder": "e.g. Warm regards, Bernd 😊",
+    "tenure": {
+      "day": "for one day",
+      "days": "for {count} days",
+      "month": "for one month",
+      "months": "for {count} months",
+      "today": "since today",
+      "week": "for one week",
+      "weeks": "for {count} weeks",
+      "year": "for one year",
+      "years": "for {count} years"
+    },
     "title": "Crea's assessment",
     "verdict": {
       "confirm": "Confirm suggested",
