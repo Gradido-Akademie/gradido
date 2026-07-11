@@ -16,8 +16,12 @@ import { buildCreaSystemPrompt, moderatorDecisionLabel } from './crea/ruleset'
 
 const logger = getLogger(`${LOG4JS_BASE_CATEGORY_NAME}.apis.anthropic.AnthropicClient`)
 
-// Crea's structured output is small; give the model enough room for the JSON.
-const CREA_MAX_TOKENS = 2048
+// Crea's structured JSON output is usually small, but a contribution with many
+// activities (e.g. a long, semicolon-separated list) yields a longer activities array
+// plus reasoning and reply. Give generous room: at 2048 such a case was truncated
+// mid-JSON, which reached the moderator as a JSON parse error. This is only a ceiling -
+// normal evaluations stop well before it, so a higher limit costs nothing.
+const CREA_MAX_TOKENS = 8192
 
 /**
  * Singleton client for the Anthropic (Claude) API, used by the Crea moderation
@@ -74,6 +78,7 @@ export class AnthropicClient {
       `crea usage: input=${message.usage.input_tokens} cacheRead=${message.usage.cache_read_input_tokens} cacheWrite=${message.usage.cache_creation_input_tokens} output=${message.usage.output_tokens}`,
     )
 
+    this.assertNotTruncated(message)
     const evaluation = JSON.parse(this.firstTextBlock(message)) as CreaEvaluation
     // Layer-3 post-processing (authoritative discrepancy + local [ANREDE] /
     // [SIGNATUR] fill) is shared with the stub preview so both paths behave
@@ -109,11 +114,24 @@ export class AnthropicClient {
       `crea rewrite usage: input=${message.usage.input_tokens} cacheRead=${message.usage.cache_read_input_tokens} output=${message.usage.output_tokens}`,
     )
 
+    this.assertNotTruncated(message)
     const { responseText } = JSON.parse(this.firstTextBlock(message)) as { responseText: string }
     // Fill [ANREDE] locally (PII stays local); [SIGNATUR] is left for the client
     // to fill reactively (E-013 / E-014). No discrepancy recompute: the rewrite
     // does not re-judge, it only reformulates for the chosen outcome.
     return fillSalutation(input, responseText).text
+  }
+
+  // A truncated response (max_tokens hit) leaves incomplete JSON, which would fail as a
+  // cryptic parse error. Catch it explicitly so the log names the cause and the moderator
+  // gets a clear message rather than a JSON crash.
+  private assertNotTruncated(message: Anthropic.Message): void {
+    if (message.stop_reason === 'max_tokens') {
+      logger.error(
+        `crea output truncated at max_tokens=${CREA_MAX_TOKENS} (output=${message.usage.output_tokens}); the contribution likely lists many activities`,
+      )
+      throw new Error('Crea returned an incomplete result (output too long)')
+    }
   }
 
   private firstTextBlock(message: Anthropic.Message): string {
