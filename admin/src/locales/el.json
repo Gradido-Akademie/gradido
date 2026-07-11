@@ -69,6 +69,7 @@
     "column": "Crea",
     "contextLabel": "Extra info for Crea (optional)",
     "contextPlaceholder": "e.g. I know this member and their contribution.",
+    "contribution": "Contribution",
     "copied": "Reply copied",
     "copy": "Copy reply",
     "copyFailed": "Copy failed",

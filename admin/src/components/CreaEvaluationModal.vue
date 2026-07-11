@@ -9,6 +9,16 @@
     @shown="onShown"
     @hidden="resetState"
   >
+    <!-- The contribution itself, shown at the top from the prop so it is visible the
+         moment the modal opens - before Crea's evaluation returns. The large modal hides
+         the row behind it, so without this the moderator cannot see what Crea judges. -->
+    <div v-if="contributionMemo" class="border rounded p-2 mb-3">
+      <p class="mb-1">
+        <strong>{{ $t('crea.contribution') }}</strong>
+      </p>
+      <p class="mb-0 text-break crea-original">{{ contributionMemo }}</p>
+    </div>
+
     <div v-if="loading" class="text-center py-4">
       <BSpinner class="me-2" />
       {{ $t('crea.loading') }}
@@ -250,6 +260,11 @@ const isDeviation = computed(
   () => evaluation.value != null && chosenDecision.value !== evaluation.value.overallVerdict,
 )
 
+// The original contribution text, taken from the prop so it shows immediately on open
+// (independent of the evaluation call). Later, judging several contributions at once,
+// this becomes a list separated by thin rules; for now it is the single contribution.
+const contributionMemo = computed(() => props.contribution?.memo ?? '')
+
 const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)
 const { mutate: rewriteMutation } = useMutation(creaRewriteResponse)
 
@@ -359,3 +374,9 @@ const copyResponse = async () => {
   }
 }
 </script>
+
+<style scoped>
+.crea-original {
+  white-space: pre-line;
+}
+</style>
