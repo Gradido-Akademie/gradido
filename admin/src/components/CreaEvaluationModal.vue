@@ -128,8 +128,8 @@
       <!-- Your decision (E-017): Crea's own recommendation is preselected, so
            "follow" means leaving it. Switching is pure UI state and costs nothing;
            only "write for my decision" (shown when you deviate) calls Crea again.
-           Single mode only - the batch path has no per-contribution rewrite (E-020). -->
-      <div v-if="!isBatch" class="mb-3">
+           Works in both single and batch mode (batch uses creaRewriteBatch, E-020). -->
+      <div class="mb-3">
         <p class="mb-1">
           <strong>{{ $t('crea.deviation') }}</strong>
         </p>
@@ -221,6 +221,7 @@ import { useAppToast } from '@/composables/useToast'
 import { adminListContributions } from '@/graphql/adminListContributions.graphql'
 import { creaEvaluateBatch } from '@/graphql/creaEvaluateBatch'
 import { creaEvaluateContribution } from '@/graphql/creaEvaluateContribution'
+import { creaRewriteBatch } from '@/graphql/creaRewriteBatch'
 import { creaRewriteResponse } from '@/graphql/creaRewriteResponse'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
 import { useCreaClipboard } from '@/composables/useCreaClipboard'
@@ -406,6 +407,7 @@ const contributionTenure = computed(() => {
 const { mutate: evaluateMutation } = useMutation(creaEvaluateContribution)
 const { mutate: rewriteMutation } = useMutation(creaRewriteResponse)
 const { mutate: evaluateBatchMutation } = useMutation(creaEvaluateBatch)
+const { mutate: rewriteBatchMutation } = useMutation(creaRewriteBatch)
 // Not destructured: useApolloClient() is undefined when no Apollo provider is present
 // (e.g. in the CreationConfirm unit tests that mount this modal), and destructuring
 // undefined at setup would throw. loadSiblings guards on it before use.
@@ -516,6 +518,9 @@ const runBatchEvaluation = async () => {
     evaluation.value = response.data.creaEvaluateBatch
     rawResponseText.value = evaluation.value.responseText
     responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
+    // Preselect Crea's own overall recommendation, so switching a button = deviating.
+    chosenDecision.value = evaluation.value.overallVerdict
+    moderatorContext.value = ''
   } catch (error) {
     if (/not enabled/i.test(error.message)) {
       inactive.value = true
@@ -532,24 +537,38 @@ const runBatchEvaluation = async () => {
 // (badge, reasoning, open points) stays put, so `rewriting` is separate from
 // `loading` (which would hide that whole block). Does not persist (E-017).
 const rewriteForDecision = async () => {
-  if (!props.contribution || !isDeviation.value) {
+  if (!isDeviation.value) {
     return
   }
   rewriting.value = true
   try {
-    const response = await rewriteMutation({
-      input: {
-        ...buildInput(props.contribution),
-        moderatorDecision: chosenDecision.value,
-        moderatorContext: moderatorContext.value.trim() || null,
-      },
-    })
-    const result = response.data.creaRewriteResponse
-    rawResponseText.value = result.responseText
-    responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
-    // A confirm rewrite also carries the public memo note (E-019); inquire/deny return
-    // null. Surfacing it fills the editable field above and the "Text ergänzen" button.
-    supplementText.value = result.memoSupplement ?? ''
+    if (isBatch.value) {
+      // Batch deviation (E-020): one fresh joint reply for the chosen outcome. No
+      // memoSupplement in batch mode ("Text ergänzen" is single-contribution, E-019).
+      const response = await rewriteBatchMutation({
+        input: {
+          ...buildBatchInput(),
+          moderatorDecision: chosenDecision.value,
+          moderatorContext: moderatorContext.value.trim() || null,
+        },
+      })
+      rawResponseText.value = response.data.creaRewriteBatch.responseText
+      responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
+    } else {
+      const response = await rewriteMutation({
+        input: {
+          ...buildInput(props.contribution),
+          moderatorDecision: chosenDecision.value,
+          moderatorContext: moderatorContext.value.trim() || null,
+        },
+      })
+      const result = response.data.creaRewriteResponse
+      rawResponseText.value = result.responseText
+      responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
+      // A confirm rewrite also carries the public memo note (E-019); inquire/deny return
+      // null. Surfacing it fills the editable field above and the "Text ergänzen" button.
+      supplementText.value = result.memoSupplement ?? ''
+    }
   } catch (error) {
     toastError(error.message)
   } finally {

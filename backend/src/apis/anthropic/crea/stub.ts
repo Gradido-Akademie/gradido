@@ -119,3 +119,31 @@ export function buildStubBatch(input: CreaBatchInput): CreaBatchEvaluation {
     flags: uncertain ? [CREA_STUB_FLAG, 'anrede_unsicher'] : [CREA_STUB_FLAG],
   }
 }
+
+/**
+ * Canned batch rewrite for the staging preview (E-020): mirrors rewriteBatch without
+ * calling the API. Returns a fixed joint reply for the moderator's target decision,
+ * [ANREDE] filled locally and [SIGNATUR] left for the client. No memoSupplement in
+ * batch mode. Only reached when no real client is configured.
+ */
+export function buildStubBatchRewrite(input: CreaBatchInput): CreaRewriteResult {
+  const isEn = (input.uiLanguage ?? 'de').startsWith('en')
+  const bodies = isEn
+    ? {
+        confirm:
+          'thank you so much — I will gladly credit **your contributions to the common good**.',
+        inquire:
+          'thank you for your contributions! Could you tell me a little more about them? (More on the common good: https://gradido.net/gemeinwohl-was-ist-das/)',
+        deny: 'thank you for your effort. These contributions cannot be credited this time — but the hours become free again, so you are welcome to submit new ones.',
+      }
+    : {
+        confirm: 'vielen Dank — ich schreibe Dir **Deine Gemeinwohl-Beiträge** sehr gerne gut.',
+        inquire:
+          'vielen Dank für Deine Beiträge! Magst Du mir noch ein wenig mehr dazu erzählen? (Mehr zum Gemeinwohl: https://gradido.net/gemeinwohl-was-ist-das/)',
+        deny: 'danke für Deinen Einsatz. Diese Beiträge kann ich Dir diesmal leider nicht gutschreiben — die Stunden werden dadurch aber wieder frei, und Du kannst gerne neue Beiträge einreichen.',
+      }
+  const key = (input.moderatorDecision ?? 'confirm') as keyof typeof bodies
+  const body = bodies[key] ?? bodies.confirm
+  const text = `${SALUTATION_PLACEHOLDER},\n\n${body}\n\n${SIGNATURE_PLACEHOLDER}`
+  return { responseText: fillSalutation(input, text).text, memoSupplement: null }
+}

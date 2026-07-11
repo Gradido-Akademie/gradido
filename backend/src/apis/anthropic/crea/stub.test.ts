@@ -1,7 +1,13 @@
 import type { CreaBatchInput } from '@/graphql/input/CreaBatchInput'
 import type { CreaContributionInput } from '@/graphql/input/CreaContributionInput'
 import { SALUTATION_PLACEHOLDER, SIGNATURE_PLACEHOLDER } from './deterministics'
-import { buildStubBatch, buildStubEvaluation, buildStubRewrite, CREA_STUB_FLAG } from './stub'
+import {
+  buildStubBatch,
+  buildStubBatchRewrite,
+  buildStubEvaluation,
+  buildStubRewrite,
+  CREA_STUB_FLAG,
+} from './stub'
 
 const stubInput = (over: Partial<CreaContributionInput> = {}): CreaContributionInput =>
   ({ text: 'Ich habe im Tierheim geholfen.', ...over }) as CreaContributionInput
@@ -111,5 +117,13 @@ describe('crea stub batch evaluation (E-020)', () => {
     expect(buildStubBatch(batchInput({ recipientFirstName: 'Xyzzy' })).flags).toContain(
       'anrede_unsicher',
     )
+  })
+
+  it('rewrites one joint reply per target decision, no memo supplement (E-020)', () => {
+    const confirm = buildStubBatchRewrite(batchInput({ moderatorDecision: 'confirm' }))
+    const deny = buildStubBatchRewrite(batchInput({ moderatorDecision: 'deny' }))
+    expect(confirm.responseText).not.toBe(deny.responseText)
+    expect(deny.responseText).toContain('wieder frei')
+    expect(confirm.memoSupplement).toBeNull()
   })
 })

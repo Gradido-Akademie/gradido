@@ -176,6 +176,40 @@ export class AnthropicClient {
     }
   }
 
+  /**
+   * Rewrites the joint reply when the moderator deviates from Crea's overall batch
+   * recommendation (E-017 applied to E-020): the target decision + optional context
+   * steer ONE fresh reply text for all contributions. Like the single rewrite it does
+   * NOT re-judge, uses the slim rewrite schema and reuses the cached rules prefix. No
+   * memoSupplement in batch mode (the public per-contribution note is single-only, E-019).
+   */
+  public async rewriteBatch(input: CreaBatchInput): Promise<CreaRewriteResult> {
+    const message = await this.anthropic.messages.create({
+      model: CONFIG.ANTHROPIC_MODEL,
+      max_tokens: CREA_MAX_TOKENS,
+      thinking: { type: 'disabled' },
+      system: [
+        {
+          type: 'text',
+          text: buildCreaSystemPrompt(),
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
+      messages: [{ role: 'user', content: this.buildBatchRewriteUserMessage(input) }],
+      output_config: { format: { type: 'json_schema', schema: CREA_REWRITE_SCHEMA } },
+    })
+
+    logger.info(
+      `crea batch rewrite usage: input=${message.usage.input_tokens} cacheRead=${message.usage.cache_read_input_tokens} output=${message.usage.output_tokens}`,
+    )
+
+    this.assertNotTruncated(message)
+    const parsed = JSON.parse(this.firstTextBlock(message)) as { responseText: string }
+    // Fill [ANREDE] locally; [SIGNATUR] left for the client. memoSupplement is null in
+    // batch mode ("Text ergaenzen" targets a single contribution's memo, E-019).
+    return { responseText: fillSalutation(input, parsed.responseText).text, memoSupplement: null }
+  }
+
   // A truncated response (max_tokens hit) leaves incomplete JSON, which would fail as a
   // cryptic parse error. Catch it explicitly so the log names the cause and the moderator
   // gets a clear message rather than a JSON crash.
@@ -262,6 +296,44 @@ export class AnthropicClient {
       `- Anrede: mit dem Platzhalter ${SALUTATION_PLACEHOLDER} beginnen (der Code fuellt den Namen lokal ein)`,
       `- Grussformel: mit dem Platzhalter ${SIGNATURE_PLACEHOLDER} abschliessen (der Code fuellt die Moderator-Signatur lokal ein)`,
       `- Eingestellte Software-Sprache (fuer reasoning): ${input.uiLanguage ?? 'de'}`,
+    )
+    return lines.join('\n')
+  }
+
+  /**
+   * Batch rewrite prompt (E-020): the same contributions plus the moderator's target
+   * decision and optional context. Crea reformulates ONE joint reply for that outcome;
+   * it does not re-evaluate.
+   */
+  private buildBatchRewriteUserMessage(input: CreaBatchInput): string {
+    const lines: string[] = ['## Mehrere Beitraege desselben Teilnehmers (unveraendert)', '']
+    input.contributions.forEach((contribution, index) => {
+      const meta: string[] = []
+      if (contribution.date) {
+        meta.push(contribution.date)
+      }
+      if (contribution.enteredGdd != null) {
+        meta.push(`${contribution.enteredGdd} GDD`)
+      }
+      const heading = `### Beitrag ${index + 1}${meta.length ? ` (${meta.join(', ')})` : ''}`
+      lines.push(heading, contribution.text, '')
+    })
+    lines.push(
+      '## Fakten aus dem System',
+      `- Anrede: mit dem Platzhalter ${SALUTATION_PLACEHOLDER} beginnen (der Code fuellt den Namen lokal ein)`,
+      `- Grussformel: mit dem Platzhalter ${SIGNATURE_PLACEHOLDER} abschliessen (der Code fuellt die Moderator-Signatur lokal ein)`,
+      `- Eingestellte Software-Sprache (fuer reasoning): ${input.uiLanguage ?? 'de'}`,
+      '',
+      '## Moderator-Vorgabe (weicht von Deiner Empfehlung ab)',
+      `- Zielentscheidung fuer ALLE Beitraege zusammen: ${moderatorDecisionLabel(input.moderatorDecision)}`,
+    )
+    if (input.moderatorContext?.trim()) {
+      lines.push(
+        `- Zusatzinfo des Moderators (wahr, er kennt den Fall): ${input.moderatorContext.trim()}`,
+      )
+    }
+    lines.push(
+      '- Schreibe NUR den neuen gemeinsamen Antwortvorschlag fuer diese Zielentscheidung; bewerte nicht neu.',
     )
     return lines.join('\n')
   }

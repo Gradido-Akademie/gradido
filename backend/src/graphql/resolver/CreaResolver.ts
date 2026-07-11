@@ -6,7 +6,12 @@ import { CreaRewriteResult } from '@model/CreaRewriteResult'
 import { Arg, Authorized, Mutation, Resolver } from 'type-graphql'
 import { AnthropicClient } from '@/apis/anthropic/AnthropicClient'
 import { metaFromInput, persistCreaRecords } from '@/apis/anthropic/crea/records'
-import { buildStubBatch, buildStubEvaluation, buildStubRewrite } from '@/apis/anthropic/crea/stub'
+import {
+  buildStubBatch,
+  buildStubBatchRewrite,
+  buildStubEvaluation,
+  buildStubRewrite,
+} from '@/apis/anthropic/crea/stub'
 import { RIGHTS } from '@/auth/RIGHTS'
 import { CONFIG } from '@/config'
 
@@ -78,6 +83,28 @@ export class CreaResolver {
     }
     if (CONFIG.CREA_STUB) {
       return buildStubBatch(input)
+    }
+    throw new Error('Anthropic API is not enabled')
+  }
+
+  /**
+   * Rewrites the joint batch reply when the moderator deviates from Crea's overall
+   * recommendation (E-017 for the batch, E-020): a fresh joint responseText for the
+   * moderator's target decision + optional context. Like the single rewrite it does
+   * NOT re-judge and does NOT persist. No memoSupplement in batch mode (E-019).
+   */
+  @Authorized([RIGHTS.AI_SEND_MESSAGE])
+  @Mutation(() => CreaRewriteResult)
+  async creaRewriteBatch(@Arg('input') input: CreaBatchInput): Promise<CreaRewriteResult> {
+    if (!input.moderatorDecision) {
+      throw new Error('moderatorDecision is required to rewrite the batch response')
+    }
+    const client = AnthropicClient.getInstance()
+    if (client) {
+      return client.rewriteBatch(input)
+    }
+    if (CONFIG.CREA_STUB) {
+      return buildStubBatchRewrite(input)
     }
     throw new Error('Anthropic API is not enabled')
   }

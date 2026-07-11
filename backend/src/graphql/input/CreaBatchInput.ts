@@ -46,4 +46,19 @@ export class CreaBatchInput {
   @IsOptional()
   @IsString()
   uiLanguage?: string | null
+
+  // The moderator's target decision when deviating from Crea's overall recommendation
+  // (E-017 / E-020): confirm | inquire | deny. Only set on the batch rewrite call
+  // (creaRewriteBatch); "deny" stays out of Crea's own verdict enum (E-008).
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  moderatorDecision?: string | null
+
+  // One or two sentences the moderator adds when deviating - context Crea lacked.
+  // Treated as true; steers the tone and the reason for the new joint reply.
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  moderatorContext?: string | null
 }
