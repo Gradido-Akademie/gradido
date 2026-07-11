@@ -119,11 +119,12 @@ describe('crea stub batch evaluation (E-020)', () => {
     )
   })
 
-  it('rewrites one joint reply per target decision, no memo supplement (E-020)', () => {
+  it('rewrites one joint reply per target decision, memo note only on confirm (E-020)', () => {
     const confirm = buildStubBatchRewrite(batchInput({ moderatorDecision: 'confirm' }))
     const deny = buildStubBatchRewrite(batchInput({ moderatorDecision: 'deny' }))
     expect(confirm.responseText).not.toBe(deny.responseText)
     expect(deny.responseText).toContain('wieder frei')
-    expect(confirm.memoSupplement).toBeNull()
+    expect(confirm.memoSupplement).toBeTruthy()
+    expect(deny.memoSupplement).toBeNull()
   })
 })

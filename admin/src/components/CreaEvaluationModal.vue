@@ -552,8 +552,12 @@ const rewriteForDecision = async () => {
           moderatorContext: moderatorContext.value.trim() || null,
         },
       })
-      rawResponseText.value = response.data.creaRewriteBatch.responseText
+      const result = response.data.creaRewriteBatch
+      rawResponseText.value = result.responseText
       responseText.value = applySignature(rawResponseText.value, moderatorSignature.value)
+      // A confirm deviation also carries the public memo note (E-019); surfacing it fills
+      // the "Ergänzung" field and enables the "Text ergänzen" button in the reply form.
+      supplementText.value = result.memoSupplement ?? ''
     } else {
       const response = await rewriteMutation({
         input: {

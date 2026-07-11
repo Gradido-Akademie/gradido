@@ -180,8 +180,9 @@ export class AnthropicClient {
    * Rewrites the joint reply when the moderator deviates from Crea's overall batch
    * recommendation (E-017 applied to E-020): the target decision + optional context
    * steer ONE fresh reply text for all contributions. Like the single rewrite it does
-   * NOT re-judge, uses the slim rewrite schema and reuses the cached rules prefix. No
-   * memoSupplement in batch mode (the public per-contribution note is single-only, E-019).
+   * NOT re-judge, uses the slim rewrite schema and reuses the cached rules prefix. On a
+   * confirm deviation it also carries memoSupplement (E-019), which the moderator appends
+   * to one of the contributions via "Text ergaenzen".
    */
   public async rewriteBatch(input: CreaBatchInput): Promise<CreaRewriteResult> {
     const message = await this.anthropic.messages.create({
@@ -204,10 +205,17 @@ export class AnthropicClient {
     )
 
     this.assertNotTruncated(message)
-    const parsed = JSON.parse(this.firstTextBlock(message)) as { responseText: string }
-    // Fill [ANREDE] locally; [SIGNATUR] left for the client. memoSupplement is null in
-    // batch mode ("Text ergaenzen" targets a single contribution's memo, E-019).
-    return { responseText: fillSalutation(input, parsed.responseText).text, memoSupplement: null }
+    const parsed = JSON.parse(this.firstTextBlock(message)) as {
+      responseText: string
+      memoSupplement?: string | null
+    }
+    // Fill [ANREDE] locally; [SIGNATUR] left for the client. On a confirm deviation Crea
+    // also drafts the public memo note (E-019); the moderator appends it to ONE of the
+    // contributions via "Text ergaenzen". The 💬 marker + first name are added client-side.
+    return {
+      responseText: fillSalutation(input, parsed.responseText).text,
+      memoSupplement: parsed.memoSupplement?.trim() || null,
+    }
   }
 
   // A truncated response (max_tokens hit) leaves incomplete JSON, which would fail as a

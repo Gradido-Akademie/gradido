@@ -145,5 +145,12 @@ export function buildStubBatchRewrite(input: CreaBatchInput): CreaRewriteResult 
   const key = (input.moderatorDecision ?? 'confirm') as keyof typeof bodies
   const body = bodies[key] ?? bodies.confirm
   const text = `${SALUTATION_PLACEHOLDER},\n\n${body}\n\n${SIGNATURE_PLACEHOLDER}`
-  return { responseText: fillSalutation(input, text).text, memoSupplement: null }
+  // Public memo note only on a confirm deviation (E-019), like the single rewrite stub.
+  const memoSupplement =
+    key === 'confirm'
+      ? isEn
+        ? 'Approved as genuine contributions to the common good (preview note).'
+        : 'Als echte Gemeinwohl-Beiträge genehmigt (Vorschau-Hinweis).'
+      : null
+  return { responseText: fillSalutation(input, text).text, memoSupplement }
 }
