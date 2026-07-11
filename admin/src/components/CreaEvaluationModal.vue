@@ -125,13 +125,13 @@
             v-model="moderatorContext"
             :rows="2"
             :placeholder="$t('crea.contextPlaceholder')"
-            class="mb-2"
+            class="mb-1"
           />
+          <p class="mb-2 text-muted small">{{ $t('crea.contextLabel') }}</p>
           <BButton variant="primary" size="sm" :disabled="rewriting" @click="rewriteForDecision">
             <BSpinner v-if="rewriting" small class="me-1" />
             {{ $t('crea.rewrite') }}
           </BButton>
-          <p class="mt-1 mb-0 text-muted small">{{ $t('crea.contextLabel') }}</p>
         </div>
       </div>
 
