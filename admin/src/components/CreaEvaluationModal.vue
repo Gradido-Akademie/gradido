@@ -239,6 +239,7 @@ import { creaRewriteResponse } from '@/graphql/creaRewriteResponse'
 import { useBoldShortcut } from '@/composables/useBoldShortcut'
 import { useCreaClipboard } from '@/composables/useCreaClipboard'
 import { useCreaSupplement } from '@/composables/useCreaSupplement'
+import { primeCreaSound, playCreaSound } from '@/composables/useCreaSound'
 import { tenureBucket } from '@/utils/tenure'
 
 // Preview flag the backend stub carries so the modal shows a "no AI" banner and
@@ -466,6 +467,7 @@ const runEvaluation = async () => {
   }
   resetState()
   loading.value = true
+  primeCreaSound()
   try {
     const response = await evaluateMutation({ input: buildInput(props.contribution) })
     evaluation.value = response.data.creaEvaluateContribution
@@ -474,6 +476,7 @@ const runEvaluation = async () => {
     // Preselect Crea's own recommendation, so switching away = deviating.
     chosenDecision.value = evaluation.value.overallVerdict
     moderatorContext.value = ''
+    playCreaSound()
   } catch (error) {
     // Crea stays dormant on staging until the API key (DO-5) is set; the resolver
     // then throws "Anthropic API is not enabled". Show a calm hint, not an error.
@@ -531,6 +534,7 @@ const runBatchEvaluation = async () => {
   inactive.value = false
   errorMessage.value = ''
   evaluation.value = null
+  primeCreaSound()
   try {
     const response = await evaluateBatchMutation({ input: buildBatchInput() })
     evaluation.value = response.data.creaEvaluateBatch
@@ -539,6 +543,7 @@ const runBatchEvaluation = async () => {
     // Preselect Crea's own overall recommendation, so switching a button = deviating.
     chosenDecision.value = evaluation.value.overallVerdict
     moderatorContext.value = ''
+    playCreaSound()
   } catch (error) {
     if (/not enabled/i.test(error.message)) {
       inactive.value = true
