@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { mutations, actions } from './store'
+import { mutations, actions, THEME_MODE_STORAGE_KEY } from './store'
 import i18n from '../i18n'
 import jwtDecode from 'jwt-decode'
 
@@ -159,9 +159,22 @@ describe('Vuex store', () => {
         darkMode: true,
       }
 
-      it('calls seventeen commits', () => {
+      it('calls eighteen commits', () => {
         login({ commit, state }, commitedData)
         expect(commit).toHaveBeenCalledTimes(17)
+      })
+
+      it('uses the account language when there is no deliberate pre-login choice', () => {
+        const localCommit = vi.fn()
+        login({ commit: localCommit, state: {} }, commitedData)
+        expect(localCommit).toHaveBeenCalledWith('language', 'de')
+      })
+
+      it('prefers a deliberate pre-login language over the account language and clears it', () => {
+        const localCommit = vi.fn()
+        login({ commit: localCommit, state: { preLoginLanguage: 'it' } }, commitedData)
+        expect(localCommit).toHaveBeenCalledWith('language', 'it')
+        expect(localCommit).toHaveBeenCalledWith('setPreLoginLanguage', null)
       })
 
       // ... (other login action tests remain largely the same)
@@ -254,6 +267,38 @@ describe('Vuex store', () => {
         applyTheme({ state: { themeMode: 'system' }, commit })
         expect(commit).toHaveBeenCalledWith('setDarkMode', true)
         window.matchMedia = original
+      })
+    })
+
+    describe('applyTheme', () => {
+      it('sets darkMode true when themeMode is dark', () => {
+        const commit = vi.fn()
+        applyTheme({ state: { themeMode: 'dark' }, commit })
+        expect(commit).toHaveBeenCalledWith('setDarkMode', true)
+      })
+
+      it('sets darkMode false when themeMode is light', () => {
+        const commit = vi.fn()
+        applyTheme({ state: { themeMode: 'light' }, commit })
+        expect(commit).toHaveBeenCalledWith('setDarkMode', false)
+      })
+
+      it('follows the OS preference when themeMode is system', () => {
+        const commit = vi.fn()
+        const original = window.matchMedia
+        window.matchMedia = vi.fn(() => ({ matches: true }))
+        applyTheme({ state: { themeMode: 'system' }, commit })
+        expect(commit).toHaveBeenCalledWith('setDarkMode', true)
+        window.matchMedia = original
+      })
+
+      it('mirrors the theme mode into the dedicated storage key', () => {
+        const commit = vi.fn()
+        const setItem = vi.fn()
+        vi.stubGlobal('localStorage', { setItem })
+        applyTheme({ state: { themeMode: 'dark' }, commit })
+        expect(setItem).toHaveBeenCalledWith(THEME_MODE_STORAGE_KEY, 'dark')
+        vi.unstubAllGlobals()
       })
     })
   })

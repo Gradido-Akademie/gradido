@@ -324,7 +324,7 @@ describe('UserResolver', () => {
       it('sets "de" as default language', async () => {
         await mutate({
           mutation: createUser,
-          variables: { ...variables, email: 'bibi@bloxberg.de', language: 'it' },
+          variables: { ...variables, email: 'bibi@bloxberg.de', language: 'xx' },
         })
         await expect(
           UserContact.findOne({ where: { email: 'bibi@bloxberg.de' }, relations: ['user'] }),

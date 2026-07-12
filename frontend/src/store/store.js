@@ -5,11 +5,19 @@ import createPersistedState from 'vuex-persistedstate'
 import jwtDecode from 'jwt-decode'
 import i18n from '../i18n'
 
+// Dedicated localStorage key mirroring state.themeMode. The pre-paint script in
+// index.html reads it with a single getItem, so it never has to parse the whole
+// persisted-state blob on the blocking boot path. Kept in sync by applyTheme.
+export const THEME_MODE_STORAGE_KEY = 'gradido-theme-mode'
+
 export const mutations = {
   language: (state, language) => {
     i18n.global.locale.value = language
     // localeChanged(language)
     state.language = language
+  },
+  setPreLoginLanguage: (state, preLoginLanguage) => {
+    state.preLoginLanguage = preLoginLanguage
   },
   gradidoID: (state, gradidoID) => {
     state.gradidoID = gradidoID
@@ -90,9 +98,13 @@ export const mutations = {
 }
 
 export const actions = {
-  login: ({ dispatch, commit }, data) => {
+  login: ({ commit, state }, data) => {
     commit('gradidoID', data.gradidoID)
-    commit('language', data.language)
+    // A language deliberately chosen on the login page wins over the account
+    // language, then is cleared once consumed. Browser auto-detection does not set
+    // preLoginLanguage, so it never overrides the account language here.
+    commit('language', state.preLoginLanguage || data.language)
+    commit('setPreLoginLanguage', null)
     commit('username', data.alias)
     commit('firstName', data.firstName)
     commit('lastName', data.lastName)
@@ -147,7 +159,17 @@ export const actions = {
   // Compute the effective dark mode from the device-local themeMode
   // (system | light | dark) plus the OS preference, then set the darkMode flag
   // that App.vue and the dark stylesheet consume.
+  // It also mirrors themeMode into THEME_MODE_STORAGE_KEY. applyTheme runs on boot,
+  // on every theme change and on OS changes, so the key that the pre-paint script
+  // in index.html reads stays in sync without that script parsing the whole blob.
   applyTheme: ({ state, commit }) => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(THEME_MODE_STORAGE_KEY, state.themeMode)
+      }
+    } catch (e) {
+      // storage can be unavailable (private mode); the theme still applies below
+    }
     const systemDark =
       typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -172,6 +194,7 @@ try {
     ],
     state: {
       language: null,
+      preLoginLanguage: null,
       gradidoID: null,
       firstName: '',
       lastName: '',

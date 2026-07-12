@@ -58,9 +58,10 @@ store.dispatch('applyTheme')
 
 // Restore the persisted UI language before mount. vuex-persistedstate rehydrates
 // state.language without firing the `language` mutation (which is what sets the
-// i18n locale). This used to be masked by the login layout briefly rendering its
-// language switcher on boot; now that we mount straight into the target route, sync
-// the locale here so the app is not stuck on the default until Settings is opened.
+// i18n locale). Previously this was masked by the login layout briefly rendering
+// its language switcher on boot; now that we mount straight into the target route
+// (see router.isReady below), sync the locale here so the app is not stuck on the
+// default language until Settings is opened.
 if (store.state.language) {
   i18n.global.locale.value = store.state.language
 }
