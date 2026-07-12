@@ -282,10 +282,19 @@ const isMemoTabValid = computed(
   () => form.value.memo.length >= 5 && form.value.memo.length <= MEMO_MAX_LENGTH,
 )
 
+// Removing an existing reminder (the checkbox unchecked on a contribution that had one)
+// is a valid save even without a message -- otherwise a reminder could never be
+// withdrawn. inputResubmissionDate reflects the persisted state, so it stays truthy
+// while the moderator unchecks the box, until the save + refetch clears it.
+const isRemovingResubmission = computed(
+  () => !showResubmissionDate.value && !!props.inputResubmissionDate,
+)
+
 const disabled = computed(
   () =>
     loading.value ||
     (!(showResubmissionDate.value && resubmissionDate.value) &&
+      !isRemovingResubmission.value &&
       ([0, 1].includes(tabindex.value)
         ? !isTextTabValid.value
         : tabindex.value === 2
