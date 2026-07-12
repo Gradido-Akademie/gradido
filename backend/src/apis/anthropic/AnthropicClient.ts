@@ -16,6 +16,7 @@ import {
 import { CREA_BATCH_SCHEMA, CREA_OUTPUT_SCHEMA, CREA_REWRITE_SCHEMA } from './crea/outputSchema'
 import { applyCreaDeterministics, fillSalutation } from './crea/postprocess'
 import { buildCreaSystemPrompt, moderatorDecisionLabel } from './crea/ruleset'
+import { type CreaEffort, resolveCreaModelParams } from './crea/settings'
 
 const logger = getLogger(`${LOG4JS_BASE_CATEGORY_NAME}.apis.anthropic.AnthropicClient`)
 
@@ -59,13 +60,14 @@ export class AnthropicClient {
    * persistence yet.
    */
   public async evaluateContribution(input: CreaContributionInput): Promise<CreaEvaluation> {
+    const params = await resolveCreaModelParams()
     const message = await this.anthropic.messages.create({
-      model: CONFIG.ANTHROPIC_MODEL,
-      max_tokens: CREA_MAX_TOKENS,
-      // Thinking disabled for the thin slice (valid on Sonnet 5 / Opus 4.8):
-      // yields a single JSON text block and leaves the full budget for output.
-      // Adaptive thinking is a later quality knob.
-      thinking: { type: 'disabled' },
+      model: params.model,
+      max_tokens: params.maxTokens,
+      // Effort 'disabled' keeps thinking off (the lean single-JSON default); any level
+      // switches on adaptive thinking and raises max_tokens for the reasoning that
+      // precedes the JSON. Model + effort come from the admin settings (DO-4).
+      thinking: params.thinking,
       system: [
         {
           type: 'text',
@@ -74,7 +76,9 @@ export class AnthropicClient {
         },
       ],
       messages: [{ role: 'user', content: this.buildUserMessage(input) }],
-      output_config: { format: { type: 'json_schema', schema: CREA_OUTPUT_SCHEMA } },
+      output_config: params.effort
+        ? { effort: params.effort, format: { type: 'json_schema', schema: CREA_OUTPUT_SCHEMA } }
+        : { format: { type: 'json_schema', schema: CREA_OUTPUT_SCHEMA } },
     })
 
     logger.info(
@@ -100,10 +104,11 @@ export class AnthropicClient {
    * No persistence.
    */
   public async rewriteResponse(input: CreaContributionInput): Promise<CreaRewriteResult> {
+    const params = await resolveCreaModelParams()
     const message = await this.anthropic.messages.create({
-      model: CONFIG.ANTHROPIC_MODEL,
-      max_tokens: CREA_MAX_TOKENS,
-      thinking: { type: 'disabled' },
+      model: params.model,
+      max_tokens: params.maxTokens,
+      thinking: params.thinking,
       system: [
         {
           type: 'text',
@@ -112,7 +117,9 @@ export class AnthropicClient {
         },
       ],
       messages: [{ role: 'user', content: this.buildRewriteUserMessage(input) }],
-      output_config: { format: { type: 'json_schema', schema: CREA_REWRITE_SCHEMA } },
+      output_config: params.effort
+        ? { effort: params.effort, format: { type: 'json_schema', schema: CREA_REWRITE_SCHEMA } }
+        : { format: { type: 'json_schema', schema: CREA_REWRITE_SCHEMA } },
     })
 
     logger.info(
@@ -144,10 +151,11 @@ export class AnthropicClient {
    * [SIGNATUR] left for the client (E-012 / E-014).
    */
   public async evaluateBatch(input: CreaBatchInput): Promise<CreaBatchEvaluation> {
+    const params = await resolveCreaModelParams()
     const message = await this.anthropic.messages.create({
-      model: CONFIG.ANTHROPIC_MODEL,
-      max_tokens: CREA_MAX_TOKENS,
-      thinking: { type: 'disabled' },
+      model: params.model,
+      max_tokens: params.maxTokens,
+      thinking: params.thinking,
       system: [
         {
           type: 'text',
@@ -156,7 +164,9 @@ export class AnthropicClient {
         },
       ],
       messages: [{ role: 'user', content: this.buildBatchUserMessage(input) }],
-      output_config: { format: { type: 'json_schema', schema: CREA_BATCH_SCHEMA } },
+      output_config: params.effort
+        ? { effort: params.effort, format: { type: 'json_schema', schema: CREA_BATCH_SCHEMA } }
+        : { format: { type: 'json_schema', schema: CREA_BATCH_SCHEMA } },
     })
 
     logger.info(
@@ -185,10 +195,11 @@ export class AnthropicClient {
    * to one of the contributions via "Text ergaenzen".
    */
   public async rewriteBatch(input: CreaBatchInput): Promise<CreaRewriteResult> {
+    const params = await resolveCreaModelParams()
     const message = await this.anthropic.messages.create({
-      model: CONFIG.ANTHROPIC_MODEL,
-      max_tokens: CREA_MAX_TOKENS,
-      thinking: { type: 'disabled' },
+      model: params.model,
+      max_tokens: params.maxTokens,
+      thinking: params.thinking,
       system: [
         {
           type: 'text',
@@ -197,7 +208,9 @@ export class AnthropicClient {
         },
       ],
       messages: [{ role: 'user', content: this.buildBatchRewriteUserMessage(input) }],
-      output_config: { format: { type: 'json_schema', schema: CREA_REWRITE_SCHEMA } },
+      output_config: params.effort
+        ? { effort: params.effort, format: { type: 'json_schema', schema: CREA_REWRITE_SCHEMA } }
+        : { format: { type: 'json_schema', schema: CREA_REWRITE_SCHEMA } },
     })
 
     logger.info(
@@ -215,6 +228,39 @@ export class AnthropicClient {
     return {
       responseText: fillSalutation(input, parsed.responseText).text,
       memoSupplement: parsed.memoSupplement?.trim() || null,
+    }
+  }
+
+  /**
+   * A cheap probe for the admin "test model" button (DO-4): verifies the given model
+   * (and effort) actually answers. Returns a short outcome instead of throwing so the
+   * UI can toast it. Runs on the shared client (needs the key active).
+   */
+  public async probeModel(
+    model: string,
+    effort: CreaEffort,
+  ): Promise<{ ok: boolean; message: string }> {
+    try {
+      const message =
+        effort === 'disabled'
+          ? await this.anthropic.messages.create({
+              model,
+              max_tokens: 64,
+              thinking: { type: 'disabled' },
+              messages: [{ role: 'user', content: 'Antworte nur mit dem Wort: OK' }],
+            })
+          : await this.anthropic.messages.create({
+              model,
+              max_tokens: 4096,
+              thinking: { type: 'adaptive' },
+              output_config: { effort },
+              messages: [{ role: 'user', content: 'Antworte nur mit dem Wort: OK' }],
+            })
+      const block = message.content.find((content) => content.type === 'text')
+      const text = block && block.type === 'text' ? block.text.trim() : ''
+      return { ok: true, message: text || '(kein Text in der Antwort)' }
+    } catch (error) {
+      return { ok: false, message: error instanceof Error ? error.message : String(error) }
     }
   }
 
