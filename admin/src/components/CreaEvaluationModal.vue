@@ -200,11 +200,19 @@
         <strong>{{ $t('crea.response') }}</strong>
       </p>
       <BFormTextarea v-model="responseText" :rows="16" class="mb-2" @keydown="onResponseKeydown" />
-      <!-- A new draft comes only from a deviation (the decision buttons above), not
-           from a context-free "regenerate" (E-017). So just the copy action here. -->
-      <div class="d-flex justify-content-end">
-        <BButton variant="info" size="sm" @click="copyResponse">
-          {{ $t('crea.copy') }}
+      <!-- How to get the suggestion into the contribution -- a new moderator would not
+           know otherwise -- next to a quiet copy-to-clipboard icon (rarely needed now
+           that the reply form has an "insert draft" button). -->
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <p class="mb-0 text-muted small">{{ $t('crea.useHint') }}</p>
+        <BButton
+          variant="link"
+          size="sm"
+          class="p-1 text-muted flex-shrink-0"
+          :title="$t('crea.copy')"
+          @click="copyResponse"
+        >
+          <IBiCopy />
         </BButton>
       </div>
 

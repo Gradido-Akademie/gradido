@@ -37,6 +37,14 @@
       <template #cell(name)="row">
         <span v-if="row.item.user">
           {{ row.item.user.firstName }} {{ row.item.user.lastName }}
+          <span
+            v-if="row.item.user.emailContact"
+            class="ms-1 pointer text-primary"
+            :title="$t('filter.byEmail')"
+            @click="$emit('search-for-email', row.item.user.emailContact.email)"
+          >
+            <IBiSearch />
+          </span>
           <small v-if="row.item.user.alias">
             <hr />
             {{ row.item.user.alias }}
@@ -151,7 +159,6 @@
                 @update-status="updateStatus"
                 @reload-contribution="reloadContribution"
                 @update-contributions="updateContributions"
-                @search-for-email="$emit('search-for-email', $event)"
               />
             </div>
           </template>

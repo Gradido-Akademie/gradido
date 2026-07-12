@@ -116,6 +116,7 @@
       "years": "seit {count} Jahren"
     },
     "title": "Creas Einschätzung",
+    "useHint": "So kommt der Vorschlag in den Beitrag: das Fenster schließen und ihn in der Einzelansicht des Beitrags über „Vorschlag einfügen“ einsetzen.",
     "verdict": {
       "confirm": "Bestätigen empfohlen",
       "inquire": "Rückfrage empfohlen",

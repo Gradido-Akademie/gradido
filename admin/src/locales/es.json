@@ -116,6 +116,7 @@
       "years": "for {count} years"
     },
     "title": "Crea's assessment",
+    "useHint": "To use the suggestion: close this window and insert it into the contribution's detail view via 'Insert draft'.",
     "verdict": {
       "confirm": "Confirm suggested",
       "inquire": "Ask back suggested",
