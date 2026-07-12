@@ -52,8 +52,17 @@
       </template>
       <template #cell(creaEvaluate)="row">
         <div v-if="!myself(row.item)">
-          <BButton variant="info" size="md" class="me-2" @click="$emit('crea-evaluate', row.item)">
-            <IBiRobot />
+          <BButton
+            variant="link"
+            class="crea-logo-btn me-2"
+            :title="$t('crea.column')"
+            @click="$emit('crea-evaluate', row.item)"
+          >
+            <img
+              src="../../../public/img/crea-logo.jpg"
+              :alt="$t('crea.column')"
+              class="crea-logo-img"
+            />
           </BButton>
         </div>
       </template>
@@ -314,5 +323,27 @@ export default {
   --bs-table-bg: #e78d8d;
   --bs-table-striped-bg: #e57373;
   --bs-table-hover-bg: #e06a6a;
+}
+
+/* Crea logo used as the per-row trigger button (replaces the former robot icon) */
+.crea-logo-btn {
+  padding: 2px;
+  border: none;
+  border-radius: 20%;
+  line-height: 0;
+}
+
+.crea-logo-btn:hover,
+.crea-logo-btn:focus-visible {
+  background-color: rgb(0 0 0 / 6%);
+  box-shadow: none;
+}
+
+.crea-logo-img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 20%;
 }
 </style>

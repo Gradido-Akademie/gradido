@@ -19,7 +19,13 @@
             <time-picker v-model="resubmissionTime" class="ms-2" />
           </div>
         </BFormGroup>
-        <div v-if="showCreaInsert || showCreaAppend" class="mt-3 d-flex gap-2">
+        <div v-if="showCreaInsert || showCreaAppend" class="mt-3 d-flex gap-2 align-items-center">
+          <img
+            v-if="showCreaInsert"
+            src="../../../public/img/crea-logo.jpg"
+            :alt="$t('crea.column')"
+            class="crea-inline-logo"
+          />
           <BButton
             v-if="showCreaInsert"
             variant="outline-info"
@@ -370,3 +376,13 @@ const onReset = () => {
     props.inputResubmissionDate !== undefined && props.inputResubmissionDate !== null
 }
 </script>
+
+<style scoped>
+.crea-inline-logo {
+  display: block;
+  width: 26px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 22%;
+}
+</style>

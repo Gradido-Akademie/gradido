@@ -5,10 +5,15 @@
     size="lg"
     ok-only
     :ok-title="$t('crea.close')"
-    :title="$t('crea.title')"
     @shown="onShown"
     @hidden="resetState"
   >
+    <template #title>
+      <span class="d-flex align-items-center gap-2">
+        <img src="../../public/img/crea-logo.jpg" :alt="$t('crea.title')" class="crea-title-logo" />
+        {{ $t('crea.title') }}
+      </span>
+    </template>
     <!-- The contribution itself, shown at the top from the prop so it is visible the
          moment the modal opens - before Crea's evaluation returns. The large modal hides
          the row behind it, so without this the moderator cannot see what Crea judges. -->
@@ -626,5 +631,13 @@ const copyResponse = async () => {
 <style scoped>
 .crea-original {
   white-space: pre-line;
+}
+
+.crea-title-logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 20%;
 }
 </style>
