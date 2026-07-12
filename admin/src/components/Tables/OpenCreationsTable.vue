@@ -51,7 +51,7 @@
         </small>
       </template>
       <template #cell(creaEvaluate)="row">
-        <div v-if="!myself(row.item)">
+        <div v-if="showCreaButton(row.item)">
           <BButton
             variant="link"
             class="crea-logo-btn me-2"
@@ -199,6 +199,10 @@ export default {
       type: Date,
       required: false,
     },
+    creaOpenOnly: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: [
     'update-contributions',
@@ -225,6 +229,14 @@ export default {
     ...useDateFormatter(),
     myself(item) {
       return item.userId === this.$store.state.moderator.id
+    },
+    // The Crea button appears for other people's contributions; on the "all" tab
+    // (creaOpenOnly) it is limited to still-open ones (IN_PROGRESS / PENDING) -- the
+    // blue rows a moderator can still act on.
+    showCreaButton(item) {
+      if (this.myself(item)) return false
+      if (!this.creaOpenOnly) return true
+      return item.contributionStatus === 'IN_PROGRESS' || item.contributionStatus === 'PENDING'
     },
     getStatusIcon(status) {
       return iconMap[status] ? iconMap[status] : 'default-icon'

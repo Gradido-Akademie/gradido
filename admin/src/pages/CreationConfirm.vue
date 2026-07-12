@@ -54,6 +54,7 @@
       :items="items"
       :fields="fields"
       :hide-resubmission="hideResubmission"
+      :crea-open-only="creaOpenOnly"
       @show-overlay="showOverlay"
       @update-status="updateStatus"
       @reload-contribution="reloadContribution"
@@ -170,11 +171,18 @@ const baseFields = {
 const roles = computed(() => store.state.moderator?.roles ?? [])
 const isAdmin = computed(() => roles.value.includes('ADMIN'))
 const isAiUser = computed(() => isAdmin.value || roles.value.includes('MODERATOR_AI'))
-// Who sees the Crea button: AI moderators on open contributions, administrators on
-// every tab as well, so they can test Crea against the whole pool. Plain moderators
-// hold no AI_SEND_MESSAGE right and see no button at all. This only guides the UI --
+// Who sees the Crea button: AI moderators on the open tab (0) and on the "all" tab (4) --
+// there only on still-open contributions (see creaOpenOnly), so they can jump straight
+// from a participant's history to an open item. Administrators additionally see it on the
+// dedicated confirmed/denied/deleted tabs to test Crea against the whole pool. Plain
+// moderators hold no AI_SEND_MESSAGE right and see no button. This only guides the UI --
 // the resolver's @Authorized guard is what actually enforces the right.
-const showCreaColumn = computed(() => (tabIndex.value === 0 ? isAiUser.value : isAdmin.value))
+const showCreaColumn = computed(() =>
+  tabIndex.value === 0 || tabIndex.value === 4 ? isAiUser.value : isAdmin.value,
+)
+// The "all" tab (index 4) mixes open and closed contributions; there Crea shows only on
+// the open (blue) rows -- the ones still to be processed. Other tabs are single-status.
+const creaOpenOnly = computed(() => tabIndex.value === 4)
 
 const fields = computed(() => {
   const tabFields = [
