@@ -3,8 +3,6 @@
     id="crea-evaluation-modal"
     v-model="modalVisible"
     size="lg"
-    ok-only
-    :ok-title="$t('crea.close')"
     @shown="onShown"
     @hidden="resetState"
   >
@@ -13,6 +11,25 @@
         <img src="../../public/img/crea-logo.jpg" :alt="$t('crea.title')" class="crea-title-logo" />
         {{ $t('crea.title') }}
       </span>
+    </template>
+
+    <template #footer>
+      <div class="crea-footer">
+        <span class="crea-footer-side"></span>
+        <BButton variant="secondary" @click="modalVisible = false">
+          {{ $t('crea.close') }}
+        </BButton>
+        <span class="crea-footer-side crea-footer-side-right">
+          <BButton
+            v-if="isBatch"
+            variant="primary"
+            :disabled="loading || selectedIds.length === 0"
+            @click="runBatchEvaluation"
+          >
+            {{ $t('crea.evaluate') }}
+          </BButton>
+        </span>
+      </div>
     </template>
     <!-- The contribution itself, shown at the top from the prop so it is visible the
          moment the modal opens - before Crea's evaluation returns. The large modal hides
@@ -51,15 +68,6 @@
             <span class="text-break crea-original">{{ c.memo }}</span>
           </label>
         </div>
-        <BButton
-          variant="primary"
-          size="sm"
-          class="mt-1"
-          :disabled="loading || selectedIds.length === 0"
-          @click="runBatchEvaluation"
-        >
-          {{ $t('crea.evaluate') }}
-        </BButton>
       </template>
 
       <!-- Single mode: the one contribution verbatim, as before. -->
@@ -68,7 +76,7 @@
 
     <div v-if="loading" class="text-center py-4">
       <BSpinner class="me-2" />
-      {{ $t('crea.loading') }}
+      {{ loadingText }}
     </div>
 
     <div v-else-if="inactive" class="alert alert-info mb-0">
@@ -281,6 +289,11 @@ const supplementText = ref('')
 const contributions = ref([])
 const selectedIds = ref([])
 const isBatch = computed(() => contributions.value.length >= 2)
+// "Crea liest den Beitrag" (one) vs "... die Beiträge" (several) while evaluating.
+const loadingText = computed(() => {
+  const count = isBatch.value ? selectedIds.value.length : 1
+  return count === 1 ? t('crea.loading') : t('crea.loadingPlural')
+})
 
 const applySignature = (text, signature) =>
   signature ? text.split(SIGNATURE_PLACEHOLDER).join(signature) : text
@@ -639,5 +652,102 @@ const copyResponse = async () => {
   height: 32px;
   object-fit: cover;
   border-radius: 20%;
+}
+
+/* Footer: primary action ("Bewerten") on the right, "Schließen" centred. */
+.crea-footer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.crea-footer-side {
+  display: flex;
+  flex: 1 1 0;
+}
+
+.crea-footer-side-right {
+  justify-content: flex-end;
+}
+
+/* Crea-scoped Gradido palette for the decision buttons + verdict badge. The admin
+   otherwise ships stock Bootstrap; these three tones match the wallet toast colours
+   (green #047006 / gold #c58d38 / red #c62828). Gold carries dark text for contrast.
+   We override Bootstrap's own --bs-btn-* variables so hover/active/disabled follow. */
+:deep(.btn-success) {
+  --bs-btn-bg: #047006;
+  --bs-btn-border-color: #047006;
+  --bs-btn-hover-bg: #035c05;
+  --bs-btn-hover-border-color: #035c05;
+  --bs-btn-active-bg: #035c05;
+  --bs-btn-active-border-color: #035c05;
+  --bs-btn-disabled-bg: #047006;
+  --bs-btn-disabled-border-color: #047006;
+}
+
+:deep(.btn-outline-success) {
+  --bs-btn-color: #047006;
+  --bs-btn-border-color: #047006;
+  --bs-btn-hover-bg: #047006;
+  --bs-btn-hover-border-color: #047006;
+  --bs-btn-active-bg: #047006;
+  --bs-btn-active-border-color: #047006;
+}
+
+:deep(.btn-warning) {
+  --bs-btn-bg: #c58d38;
+  --bs-btn-border-color: #c58d38;
+  --bs-btn-color: #2c2c2c;
+  --bs-btn-hover-bg: #b57f2f;
+  --bs-btn-hover-border-color: #b57f2f;
+  --bs-btn-hover-color: #2c2c2c;
+  --bs-btn-active-bg: #b57f2f;
+  --bs-btn-active-border-color: #b57f2f;
+  --bs-btn-active-color: #2c2c2c;
+  --bs-btn-disabled-bg: #c58d38;
+  --bs-btn-disabled-border-color: #c58d38;
+  --bs-btn-disabled-color: #2c2c2c;
+}
+
+:deep(.btn-outline-warning) {
+  --bs-btn-color: #8a5f1c;
+  --bs-btn-border-color: #c58d38;
+  --bs-btn-hover-bg: #c58d38;
+  --bs-btn-hover-border-color: #c58d38;
+  --bs-btn-hover-color: #2c2c2c;
+  --bs-btn-active-bg: #c58d38;
+  --bs-btn-active-border-color: #c58d38;
+  --bs-btn-active-color: #2c2c2c;
+}
+
+:deep(.btn-danger) {
+  --bs-btn-bg: #c62828;
+  --bs-btn-border-color: #c62828;
+  --bs-btn-hover-bg: #a81f1f;
+  --bs-btn-hover-border-color: #a81f1f;
+  --bs-btn-active-bg: #a81f1f;
+  --bs-btn-active-border-color: #a81f1f;
+  --bs-btn-disabled-bg: #c62828;
+  --bs-btn-disabled-border-color: #c62828;
+}
+
+:deep(.btn-outline-danger) {
+  --bs-btn-color: #c62828;
+  --bs-btn-border-color: #c62828;
+  --bs-btn-hover-bg: #c62828;
+  --bs-btn-hover-border-color: #c62828;
+  --bs-btn-active-bg: #c62828;
+  --bs-btn-active-border-color: #c62828;
+}
+
+:deep(.badge.text-bg-success) {
+  color: #fff;
+  background-color: #047006;
+}
+
+:deep(.badge.text-bg-warning) {
+  color: #2c2c2c;
+  background-color: #c58d38;
 }
 </style>

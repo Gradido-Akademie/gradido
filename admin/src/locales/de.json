@@ -91,6 +91,7 @@
     "inactive": "Crea ist noch nicht aktiv – der API-Schlüssel fehlt (wird separat eingerichtet).",
     "insertDraft": "Vorschlag einfügen",
     "loading": "Crea liest den Beitrag …",
+    "loadingPlural": "Crea liest die Beiträge …",
     "memoTooLong": "Der Beitragstext ist zu lang (max. {max} Zeichen) – bitte kürze ihn etwas.",
     "openPoints": "Offene Punkte",
     "previewBanner": "Vorschau ohne KI-Verbindung – ein Beispiel-Ergebnis. Optik, Datenbank und Anrede/Signatur sind echt.",
