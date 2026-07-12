@@ -161,7 +161,7 @@ describe('Vuex store', () => {
 
       it('calls eighteen commits', () => {
         login({ commit, state }, commitedData)
-        expect(commit).toHaveBeenCalledTimes(17)
+        expect(commit).toHaveBeenCalledTimes(18)
       })
 
       it('uses the account language when there is no deliberate pre-login choice', () => {
