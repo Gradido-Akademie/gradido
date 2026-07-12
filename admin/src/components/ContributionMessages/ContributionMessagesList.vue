@@ -52,6 +52,7 @@
         @update-status="updateStatus"
         @reload-contribution="reloadContribution"
         @update-contributions="updateContributions"
+        @resubmission-saved="$emit('resubmission-saved', $event)"
       />
     </div>
   </div>
@@ -80,7 +81,12 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update-status', 'reload-contribution', 'update-contributions'])
+const emit = defineEmits([
+  'update-status',
+  'reload-contribution',
+  'update-contributions',
+  'resubmission-saved',
+])
 const email = computed(() => {
   return props.contribution.user.emailContact.email
 })

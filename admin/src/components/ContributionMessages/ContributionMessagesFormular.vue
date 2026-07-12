@@ -168,6 +168,7 @@ const emit = defineEmits([
   'get-contribution',
   'update-status',
   'get-list-contribution-messages',
+  'resubmission-saved',
 ])
 
 const { t } = useI18n()
@@ -347,6 +348,11 @@ const onSubmit = () => {
         if (!updateOnlyResubmissionAt) {
           emit('update-status', props.contributionId)
         }
+      }
+      // Signal a saved reminder up to the page, which may offer to apply it to all
+      // displayed contributions of this participant (bulk resubmission).
+      if (showResubmissionDate.value && resubmissionAtDate) {
+        emit('resubmission-saved', resubmissionAtDate.toString())
       }
       toastSuccess(t('message.request'))
       form.value = {

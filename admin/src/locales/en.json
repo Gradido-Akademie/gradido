@@ -14,6 +14,13 @@
   "alias": "Alias",
   "all_emails": "All users",
   "back": "back",
+  "bulkResubmission": {
+    "cancel": "Do not apply",
+    "confirm": "OK",
+    "question": "Apply the reminder settings to all displayed contributions of {name}?",
+    "success": "Reminder applied.",
+    "title": "Apply reminder?"
+  },
   "change_user_role": "Change user role",
   "close": "Close",
   "contribution": {

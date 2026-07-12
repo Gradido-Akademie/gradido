@@ -61,6 +61,7 @@
       @update-contributions="refetch"
       @search-for-email="query = $event"
       @crea-evaluate="openCreaModal"
+      @resubmission-saved="onResubmissionSaved"
     />
 
     <BPagination
@@ -92,6 +93,15 @@
       </Overlay>
     </div>
     <CreaEvaluationModal :contribution="creaItem" />
+    <BModal
+      v-model="bulkResubmission.show"
+      :title="$t('bulkResubmission.title')"
+      :ok-title="$t('bulkResubmission.confirm')"
+      :cancel-title="$t('bulkResubmission.cancel')"
+      @ok="applyBulkResubmission"
+    >
+      {{ $t('bulkResubmission.question', { name: bulkResubmission.name }) }}
+    </BModal>
   </div>
 </template>
 
@@ -112,6 +122,7 @@ import { adminDeleteContribution } from '../graphql/adminDeleteContribution'
 import { confirmContribution } from '../graphql/confirmContribution'
 import { denyContribution } from '../graphql/denyContribution'
 import { getContribution } from '../graphql/getContribution'
+import { adminUpdateContribution } from '../graphql/adminUpdateContribution'
 import { useAppToast } from '@/composables/useToast'
 import { useDateFormatter } from '@/composables/useDateFormatter'
 import CONFIG from '@/config'
@@ -190,6 +201,7 @@ const fields = computed(() => {
     [
       { key: 'bookmark', label: t('delete') },
       { key: 'deny', label: t('deny') },
+      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -200,6 +212,7 @@ const fields = computed(() => {
     ],
     // confirmed contributions
     [
+      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -211,6 +224,7 @@ const fields = computed(() => {
     ],
     // denied contributions
     [
+      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -222,6 +236,7 @@ const fields = computed(() => {
     ],
     // deleted contributions
     [
+      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -234,6 +249,7 @@ const fields = computed(() => {
     // all contributions
     [
       { key: 'contributionStatus', label: t('status') },
+      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -434,6 +450,38 @@ const { show: showCreaModal } = useModal('crea-evaluation-modal')
 const openCreaModal = (selectedItem) => {
   creaItem.value = selectedItem
   showCreaModal()
+}
+
+// Bulk resubmission: after a moderator saves a reminder on one contribution, offer to
+// apply it to all displayed contributions -- but only when the list shows a SINGLE
+// participant (all rows same userId, e.g. filtered via the magnifier) and holds more
+// than one open contribution. This never touches other participants' contributions.
+const { mutate: updateContributionMutation } = useMutation(adminUpdateContribution)
+const bulkResubmission = ref({ show: false, resubmissionAt: null, name: '' })
+
+const displayedOpenItems = () =>
+  items.value.filter((c) => FILTER_TAB_MAP[0].includes(c.contributionStatus))
+const isSingleParticipant = () => new Set(items.value.map((c) => c.userId)).size === 1
+
+const onResubmissionSaved = (resubmissionAt) => {
+  if (isSingleParticipant() && displayedOpenItems().length > 1) {
+    const user = items.value[0]?.user
+    const name = user ? `${user.firstName} ${user.lastName}` : ''
+    bulkResubmission.value = { show: true, resubmissionAt, name }
+  }
+}
+
+const applyBulkResubmission = async () => {
+  const { resubmissionAt } = bulkResubmission.value
+  try {
+    await Promise.all(
+      displayedOpenItems().map((c) => updateContributionMutation({ id: c.id, resubmissionAt })),
+    )
+    toastSuccess(t('bulkResubmission.success'))
+    refetch()
+  } catch (error) {
+    toastError(error.message)
+  }
 }
 
 const updateStatus = (id) => {
