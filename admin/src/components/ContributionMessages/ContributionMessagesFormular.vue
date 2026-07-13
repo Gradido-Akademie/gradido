@@ -377,20 +377,15 @@ const onSubmit = () => {
       loading.value = false
     })
     .catch((error) => {
-      // A pure resubmission "save" on a contribution that already holds this exact
-      // reminder throws "wasn't changed". Not a real failure: in a group the moderator
-      // may want to propagate this reminder to the participant's other displayed
-      // contributions. Signal it up (marked unchanged) instead of blocking with a red
-      // error; the page then shows the bulk prompt, or a neutral notice when alone.
-      if (
-        updateOnlyResubmissionAt &&
-        showResubmissionDate.value &&
-        resubmissionAtDate &&
-        error.message?.includes("wasn't changed")
-      ) {
+      // A pure resubmission "save" that changes nothing -- the reminder already holds
+      // this exact date, or there is no reminder to add or remove -- makes the backend
+      // throw "wasn't changed". Not a real failure: signal it up marked unchanged
+      // instead of a red error. The page then offers to propagate an existing reminder
+      // to the group, or shows a neutral notice when there is nothing to spread.
+      if (updateOnlyResubmissionAt && error.message?.includes("wasn't changed")) {
         emit('resubmission-saved', {
           id: props.contributionId,
-          resubmissionAt: resubmissionAtDate.toString(),
+          resubmissionAt: resubmissionAtDate ? resubmissionAtDate.toString() : null,
           unchanged: true,
         })
         loading.value = false

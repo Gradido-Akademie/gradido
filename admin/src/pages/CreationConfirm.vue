@@ -477,13 +477,17 @@ const displayedOpenItems = () =>
 const isSingleParticipant = () => new Set(items.value.map((c) => c.userId)).size === 1
 
 const onResubmissionSaved = ({ id, resubmissionAt, unchanged }) => {
-  if (isSingleParticipant() && displayedOpenItems().length > 1) {
+  // Offer to propagate only when there is something to spread: a reminder value (a
+  // date), or a real save (a removal propagates the clearing). A no-op with no reminder
+  // has nothing to propagate -- show a neutral notice instead of opening the prompt.
+  const canPropagate = resubmissionAt != null || !unchanged
+  if (canPropagate && isSingleParticipant() && displayedOpenItems().length > 1) {
     const user = items.value[0]?.user
     const name = user ? `${user.firstName} ${user.lastName}` : ''
     bulkResubmission.value = { show: true, resubmissionAt, name, currentId: id }
   } else if (unchanged) {
-    // Nothing to change on this contribution and no group to propagate to: a neutral
-    // notice instead of the backend's red "wasn't changed" error.
+    // Nothing changed and nothing (or no group) to propagate to: a neutral notice
+    // instead of the backend's red "wasn't changed" error.
     toastWarning(t('bulkResubmission.noChange'))
   }
 }

@@ -262,6 +262,17 @@ describe('CreationConfirm', () => {
     expect(mockToastWarning).toHaveBeenCalled()
   })
 
+  it('shows a neutral notice for a no-reminder no-op even within a group', async () => {
+    await simulateQueryResult({
+      adminListContributions: { contributionCount: 3, contributionList: openItems(3, 7) },
+    })
+
+    wrapper.vm.onResubmissionSaved({ id: 1, resubmissionAt: null, unchanged: true })
+
+    expect(wrapper.vm.bulkResubmission.show).toBe(false)
+    expect(mockToastWarning).toHaveBeenCalled()
+  })
+
   it('treats a "wasn\'t changed" rejection as a harmless no-op', async () => {
     await simulateQueryResult({
       adminListContributions: { contributionCount: 3, contributionList: openItems(3, 7) },
