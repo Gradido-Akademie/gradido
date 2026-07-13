@@ -572,6 +572,7 @@ const rewriteForDecision = async () => {
     return
   }
   rewriting.value = true
+  primeCreaSound()
   try {
     if (isBatch.value) {
       // Batch deviation (E-020): one fresh joint reply for the chosen outcome. No
@@ -604,6 +605,9 @@ const rewriteForDecision = async () => {
       // null. Surfacing it fills the editable field above and the "Text ergänzen" button.
       supplementText.value = result.memoSupplement ?? ''
     }
+    // Same "BaDong" cue as the initial and batch evaluation (E-025): a fresh reply just
+    // arrived after the moderator deviated.
+    playCreaSound()
   } catch (error) {
     toastError(error.message)
   } finally {
