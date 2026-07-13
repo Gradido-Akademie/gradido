@@ -18,8 +18,11 @@
     "cancel": "Nicht übernehmen",
     "confirm": "OK",
     "question": "Erinnerungseinstellungen auf alle angezeigten Beiträge von {name} übernehmen?",
+    "questionRemove": "Erinnerung bei allen angezeigten Beiträgen von {name} entfernen?",
     "success": "Wiedervorlage übernommen.",
-    "title": "Wiedervorlage übernehmen?"
+    "successRemove": "Wiedervorlage entfernt.",
+    "title": "Wiedervorlage übernehmen?",
+    "titleRemove": "Wiedervorlage entfernen?"
   },
   "change_user_role": "Nutzerrolle ändern",
   "close": "Schließen",

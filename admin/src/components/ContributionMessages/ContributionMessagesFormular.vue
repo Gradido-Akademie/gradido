@@ -358,10 +358,15 @@ const onSubmit = () => {
           emit('update-status', props.contributionId)
         }
       }
-      // Signal a saved reminder up to the page, which may offer to apply it to all
-      // displayed contributions of this participant (bulk resubmission).
-      if (showResubmissionDate.value && resubmissionAtDate) {
-        emit('resubmission-saved', resubmissionAtDate.toString())
+      // Signal a saved reminder change up to the page, which may offer to apply it to
+      // all displayed contributions of this participant (bulk resubmission). Fires both
+      // when a date is set and when an existing reminder is removed; carries this
+      // contribution's id so the bulk loop can skip the row that was just saved here.
+      if ((showResubmissionDate.value && resubmissionAtDate) || isRemovingResubmission.value) {
+        emit('resubmission-saved', {
+          id: props.contributionId,
+          resubmissionAt: resubmissionAtDate ? resubmissionAtDate.toString() : null,
+        })
       }
       toastSuccess(t('message.request'))
       form.value = {

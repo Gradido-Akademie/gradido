@@ -95,12 +95,12 @@
     <CreaEvaluationModal :contribution="creaItem" />
     <BModal
       v-model="bulkResubmission.show"
-      :title="$t('bulkResubmission.title')"
+      :title="bulkTitle"
       :ok-title="$t('bulkResubmission.confirm')"
       :cancel-title="$t('bulkResubmission.cancel')"
       @ok="applyBulkResubmission"
     >
-      {{ $t('bulkResubmission.question', { name: bulkResubmission.name }) }}
+      {{ bulkQuestion }}
     </BModal>
   </div>
 </template>
@@ -457,31 +457,54 @@ const openCreaModal = (selectedItem) => {
 // participant (all rows same userId, e.g. filtered via the magnifier) and holds more
 // than one open contribution. This never touches other participants' contributions.
 const { mutate: updateContributionMutation } = useMutation(adminUpdateContribution)
-const bulkResubmission = ref({ show: false, resubmissionAt: null, name: '' })
+const bulkResubmission = ref({ show: false, resubmissionAt: null, name: '', currentId: null })
+
+// Clearing a reminder (resubmissionAt === null) makes the modal speak of "removing",
+// otherwise of "applying" the date.
+const isBulkClearing = computed(() => bulkResubmission.value.resubmissionAt === null)
+const bulkTitle = computed(() =>
+  isBulkClearing.value ? t('bulkResubmission.titleRemove') : t('bulkResubmission.title'),
+)
+const bulkQuestion = computed(() => {
+  const name = bulkResubmission.value.name
+  return isBulkClearing.value
+    ? t('bulkResubmission.questionRemove', { name })
+    : t('bulkResubmission.question', { name })
+})
 
 const displayedOpenItems = () =>
   items.value.filter((c) => FILTER_TAB_MAP[0].includes(c.contributionStatus))
 const isSingleParticipant = () => new Set(items.value.map((c) => c.userId)).size === 1
 
-const onResubmissionSaved = (resubmissionAt) => {
+const onResubmissionSaved = ({ id, resubmissionAt }) => {
   if (isSingleParticipant() && displayedOpenItems().length > 1) {
     const user = items.value[0]?.user
     const name = user ? `${user.firstName} ${user.lastName}` : ''
-    bulkResubmission.value = { show: true, resubmissionAt, name }
+    bulkResubmission.value = { show: true, resubmissionAt, name, currentId: id }
   }
 }
 
 const applyBulkResubmission = async () => {
-  const { resubmissionAt } = bulkResubmission.value
-  try {
-    await Promise.all(
-      displayedOpenItems().map((c) => updateContributionMutation({ id: c.id, resubmissionAt })),
+  const { resubmissionAt, currentId } = bulkResubmission.value
+  // The current contribution was already saved individually -- exclude it so we never
+  // re-send an unchanged value. A backend "wasn't changed at all" rejection (another
+  // displayed contribution already holds this exact date, or already had no reminder
+  // when clearing) is a harmless no-op: it must not abort the batch or raise an error.
+  const targets = displayedOpenItems().filter((c) => c.id !== currentId)
+  const results = await Promise.allSettled(
+    targets.map((c) => updateContributionMutation({ id: c.id, resubmissionAt })),
+  )
+  const failure = results.find(
+    (r) => r.status === 'rejected' && !r.reason?.message?.includes("wasn't changed"),
+  )
+  if (failure) {
+    toastError(failure.reason.message)
+  } else {
+    toastSuccess(
+      isBulkClearing.value ? t('bulkResubmission.successRemove') : t('bulkResubmission.success'),
     )
-    toastSuccess(t('bulkResubmission.success'))
-    refetch()
-  } catch (error) {
-    toastError(error.message)
   }
+  refetch()
 }
 
 const updateStatus = (id) => {

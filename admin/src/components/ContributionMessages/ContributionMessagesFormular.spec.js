@@ -143,6 +143,38 @@ describe('ContributionMessagesFormular', () => {
     expect(onSubmitSpy).toHaveBeenCalled()
   })
 
+  it('emits resubmission-saved with the contribution id when a reminder is set', async () => {
+    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    wrapper = createWrapper()
+    wrapper.vm.showResubmissionDate = true
+    wrapper.vm.resubmissionDate = futureDate
+    wrapper.vm.resubmissionTime = '08:46'
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('button[type="submit"]').trigger('click')
+    await nextTick()
+
+    const saved = wrapper.emitted('resubmission-saved')
+    expect(saved).toBeTruthy()
+    expect(saved[0][0].id).toBe(42)
+    expect(typeof saved[0][0].resubmissionAt).toBe('string')
+  })
+
+  it('emits resubmission-saved with null when an existing reminder is removed', async () => {
+    const existingDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    wrapper = createWrapper({ inputResubmissionDate: existingDate.toString() })
+    // simulate unchecking the reminder box on a contribution that had one
+    wrapper.vm.showResubmissionDate = false
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('button[type="submit"]').trigger('click')
+    await nextTick()
+
+    const saved = wrapper.emitted('resubmission-saved')
+    expect(saved).toBeTruthy()
+    expect(saved[0][0]).toEqual({ id: 42, resubmissionAt: null })
+  })
+
   it('updates contribution memo', async () => {
     wrapper = createWrapper()
     const onSubmitSpy = vi.spyOn(wrapper.vm, 'onSubmit')

@@ -18,8 +18,11 @@
     "cancel": "Do not apply",
     "confirm": "OK",
     "question": "Apply the reminder settings to all displayed contributions of {name}?",
+    "questionRemove": "Remove the reminder from all displayed contributions of {name}?",
     "success": "Reminder applied.",
-    "title": "Apply reminder?"
+    "successRemove": "Reminder removed.",
+    "title": "Apply reminder?",
+    "titleRemove": "Remove reminder?"
   },
   "change_user_role": "Cambia il ruolo dell'utente",
   "close": "Chiudi",
