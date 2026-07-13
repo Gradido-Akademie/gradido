@@ -4,6 +4,7 @@ import createPersistedState from 'vuex-persistedstate'
 
 import jwtDecode from 'jwt-decode'
 import i18n from '../i18n'
+import { clearStoragePreservingPreferences } from './storage'
 
 // Dedicated localStorage key mirroring state.themeMode. The pre-paint script in
 // index.html reads it with a single getItem, so it never has to parse the whole
@@ -142,18 +143,15 @@ export const actions = {
     commit('email', '')
     commit('userLocation', null)
     commit('redirectPath', '/overview')
+    // Wallet and admin are served from the same origin and share one
+    // localStorage. Preserve device-local preferences (dark-mode theme, crea
+    // signature, any pref.* key) instead of the blunt clear(). See store/storage.js.
     const themeMode = state.themeMode
-    // The admin interface is served from the same origin and therefore shares this
-    // localStorage. Its moderator signature is browser-only by design, so preserve
-    // it here too -- otherwise merely visiting the wallet wipes it.
-    const creaSignature = localStorage.getItem('crea.moderatorSignature')
-    localStorage.clear()
-    // localStorage.clear() wiped the persisted theme; keep the device-local
-    // choice so the login page and the next session stay in the chosen theme.
+    clearStoragePreservingPreferences()
+    // The wallet reads its theme from the persisted-state blob on boot, which the
+    // wipe cleared; re-commit it so the blob is rewritten and the login page and
+    // the next session stay in the chosen theme.
     commit('setThemeMode', themeMode)
-    if (creaSignature !== null) {
-      localStorage.setItem('crea.moderatorSignature', creaSignature)
-    }
     dispatch('applyTheme')
   },
   // Compute the effective dark mode from the device-local themeMode

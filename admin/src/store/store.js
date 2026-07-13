@@ -1,6 +1,7 @@
 import { createStore } from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
 import CONFIG from '../config'
+import { clearStoragePreservingPreferences } from './storage'
 
 export const mutations = {
   openCreationsPlus: (state, i) => {
@@ -24,16 +25,14 @@ export const mutations = {
 }
 
 export const actions = {
-  logout: ({ commit, state }) => {
+  logout: ({ commit }) => {
     commit('token', null)
     commit('moderator', null)
-    // Preserve the moderator's Crea signature across logout (E-014: browser-only,
-    // no DB field) — a full clear() would otherwise wipe it on every logout.
-    const creaSignature = window.localStorage.getItem('crea.moderatorSignature')
-    window.localStorage.clear()
-    if (creaSignature !== null) {
-      window.localStorage.setItem('crea.moderatorSignature', creaSignature)
-    }
+    // Wallet and admin are served from the same origin and share one
+    // localStorage. Preserve device-local preferences (dark-mode theme, crea
+    // signature, any pref.* key) instead of wiping everything -- otherwise a
+    // logout here also resets the wallet's theme. See store/storage.js.
+    clearStoragePreservingPreferences()
   },
 }
 
