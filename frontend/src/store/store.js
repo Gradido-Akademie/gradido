@@ -11,6 +11,22 @@ import { clearStoragePreservingPreferences } from './storage'
 // persisted-state blob on the blocking boot path. Kept in sync by applyTheme.
 export const THEME_MODE_STORAGE_KEY = 'gradido-theme-mode'
 
+// Seed themeMode from its dedicated key, which survives a logout (see
+// store/storage.js). It is the source of truth when the persisted-state blob was
+// wiped -- e.g. the admin logout clears the shared localStorage on a wallet <->
+// admin round-trip, leaving only this key. Without it the store boots at 'system'
+// and applyTheme overrides the pre-paint's correct theme (a dark->light flicker).
+// When the blob is present, vuex-persistedstate still restores themeMode from it
+// (both are kept in sync by applyTheme).
+export const readInitialThemeMode = () => {
+  try {
+    const stored = localStorage.getItem(THEME_MODE_STORAGE_KEY)
+    return ['system', 'light', 'dark'].includes(stored) ? stored : 'system'
+  } catch {
+    return 'system'
+  }
+}
+
 export const mutations = {
   language: (state, language) => {
     i18n.global.locale.value = language
@@ -213,7 +229,7 @@ try {
       hideAmountGDT: null,
       email: '',
       darkMode: false,
-      themeMode: 'system',
+      themeMode: readInitialThemeMode(),
       userLocation: null,
       redirectPath: '/overview',
       transactionToHighlightId: '',
