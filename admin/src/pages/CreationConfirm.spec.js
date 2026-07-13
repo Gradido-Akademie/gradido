@@ -37,6 +37,7 @@ describe('CreationConfirm', () => {
   let mockMutate
   const mockToastError = vi.fn()
   const mockToastSuccess = vi.fn()
+  const mockToastWarning = vi.fn()
   const mockT = vi.fn((key) => key)
   const mockD = vi.fn((date) => date.toISOString())
 
@@ -72,6 +73,7 @@ describe('CreationConfirm', () => {
     useAppToast.mockReturnValue({
       toastError: mockToastError,
       toastSuccess: mockToastSuccess,
+      toastWarning: mockToastWarning,
     })
 
     wrapper = mount(CreationConfirm, {
@@ -243,6 +245,21 @@ describe('CreationConfirm', () => {
 
     wrapper.vm.onResubmissionSaved({ id: 1, resubmissionAt: '2026-08-01T08:46:00' })
     expect(wrapper.vm.bulkResubmission.show).toBe(false)
+  })
+
+  it('shows a neutral notice when an unchanged save has no group to propagate to', async () => {
+    await simulateQueryResult({
+      adminListContributions: { contributionCount: 1, contributionList: openItems(1, 7) },
+    })
+
+    wrapper.vm.onResubmissionSaved({
+      id: 1,
+      resubmissionAt: '2026-08-01T08:46:00',
+      unchanged: true,
+    })
+
+    expect(wrapper.vm.bulkResubmission.show).toBe(false)
+    expect(mockToastWarning).toHaveBeenCalled()
   })
 
   it('treats a "wasn\'t changed" rejection as a harmless no-op', async () => {

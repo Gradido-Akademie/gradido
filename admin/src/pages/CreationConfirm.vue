@@ -137,7 +137,7 @@ const FILTER_TAB_MAP = [
 
 const store = useStore()
 const { t } = useI18n()
-const { toastError, toastSuccess } = useAppToast()
+const { toastError, toastSuccess, toastWarning } = useAppToast()
 
 const tabIndex = ref(0)
 const items = ref([])
@@ -476,11 +476,15 @@ const displayedOpenItems = () =>
   items.value.filter((c) => FILTER_TAB_MAP[0].includes(c.contributionStatus))
 const isSingleParticipant = () => new Set(items.value.map((c) => c.userId)).size === 1
 
-const onResubmissionSaved = ({ id, resubmissionAt }) => {
+const onResubmissionSaved = ({ id, resubmissionAt, unchanged }) => {
   if (isSingleParticipant() && displayedOpenItems().length > 1) {
     const user = items.value[0]?.user
     const name = user ? `${user.firstName} ${user.lastName}` : ''
     bulkResubmission.value = { show: true, resubmissionAt, name, currentId: id }
+  } else if (unchanged) {
+    // Nothing to change on this contribution and no group to propagate to: a neutral
+    // notice instead of the backend's red "wasn't changed" error.
+    toastWarning(t('bulkResubmission.noChange'))
   }
 }
 

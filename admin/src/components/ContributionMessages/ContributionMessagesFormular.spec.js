@@ -172,7 +172,26 @@ describe('ContributionMessagesFormular', () => {
 
     const saved = wrapper.emitted('resubmission-saved')
     expect(saved).toBeTruthy()
-    expect(saved[0][0]).toEqual({ id: 42, resubmissionAt: null })
+    expect(saved[0][0]).toEqual({ id: 42, resubmissionAt: null, unchanged: false })
+  })
+
+  it('signals resubmission-saved (unchanged) instead of erroring when nothing changed', async () => {
+    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    wrapper = createWrapper()
+    mockMutate.mockRejectedValueOnce(new Error("the contribution wasn't changed at all"))
+    wrapper.vm.showResubmissionDate = true
+    wrapper.vm.resubmissionDate = futureDate
+    wrapper.vm.resubmissionTime = '08:46'
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('button[type="submit"]').trigger('click')
+    await nextTick()
+
+    const saved = wrapper.emitted('resubmission-saved')
+    expect(saved).toBeTruthy()
+    expect(saved[0][0].id).toBe(42)
+    expect(saved[0][0].unchanged).toBe(true)
+    expect(mockToastError).not.toHaveBeenCalled()
   })
 
   it('updates contribution memo', async () => {

@@ -366,6 +366,7 @@ const onSubmit = () => {
         emit('resubmission-saved', {
           id: props.contributionId,
           resubmissionAt: resubmissionAtDate ? resubmissionAtDate.toString() : null,
+          unchanged: false,
         })
       }
       toastSuccess(t('message.request'))
@@ -376,6 +377,25 @@ const onSubmit = () => {
       loading.value = false
     })
     .catch((error) => {
+      // A pure resubmission "save" on a contribution that already holds this exact
+      // reminder throws "wasn't changed". Not a real failure: in a group the moderator
+      // may want to propagate this reminder to the participant's other displayed
+      // contributions. Signal it up (marked unchanged) instead of blocking with a red
+      // error; the page then shows the bulk prompt, or a neutral notice when alone.
+      if (
+        updateOnlyResubmissionAt &&
+        showResubmissionDate.value &&
+        resubmissionAtDate &&
+        error.message?.includes("wasn't changed")
+      ) {
+        emit('resubmission-saved', {
+          id: props.contributionId,
+          resubmissionAt: resubmissionAtDate.toString(),
+          unchanged: true,
+        })
+        loading.value = false
+        return
+      }
       toastError(error.message)
       loading.value = false
     })
