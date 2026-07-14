@@ -62,34 +62,34 @@ export const updateUserInfos = gql`
   }
 `
 
-export const createGmsEntry = gql`
-  mutation ($input: GmsEntryInput!) {
-    createGmsEntry(input: $input) {
-      entryUuid
+export const createMatchingEntry = gql`
+  mutation ($input: MatchingEntryInput!) {
+    createMatchingEntry(input: $input) {
+      uuid
     }
   }
 `
 
-export const updateGmsEntry = gql`
-  mutation ($entryUuid: String!, $input: GmsEntryInput!) {
-    updateGmsEntry(entryUuid: $entryUuid, input: $input) {
-      entryUuid
+export const updateMatchingEntry = gql`
+  mutation ($uuid: String!, $input: MatchingEntryInput!) {
+    updateMatchingEntry(uuid: $uuid, input: $input) {
+      uuid
     }
   }
 `
 
-export const setGmsEntryActive = gql`
-  mutation ($entryUuid: String!, $active: Boolean!) {
-    setGmsEntryActive(entryUuid: $entryUuid, active: $active) {
-      entryUuid
+export const setMatchingEntryActive = gql`
+  mutation ($uuid: String!, $active: Boolean!) {
+    setMatchingEntryActive(uuid: $uuid, active: $active) {
+      uuid
       active
     }
   }
 `
 
-export const deleteGmsEntry = gql`
-  mutation ($entryUuid: String!) {
-    deleteGmsEntry(entryUuid: $entryUuid)
+export const deleteMatchingEntry = gql`
+  mutation ($uuid: String!) {
+    deleteMatchingEntry(uuid: $uuid)
   }
 `
 

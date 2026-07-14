@@ -2,11 +2,11 @@ import { IsBoolean, IsIn, IsOptional, IsString, MaxLength } from 'class-validato
 import { Field, InputType } from 'type-graphql'
 
 @InputType()
-export class GmsEntryInput {
+export class MatchingEntryInput {
   @Field(() => String)
   @IsString()
   @IsIn(['offer', 'need', 'interest'])
-  entryType: string
+  matchingType: string
 
   @Field(() => String)
   @IsString()

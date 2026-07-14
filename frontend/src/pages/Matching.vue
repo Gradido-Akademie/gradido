@@ -67,7 +67,7 @@
 
         <div
           v-for="e in entries"
-          :key="e.entryUuid"
+          :key="e.uuid"
           class="bg-white app-box-shadow gradido-border-radius p-3 mb-4"
           :class="{ 'opacity-05': !e.active }"
         >
@@ -329,13 +329,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useAppToast } from '@/composables/useToast'
 import {
-  createGmsEntry,
-  deleteGmsEntry,
-  setGmsEntryActive,
-  updateGmsEntry,
+  createMatchingEntry,
+  deleteMatchingEntry,
+  setMatchingEntryActive,
+  updateMatchingEntry,
   updateUserInfos,
 } from '@/graphql/mutations'
-import { listGmsEntries, userLocationQuery, verifyLogin } from '@/graphql/queries'
+import { listMatchingEntries, userLocationQuery, verifyLogin } from '@/graphql/queries'
 import UserGMSLocationFormat from '@/components/UserSettings/UserGMSLocationFormat'
 import UserLocationMap from '@/components/UserSettings/UserLocationMap'
 import UserSettingsSwitch from '@/components/UserSettings/UserSettingsSwitch'
@@ -356,7 +356,7 @@ const goTab = (name) => {
 
 const types = [{ key: 'interesse' }, { key: 'angebot' }, { key: 'gesuch' }]
 
-// UI type (Interesse/Angebot/Gesuch) <-> backend entryType (interest/offer/need)
+// UI type (Interesse/Angebot/Gesuch) <-> backend matchingType (interest/offer/need)
 const TYPE_TO_ENTRY = { interesse: 'interest', angebot: 'offer', gesuch: 'need' }
 const ENTRY_TO_TYPE = { interest: 'interesse', offer: 'angebot', need: 'gesuch' }
 
@@ -378,12 +378,12 @@ const {
   refetch: refetchEntries,
   onResult: onEntries,
   onError: onEntriesError,
-} = useQuery(listGmsEntries, null, { fetchPolicy: 'cache-and-network', enabled })
+} = useQuery(listMatchingEntries, null, { fetchPolicy: 'cache-and-network', enabled })
 onEntries(({ data }) => {
-  if (!data?.listGmsEntries) return
-  entries.value = data.listGmsEntries.map((e) => ({
-    entryUuid: e.entryUuid,
-    type: ENTRY_TO_TYPE[e.entryType] || 'interesse',
+  if (!data?.listMatchingEntries) return
+  entries.value = data.listMatchingEntries.map((e) => ({
+    uuid: e.uuid,
+    type: ENTRY_TO_TYPE[e.matchingType] || 'interesse',
     summary: e.summary,
     details: e.details || '',
     active: e.active,
@@ -396,10 +396,10 @@ onEntriesError((error) => toastError(error.message))
 
 const liveCount = computed(() => entries.value.filter((e) => e.active).length)
 
-const { mutate: createEntry } = useMutation(createGmsEntry)
-const { mutate: updateEntry } = useMutation(updateGmsEntry)
-const { mutate: setEntryActive } = useMutation(setGmsEntryActive)
-const { mutate: removeEntry } = useMutation(deleteGmsEntry)
+const { mutate: createEntry } = useMutation(createMatchingEntry)
+const { mutate: updateEntry } = useMutation(updateMatchingEntry)
+const { mutate: setEntryActive } = useMutation(setMatchingEntryActive)
+const { mutate: removeEntry } = useMutation(deleteMatchingEntry)
 
 // --- New / edit entry modal ---
 const showNew = ref(false)
@@ -420,7 +420,7 @@ function openNew() {
   showNew.value = true
 }
 function openEdit(e) {
-  editUuid.value = e.entryUuid
+  editUuid.value = e.uuid
   newType.value = e.type
   newSummary.value = e.summary
   newDetails.value = e.details || ''
@@ -430,14 +430,14 @@ function openEdit(e) {
 }
 async function save() {
   const input = {
-    entryType: TYPE_TO_ENTRY[newType.value],
+    matchingType: TYPE_TO_ENTRY[newType.value],
     summary: newSummary.value.trim(),
     details: newDetails.value.trim() || null,
     remote: newRemote.value,
   }
   try {
     if (editUuid.value) {
-      await updateEntry({ entryUuid: editUuid.value, input })
+      await updateEntry({ uuid: editUuid.value, input })
     } else {
       await createEntry({ input })
     }
@@ -449,7 +449,7 @@ async function save() {
 }
 async function toggleActive(e) {
   try {
-    await setEntryActive({ entryUuid: e.entryUuid, active: !e.active })
+    await setEntryActive({ uuid: e.uuid, active: !e.active })
     await refetchEntries()
   } catch (error) {
     toastError(error.message)
@@ -467,7 +467,7 @@ async function confirmDelete() {
   if (!e) return
   showDelete.value = false
   try {
-    await removeEntry({ entryUuid: e.entryUuid })
+    await removeEntry({ uuid: e.uuid })
     await refetchEntries()
   } catch (error) {
     toastError(error.message)

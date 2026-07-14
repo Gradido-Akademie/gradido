@@ -27,11 +27,11 @@ export const verifyLogin = gql`
   }
 `
 
-export const listGmsEntries = gql`
+export const listMatchingEntries = gql`
   query {
-    listGmsEntries {
-      entryUuid
-      entryType
+    listMatchingEntries {
+      uuid
+      matchingType
       summary
       details
       remote

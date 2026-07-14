@@ -11,16 +11,16 @@ import {
 } from 'typeorm'
 import { type User as UserType } from './User'
 
-@Entity('gms_entries', {
+@Entity('matching_entries', {
   engine: 'InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
 })
-export class GmsEntry extends BaseEntity {
+export class MatchingEntry extends BaseEntity {
   @PrimaryGeneratedColumn('increment', { unsigned: true })
   id: number
 
   @Index({ unique: true })
-  @Column({ name: 'entry_uuid', type: 'char', length: 36, nullable: false })
-  entryUuid: string
+  @Column({ name: 'uuid', type: 'char', length: 36, nullable: false })
+  uuid: string
 
   @Index()
   @Column({ name: 'user_id', type: 'int', unsigned: true, nullable: false })
@@ -31,13 +31,13 @@ export class GmsEntry extends BaseEntity {
   user: UserType
 
   @Column({
-    name: 'entry_type',
+    name: 'matching_type',
     type: 'varchar',
     length: 12,
     nullable: false,
     collation: 'utf8mb4_unicode_ci',
   })
-  entryType: string
+  matchingType: string
 
   @Column({ type: 'varchar', length: 160, nullable: false, collation: 'utf8mb4_unicode_ci' })
   summary: string

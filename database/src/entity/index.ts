@@ -8,8 +8,8 @@ import { CreaSetting } from './CreaSetting'
 import { DltTransaction } from './DltTransaction'
 import { Event } from './Event'
 import { FederatedCommunity } from './FederatedCommunity'
-import { GmsEntry } from './GmsEntry'
 import { LoginElopageBuys } from './LoginElopageBuys'
+import { MatchingEntry } from './MatchingEntry'
 import { Migration } from './Migration'
 import { PendingTransaction } from './PendingTransaction'
 import { Transaction } from './Transaction'
@@ -29,7 +29,7 @@ export {
   DltTransaction,
   Event,
   FederatedCommunity,
-  GmsEntry,
+  MatchingEntry,
   LoginElopageBuys,
   Migration,
   PendingTransaction,
@@ -51,7 +51,7 @@ export const entities = [
   DltTransaction,
   Event,
   FederatedCommunity,
-  GmsEntry,
+  MatchingEntry,
   LoginElopageBuys,
   Migration,
   PendingTransaction,
