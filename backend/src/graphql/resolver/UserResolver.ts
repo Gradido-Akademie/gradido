@@ -101,6 +101,7 @@ import { Location2Point, Point2Location } from './util/Location2Point'
 import { deleteUserRole, setUserRole } from './util/modifyUserRole'
 import { sendUsersToGms } from './util/sendUserToGms'
 import { syncHumhub } from './util/syncHumhub'
+import { removeUserFromGms } from './util/syncMatchingEntryToGms'
 
 const LANGUAGES = ['de', 'en', 'es', 'fr', 'nl', 'it', 'tr', 'ru', 'pt', 'el']
 const DEFAULT_LANGUAGE = 'de'
@@ -724,6 +725,11 @@ export class UserResolver {
     })
 
     const updateUserInGMS = compareGmsRelevantUserSettings(user, updateUserInfosArgs)
+    // Read before the update overwrites it: gmsAllowed going true -> false is the
+    // member leaving the GMS. compareGmsRelevantUserSettings only reports the way
+    // in (it checks `updateUserInfosArgs.gmsAllowed &&`), which is precisely why
+    // leaving never reached the GMS.
+    const gmsConsentWithdrawn = user.gmsAllowed && updateUserInfosArgs.gmsAllowed === false
     const publishNameLogic = new PublishNameLogic(user)
     const oldHumhubUsername = publishNameLogic.getUserIdentifier(
       user.humhubPublishName as PublishNameType,
@@ -801,7 +807,13 @@ export class UserResolver {
 
     // validate if user settings are changed with relevance to update gms-user
     try {
-      if (CONFIG.GMS_ACTIVE && updateUserInGMS) {
+      if (CONFIG.GMS_ACTIVE && gmsConsentWithdrawn) {
+        // Leaving the GMS has to actually remove the copy over there. Until now,
+        // switching it off sent nothing at all: the member disappeared from their
+        // own settings, but stayed on the map and in everyone's search results.
+        logger.debug(`gms consent withdrawn, delete user in gms...`)
+        await removeUserFromGms(user)
+      } else if (CONFIG.GMS_ACTIVE && updateUserInGMS) {
         logger.debug(`changed user-settings relevant for gms-user update...`)
         const homeCom = await getHomeCommunity()
         if (!homeCom) {
