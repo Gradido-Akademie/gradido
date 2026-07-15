@@ -228,7 +228,7 @@
           </button>
         </div>
 
-        <label class="small text-muted d-block mb-1">
+        <label class="small fw-bold d-block mb-1">
           {{ $t('matching.new.completeSentence') }}
         </label>
         <div class="entry-sentence d-flex align-items-center gap-2">
