@@ -386,8 +386,8 @@
     },
     "new": {
       "cancel": "İptal",
-      "detailsToggle": "Ayrıntılar · Koşullar · Fiyat · Gradido",
-      "inSentence": "… tek cümlede",
+      "completeSentence": "Bu cümleyi tamamla",
+      "detailsHeading": "Ayrıntılar — doğru kişiler seni bulsun",
       "remote": "Bölge üstü / çevrimiçi de mevcut"
     },
     "position": {
@@ -408,20 +408,23 @@
     "type": {
       "angebot": {
         "desc": "verdiğin şey",
-        "label": "Sunuyorum",
-        "placeholder": "örn. Ev tadilatında yardım sunuyorum",
+        "detailsPlaceholder": "Eski ve yeni bisikletler, e-bisikletler de — ben gelirim",
+        "placeholder": "bisiklet tamiri",
+        "prefix": "Sunuyorum",
         "word": "Teklif"
       },
       "gesuch": {
         "desc": "aradığın şey",
-        "label": "Arıyorum",
-        "placeholder": "örn. Vergi beyannamem için birini arıyorum",
+        "detailsPlaceholder": "Giriş kapısı sıkışıyor, eski kilit göbeği",
+        "placeholder": "bir çilingir",
+        "prefix": "Arıyorum",
         "word": "Talep"
       },
       "interesse": {
         "desc": "sevdiğin şey",
-        "label": "Seviyorum",
-        "placeholder": "örn. Permakültür ve kendine yeterliliği seviyorum",
+        "detailsPlaceholder": "kendi kendine yeten bahçemde",
+        "placeholder": "permakültür",
+        "prefix": "Seviyorum",
         "word": "İlgi"
       }
     }

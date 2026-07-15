@@ -224,36 +224,30 @@
             <i-bi-heart-fill v-if="ty.key === 'interesse'" />
             <i-bi-box-seam v-else-if="ty.key === 'angebot'" />
             <i-bi-search v-else />
-            <div>{{ $t(`matching.type.${ty.key}.label`) }}</div>
+            <div>{{ $t(`matching.type.${ty.key}.word`) }}</div>
           </button>
         </div>
 
-        <div class="cat-label text-center fw-bold mb-3" :class="`cat-${newType}`">
-          {{ $t(`matching.type.${newType}.label`) }}
+        <label class="small text-muted d-block mb-1">
+          {{ $t('matching.new.completeSentence') }}
+        </label>
+        <div class="entry-sentence d-flex align-items-center gap-2">
+          <span class="entry-prefix">{{ $t(`matching.type.${newType}.prefix`) }}</span>
+          <input
+            v-model="newSummary"
+            class="form-control"
+            :placeholder="$t(`matching.type.${newType}.placeholder`)"
+          />
         </div>
 
-        <label class="small text-muted">{{ $t('matching.new.inSentence') }}</label>
-        <input
-          v-model="newSummary"
-          class="form-control"
-          :placeholder="$t(`matching.type.${newType}.placeholder`)"
-        />
-
         <div class="mt-3">
-          <a
-            class="small text-muted pointer d-inline-flex align-items-center gap-1"
-            @click="showDetails = !showDetails"
-          >
-            <i-bi-chevron-up v-if="showDetails" />
-            <i-bi-chevron-down v-else />
-            {{ $t('matching.new.detailsToggle') }}
-          </a>
+          <label class="small fw-bold d-block mb-1">{{ $t('matching.new.detailsHeading') }}</label>
           <textarea
-            v-if="showDetails"
             v-model="newDetails"
-            class="form-control mt-2 matching-textarea"
+            class="form-control matching-textarea"
             rows="5"
             style="height: auto"
+            :placeholder="$t(`matching.type.${newType}.detailsPlaceholder`)"
           ></textarea>
         </div>
 
@@ -408,7 +402,6 @@ const newType = ref('interesse')
 const newSummary = ref('')
 const newDetails = ref('')
 const newRemote = ref(false)
-const showDetails = ref(false)
 
 function openNew() {
   editUuid.value = null
@@ -416,7 +409,6 @@ function openNew() {
   newSummary.value = ''
   newDetails.value = ''
   newRemote.value = false
-  showDetails.value = false
   showNew.value = true
 }
 function openEdit(e) {
@@ -425,7 +417,6 @@ function openEdit(e) {
   newSummary.value = e.summary
   newDetails.value = e.details || ''
   newRemote.value = e.remote
-  showDetails.value = Boolean(e.details)
   showNew.value = true
 }
 async function save() {
@@ -657,8 +648,18 @@ function goPositionFromFind() {
   font-size: 28px;
 }
 
-.cat-label {
-  font-size: 22px;
+/* Inline sentence in the new-entry modal: a neutral prefix ("Ich suche") sits
+   directly before the input. The prefix inherits var(--text) so it flips with
+   light/dark — the modal teleports onto <body>, which carries the dark tokens. */
+.entry-prefix {
+  color: var(--text);
+  white-space: nowrap;
+  font-size: 15px;
+}
+
+.entry-sentence .form-control {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .type-interesse {
@@ -671,18 +672,6 @@ function goPositionFromFind() {
 
 .type-gesuch {
   background: #0e79bc;
-}
-
-.cat-interesse {
-  color: #c62828;
-}
-
-.cat-angebot {
-  color: #047006;
-}
-
-.cat-gesuch {
-  color: #0e79bc;
 }
 
 /* Type-choice buttons: unselected = pale tint with black text/icon;

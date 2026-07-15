@@ -386,8 +386,8 @@
     },
     "new": {
       "cancel": "Cancel",
-      "detailsToggle": "Details · Terms · Price · Gradido",
-      "inSentence": "… in one sentence",
+      "completeSentence": "Complete this sentence",
+      "detailsHeading": "Details — so the right people find you",
       "remote": "Also available nationwide / online"
     },
     "position": {
@@ -408,20 +408,23 @@
     "type": {
       "angebot": {
         "desc": "what you give",
-        "label": "I offer",
-        "placeholder": "e.g. I offer help with renovating flats",
+        "detailsPlaceholder": "Old and new bikes, e-bikes too — I'll come to you",
+        "placeholder": "bicycle repair",
+        "prefix": "I offer",
         "word": "Offer"
       },
       "gesuch": {
         "desc": "what you look for",
-        "label": "I am looking for",
-        "placeholder": "e.g. I am looking for someone for my tax return",
+        "detailsPlaceholder": "Front door sticks, old lock cylinder",
+        "placeholder": "a locksmith",
+        "prefix": "I am looking for",
         "word": "Request"
       },
       "interesse": {
         "desc": "what you love",
-        "label": "I love",
-        "placeholder": "e.g. I love permaculture and self-sufficiency",
+        "detailsPlaceholder": "in my own self-sufficiency garden",
+        "placeholder": "permaculture",
+        "prefix": "I love",
         "word": "Interest"
       }
     }

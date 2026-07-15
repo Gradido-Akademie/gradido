@@ -386,8 +386,8 @@
     },
     "new": {
       "cancel": "Annulla",
-      "detailsToggle": "Dettagli · Condizioni · Prezzo · Gradido",
-      "inSentence": "… in una frase",
+      "completeSentence": "Completa questa frase",
+      "detailsHeading": "Dettagli — così le persone giuste ti trovano",
       "remote": "Disponibile anche a livello sovraregionale / online"
     },
     "position": {
@@ -408,20 +408,23 @@
     "type": {
       "angebot": {
         "desc": "ciò che dai",
-        "label": "Offro",
-        "placeholder": "es. Offro aiuto per ristrutturare case",
+        "detailsPlaceholder": "Bici vecchie e nuove, anche e-bike — vengo io",
+        "placeholder": "riparazione di biciclette",
+        "prefix": "Offro",
         "word": "Offerta"
       },
       "gesuch": {
         "desc": "ciò che cerchi",
-        "label": "Cerco",
-        "placeholder": "es. Cerco qualcuno per la mia dichiarazione dei redditi",
+        "detailsPlaceholder": "La porta d'ingresso si blocca, vecchio cilindro",
+        "placeholder": "un fabbro",
+        "prefix": "Cerco",
         "word": "Richiesta"
       },
       "interesse": {
         "desc": "ciò che ami",
-        "label": "Amo",
-        "placeholder": "es. Amo la permacultura e l'autosufficienza",
+        "detailsPlaceholder": "nel mio orto di autosufficienza",
+        "placeholder": "la permacultura",
+        "prefix": "Amo",
         "word": "Interesse"
       }
     }

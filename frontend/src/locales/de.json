@@ -386,8 +386,8 @@
     },
     "new": {
       "cancel": "Abbrechen",
-      "detailsToggle": "Details · Bedingungen · Preis · Gradido",
-      "inSentence": "… in einem Satz",
+      "completeSentence": "Vervollständige diesen Satz",
+      "detailsHeading": "Details — damit die Richtigen Dich finden",
       "remote": "Auch überregional / online verfügbar"
     },
     "position": {
@@ -408,20 +408,23 @@
     "type": {
       "angebot": {
         "desc": "was Du gibst",
-        "label": "Ich biete",
-        "placeholder": "z. B. Ich biete Hilfe beim Renovieren von Wohnungen",
+        "detailsPlaceholder": "Alte und neue Räder, auch E-Bikes — ich komme vorbei",
+        "placeholder": "Fahrradreparatur",
+        "prefix": "Ich biete",
         "word": "Angebot"
       },
       "gesuch": {
         "desc": "was Du suchst",
-        "label": "Ich suche",
-        "placeholder": "z. B. Ich suche jemanden für meine Steuererklärung",
+        "detailsPlaceholder": "Haustür klemmt, alter Schließzylinder",
+        "placeholder": "einen Schlosser",
+        "prefix": "Ich suche",
         "word": "Gesuch"
       },
       "interesse": {
         "desc": "was Du liebst",
-        "label": "Ich liebe",
-        "placeholder": "z. B. Ich liebe Permakultur und Selbstversorgung",
+        "detailsPlaceholder": "im eigenen Selbstversorgungsgarten",
+        "placeholder": "Permakultur",
+        "prefix": "Ich liebe",
         "word": "Interesse"
       }
     }

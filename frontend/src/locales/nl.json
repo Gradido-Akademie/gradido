@@ -386,8 +386,8 @@
     },
     "new": {
       "cancel": "Annuleren",
-      "detailsToggle": "Details · Voorwaarden · Prijs · Gradido",
-      "inSentence": "… in één zin",
+      "completeSentence": "Maak deze zin af",
+      "detailsHeading": "Details — zodat de juiste mensen je vinden",
       "remote": "Ook bovenregionaal / online beschikbaar"
     },
     "position": {
@@ -408,20 +408,23 @@
     "type": {
       "angebot": {
         "desc": "wat je geeft",
-        "label": "Ik bied",
-        "placeholder": "bijv. Ik bied hulp bij het renoveren van woningen",
+        "detailsPlaceholder": "Oude en nieuwe fietsen, ook e-bikes — ik kom langs",
+        "placeholder": "fietsreparatie",
+        "prefix": "Ik bied",
         "word": "Aanbod"
       },
       "gesuch": {
         "desc": "wat je zoekt",
-        "label": "Ik zoek",
-        "placeholder": "bijv. Ik zoek iemand voor mijn belastingaangifte",
+        "detailsPlaceholder": "Voordeur klemt, oude cilinder",
+        "placeholder": "een slotenmaker",
+        "prefix": "Ik zoek",
         "word": "Verzoek"
       },
       "interesse": {
         "desc": "waar je van houdt",
-        "label": "Ik hou van",
-        "placeholder": "bijv. Ik hou van permacultuur en zelfvoorziening",
+        "detailsPlaceholder": "in mijn eigen zelfvoorzieningstuin",
+        "placeholder": "permacultuur",
+        "prefix": "Ik hou van",
         "word": "Interesse"
       }
     }
