@@ -259,7 +259,11 @@
         <BButton variant="secondary" @click="showNew = false">
           {{ $t('matching.new.cancel') }}
         </BButton>
-        <BButton variant="gradido" :disabled="!newSummary.trim()" @click="save">
+        <BButton
+          variant="gradido"
+          :disabled="!newSummary.trim() || !newDetails.trim()"
+          @click="save"
+        >
           {{ $t('matching.save') }}
         </BButton>
       </template>
