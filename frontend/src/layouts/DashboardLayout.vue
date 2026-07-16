@@ -5,7 +5,7 @@
     </div>
     <div v-else class="mx-lg-0">
       <!-- navbar -->
-      <BRow>
+      <BRow :class="bareOnMobile">
         <BCol>
           <navbar class="main-navbar" :balance="balance"></navbar>
         </BCol>
@@ -13,7 +13,7 @@
       <mobile-sidebar @admin="admin" @logout="logoutUser" />
 
       <!-- Breadcrumb -->
-      <BRow class="breadcrumb">
+      <BRow class="breadcrumb" :class="bareOnMobile">
         <BCol cols="10" offset-lg="2">
           <breadcrumb />
         </BCol>
@@ -28,7 +28,7 @@
         <BCol>
           <BRow class="px-lg-3">
             <BCol cols="12">
-              <BRow class="d-lg-flex" cols="12">
+              <BRow class="d-lg-flex" cols="12" :class="bareOnMobile">
                 <!-- ContentHeader -->
                 <BCol>
                   <content-header
@@ -119,7 +119,7 @@
               </BRow>
             </BCol>
             <!-- Right Side Mobil -->
-            <BCol class="d-block d-lg-none">
+            <BCol :class="hideChromeOnMobile ? 'd-none' : 'd-block d-lg-none'">
               <right-side>
                 <template #transactions>
                   <last-transactions
@@ -176,7 +176,7 @@
           </right-side>
         </BCol>
       </BRow>
-      <BRow>
+      <BRow :class="bareOnMobile">
         <!-- footer -->
         <BCol>
           <content-footer v-if="!$route.meta.hideFooter" />
@@ -188,9 +188,9 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useStore } from 'vuex'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation } from '@vue/apollo-composable'
 import ContentHeader from '@/layouts/templates/ContentHeader'
 import ContributionsTemplate from '@/layouts/templates/ContributionsTemplate'
@@ -213,6 +213,13 @@ import CONFIG from '@/config'
 import { useAppToast } from '@/composables/useToast'
 
 const store = useStore()
+const route = useRoute()
+
+// A route may ask to be left alone on small screens — the map does, because a
+// phone has no room to spare for a menu, a heading and a footer around it.
+// Desktop is unaffected: there the surroundings cost nothing.
+const hideChromeOnMobile = computed(() => Boolean(route.meta.hideChromeOnMobile))
+const bareOnMobile = computed(() => (hideChromeOnMobile.value ? 'd-none d-lg-block' : ''))
 const router = useRouter()
 const {
   refetch: useRefetchTransactionsQuery,

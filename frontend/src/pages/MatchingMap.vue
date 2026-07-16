@@ -1,6 +1,8 @@
 <template>
   <div class="matching-map-page mt--3">
-    <div class="map-head d-flex align-items-center justify-content-between mx-lg-5 mb-3">
+    <!-- Desktop only. On a phone this row is exactly the space the map wants, and
+         the way back moves onto the map instead. -->
+    <div class="map-head d-none d-lg-flex align-items-center justify-content-between mx-lg-5 mb-3">
       <div class="min-w-0">
         <div class="map-title">{{ $t('matching.map.title') }}</div>
         <div class="small text-muted">{{ $t('matching.map.subtitle') }}</div>
@@ -11,9 +13,20 @@
       </button>
     </div>
 
-    <div class="mx-lg-5">
+    <div class="map-frame mx-lg-5">
       <div class="map-shell gradido-border-radius app-box-shadow" :class="`look-${look}`">
         <div ref="mapContainer" class="map-canvas" />
+
+        <!-- With the head and the wallet's own bars gone on a phone, this is the
+             only way out — so it sits on the map, where the eye already is. -->
+        <button
+          type="button"
+          class="map-back d-lg-none"
+          :aria-label="$t('matching.map.back')"
+          @click="goBack"
+        >
+          <i-bi-arrow-left />
+        </button>
 
         <!-- Appearance: dark / normal / light. Deliberately its own switch, not the
              wallet's theme — the three looks each serve a different job, and the
@@ -53,7 +66,10 @@
               <span class="box" />
               {{ $t('matching.map.breite') }}
             </label>
-            <div class="small text-muted mt-1 ms-4 ps-1">{{ $t('matching.map.breiteHint') }}</div>
+            <!-- Explanation, not instruction — the first thing to give up for room. -->
+            <div class="small text-muted mt-1 ms-4 ps-1 d-none d-lg-block">
+              {{ $t('matching.map.breiteHint') }}
+            </div>
           </BCol>
         </BRow>
       </div>
@@ -332,6 +348,65 @@ watch(look, redraw)
   height: 65vh;
   min-height: 380px;
   width: 100%;
+}
+
+/* On a phone the page IS the map: it fills the screen, the controls sit right
+   under it, and neither needs a scroll. dvh rather than vh, so the browser's own
+   collapsing address bar cannot cut the controls off the bottom. */
+@media (width <= 991.98px) {
+  .matching-map-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    margin-top: 0 !important;
+  }
+
+  .map-frame {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .map-shell {
+    flex: 1;
+    min-height: 0;
+    border-radius: 0;
+  }
+
+  .map-canvas {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .map-controls {
+    border-radius: 0;
+    margin-top: 0 !important;
+  }
+
+  /* Leaflet parks its zoom buttons top-left, exactly where the way back now sits. */
+  .map-shell :deep(.leaflet-top.leaflet-left) {
+    margin-top: 44px;
+  }
+}
+
+.map-back {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: #383838;
+  background: rgb(255 255 255 / 90%);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 1px 5px rgb(0 0 0 / 40%);
 }
 
 /* Appearance. The filter belongs on the tile layer alone — put it on the map and

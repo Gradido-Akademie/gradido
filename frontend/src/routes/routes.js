@@ -94,6 +94,9 @@ const routes = [
     meta: {
       requiresAuth: true,
       pageTitle: 'matching',
+      // On a phone the map wants the whole screen: everything above and below it
+      // is chrome you did not come here for. Desktop keeps its surroundings.
+      hideChromeOnMobile: true,
     },
   },
   {
