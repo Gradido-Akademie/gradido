@@ -1,5 +1,8 @@
 <template>
-  <div class="matching-map-page mt--3">
+  <!-- No mt--3 here, unlike the other pages: that negative margin exists to pull
+       content up under the content header, and this route hides it — so it would
+       only glue the page to the top edge. -->
+  <div class="matching-map-page">
     <!-- Desktop only. On a phone this row is exactly the space the map wants, and
          the way back moves onto the map instead. -->
     <div class="map-head d-none d-lg-flex align-items-center justify-content-between mx-lg-5 mb-3">
@@ -27,6 +30,16 @@
         >
           <i-bi-arrow-left />
         </button>
+
+        <!-- On a phone there is no navbar and no menu, so the coin is the only
+             mark left. A mark, not a button: a stray tap while panning should not
+             throw you off the map. -->
+        <img
+          class="map-coin d-lg-none"
+          src="/img/brand/gradido_coin_128x128.png"
+          alt=""
+          aria-hidden="true"
+        />
 
         <!-- Appearance: dark / normal / light. Deliberately its own switch, not the
              wallet's theme — the three looks each serve a different job, and the
@@ -389,6 +402,28 @@ watch(look, redraw)
   .map-shell :deep(.leaflet-top.leaflet-left) {
     margin-top: 44px;
   }
+}
+
+/* Desktop needs air above the head, now that the navbar and the page heading are
+   gone and there is nothing left to sit under. The phone wants none: there the
+   map is meant to reach the edge. */
+@media (width >= 992px) {
+  .matching-map-page {
+    padding-top: 1.5rem;
+  }
+}
+
+/* 1.5× the back arrow — big enough to read as the mark, small enough to stay out
+   of the way of the map underneath. */
+.map-coin {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 500;
+  width: 51px;
+  height: 51px;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 45%));
 }
 
 .map-back {
