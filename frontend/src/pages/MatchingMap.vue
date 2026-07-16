@@ -404,14 +404,9 @@ watch(look, redraw)
   }
 }
 
-/* Desktop needs air above the head, now that the navbar and the page heading are
-   gone and there is nothing left to sit under. The phone wants none: there the
-   map is meant to reach the edge. */
-@media (width >= 992px) {
-  .matching-map-page {
-    padding-top: 1.5rem;
-  }
-}
+/* The air above belongs to the layout, not here: this page sits in the content
+   column, and padding here would leave the menu column glued to the top on its
+   own. See bareChrome in DashboardLayout. */
 
 /* A third larger than the back arrow — big enough to read as the mark, small
    enough to stay out of the way of the map underneath. */
@@ -420,8 +415,8 @@ watch(look, redraw)
   bottom: 10px;
   left: 10px;
   z-index: 500;
-  width: 46px;
-  height: 46px;
+  width: 41px;
+  height: 41px;
   pointer-events: none;
   filter: drop-shadow(0 1px 3px rgb(0 0 0 / 45%));
 }

@@ -19,7 +19,10 @@
         </BCol>
       </BRow>
 
-      <BRow fluid class="d-flex">
+      <!-- With the navbar and the heading gone there is nothing left to sit under,
+           so the air goes here — on the row, where the menu and the content get it
+           together and stay level. The phone gets none: there the map takes the edge. -->
+      <BRow fluid class="d-flex" :class="bareTopSpace">
         <!-- Sidebar left -->
         <BCol cols="2" class="d-none d-lg-block">
           <sidebar
@@ -228,6 +231,7 @@ const route = useRoute()
 const bareChrome = computed(() => Boolean(route.meta.bareChrome))
 const chromeHidden = computed(() => (bareChrome.value ? 'd-none' : ''))
 const mobileHidden = computed(() => (bareChrome.value ? 'd-none d-lg-block' : ''))
+const bareTopSpace = computed(() => (bareChrome.value ? 'pt-lg-4' : ''))
 const router = useRouter()
 const {
   refetch: useRefetchTransactionsQuery,
