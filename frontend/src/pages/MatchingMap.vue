@@ -413,15 +413,15 @@ watch(look, redraw)
   }
 }
 
-/* 1.5× the back arrow — big enough to read as the mark, small enough to stay out
-   of the way of the map underneath. */
+/* A third larger than the back arrow — big enough to read as the mark, small
+   enough to stay out of the way of the map underneath. */
 .map-coin {
   position: absolute;
   bottom: 10px;
   left: 10px;
   z-index: 500;
-  width: 51px;
-  height: 51px;
+  width: 46px;
+  height: 46px;
   pointer-events: none;
   filter: drop-shadow(0 1px 3px rgb(0 0 0 / 45%));
 }

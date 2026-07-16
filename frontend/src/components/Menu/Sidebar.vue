@@ -100,7 +100,7 @@
          the logo down with it, so the menu takes it in — below the items, where
          it does not compete with the first thing you read. -->
     <router-link v-if="showLogo" to="/overview" class="sidebar-logo d-none d-lg-block">
-      <BImg :src="logo" width="160" alt="Logo" />
+      <BImg :src="logo" width="144" alt="Logo" />
     </router-link>
   </div>
 </template>
@@ -114,7 +114,7 @@ const props = defineProps({
   showLogo: { type: Boolean, default: false },
 })
 
-// Same asset the navbar uses, at 80 % of its width: down here it is a mark, not
+// Same asset the navbar uses, well under its 200px: down here it is a mark, not
 // a masthead.
 const logo = '/img/brand/gradido-logo.png'
 
