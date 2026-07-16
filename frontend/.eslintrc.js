@@ -79,6 +79,9 @@ module.exports = {
           'math.asterisk',
           '/pageTitle./',
           '/matching.type./',
+          // built as `matching.map.look.${look}` / `.channels.${channel}`
+          '/matching.map.look./',
+          '/matching.map.channels./',
           'error.empty-transactionlist',
           'error.no-transactionlist',
           'error.session-renewal-failed',

@@ -357,10 +357,8 @@
       "remote": "Nationwide"
     },
     "find": {
-      "comingSoon": "The map is coming soon. As soon as it is here, you will find people who fit you.",
       "gateText": "Once you have set your position and made yourself visible on the map, you can also find others near you.",
       "gateTitle": "First show yourself on the map",
-      "gotIt": "All set",
       "later": "Later",
       "subtitle": "Discover who fits you",
       "title": "Find on the map",
@@ -383,6 +381,29 @@
         "p1": "You decide how precisely you appear. \"Approximate\" shows you within an area — never at your front door.",
         "p2": "Without a position you are not on the map. The switch takes you out again at any time."
       }
+    },
+    "map": {
+      "amplifier": "Amplifier",
+      "back": "Back",
+      "breite": "Who fits more than once",
+      "breiteHint": "Highlights people who answer several of your entries.",
+      "channels": {
+        "andere": "everyone else",
+        "angebot": "Offers",
+        "gesuch": "Needs",
+        "interesse": "Interests",
+        "label": "Channels"
+      },
+      "look": {
+        "dunkel": "dark",
+        "hell": "light",
+        "label": "Appearance",
+        "normal": "normal"
+      },
+      "search": "Search for a place or address",
+      "subtitle": "Your matches nearby",
+      "title": "Find on the map",
+      "you": "You"
     },
     "new": {
       "cancel": "Cancel",

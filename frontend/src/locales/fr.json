@@ -357,10 +357,8 @@
       "remote": "Suprarégional"
     },
     "find": {
-      "comingSoon": "La carte arrive bientôt. Dès qu'elle sera là, tu y trouveras des personnes qui te correspondent.",
       "gateText": "Une fois que tu as défini ta position et que tu t'es rendu visible sur la carte, tu peux aussi trouver d'autres personnes près de toi.",
       "gateTitle": "Montre-toi d'abord sur la carte",
-      "gotIt": "D'accord",
       "later": "Plus tard",
       "subtitle": "Découvre qui te correspond",
       "title": "Trouver sur la carte",

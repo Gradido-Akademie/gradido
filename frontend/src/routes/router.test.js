@@ -70,8 +70,8 @@ describe('router', () => {
       expect(defaultRoute.redirect()).toEqual({ path: '/login' })
     })
 
-    it('has 22 routes defined', () => {
-      expect(routes).toHaveLength(22)
+    it('has 23 routes defined', () => {
+      expect(routes).toHaveLength(23)
     })
 
     const testRoute = (path, expectedName, requiresAuth = true) => {
@@ -115,6 +115,8 @@ describe('router', () => {
     testRoute('/reset-password/:optin', 'ResetPassword', false)
     testRoute('/checkEmail/:optin/:code?', 'ResetPassword', false)
     testRoute('/redeem/:code', 'TransactionLink', false)
+    // Declared ahead of /matching/:tab, so this must not fall through to Matching.
+    testRoute('/matching/karte', 'MatchingMap')
 
     describe('contributions without tab parameter', () => {
       it('redirects to contribute tab', () => {

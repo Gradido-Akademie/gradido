@@ -357,10 +357,8 @@
       "remote": "Überregional"
     },
     "find": {
-      "comingSoon": "Die Karte kommt bald. Sobald sie da ist, findest Du hier Menschen, die zu Dir passen.",
       "gateText": "Sobald Du Deine Position gesetzt und Dich auf der Karte sichtbar gemacht hast, kannst Du auch andere in Deiner Nähe finden.",
       "gateTitle": "Zeig Dich zuerst auf der Karte",
-      "gotIt": "Alles klar",
       "later": "Später",
       "subtitle": "Entdecke, wer zu Dir passt",
       "title": "Auf der Karte finden",
@@ -383,6 +381,29 @@
         "p1": "Du entscheidest, wie genau Du erscheinst. „Ungefähr“ zeigt Dich im Umkreis — nie auf der Haustür.",
         "p2": "Ohne Position bist Du nicht auf der Karte. Der Schalter nimmt Dich jederzeit wieder heraus."
       }
+    },
+    "map": {
+      "amplifier": "Verstärker",
+      "back": "Zurück",
+      "breite": "Wer mehrfach passt",
+      "breiteHint": "Hebt Menschen hervor, die mehrere Deiner Einträge beantworten.",
+      "channels": {
+        "andere": "alle anderen",
+        "angebot": "Angebote",
+        "gesuch": "Gesuche",
+        "interesse": "Interessen",
+        "label": "Kanäle"
+      },
+      "look": {
+        "dunkel": "dunkel",
+        "hell": "hell",
+        "label": "Erscheinungsbild",
+        "normal": "normal"
+      },
+      "search": "Ort oder Adresse suchen",
+      "subtitle": "Deine Treffer in der Umgebung",
+      "title": "Auf der Karte finden",
+      "you": "Du"
     },
     "new": {
       "cancel": "Abbrechen",

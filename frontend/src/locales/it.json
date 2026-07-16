@@ -357,10 +357,8 @@
       "remote": "Sovraregionale"
     },
     "find": {
-      "comingSoon": "La mappa arriva presto. Appena sarà disponibile, qui troverai persone in sintonia con te.",
       "gateText": "Una volta impostata la tua posizione e resa visibile sulla mappa, potrai trovare anche altre persone vicino a te.",
       "gateTitle": "Mostrati prima sulla mappa",
-      "gotIt": "Va bene",
       "later": "Più tardi",
       "subtitle": "Scopri chi è in sintonia con te",
       "title": "Trova sulla mappa",

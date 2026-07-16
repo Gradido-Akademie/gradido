@@ -357,10 +357,8 @@
       "remote": "Suprarregional"
     },
     "find": {
-      "comingSoon": "El mapa llegará pronto. En cuanto esté, aquí encontrarás a personas que encajan contigo.",
       "gateText": "Una vez que hayas fijado tu posición y te hayas hecho visible en el mapa, también podrás encontrar a otros cerca de ti.",
       "gateTitle": "Primero muéstrate en el mapa",
-      "gotIt": "De acuerdo",
       "later": "Más tarde",
       "subtitle": "Descubre quién encaja contigo",
       "title": "Buscar en el mapa",

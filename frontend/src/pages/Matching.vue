@@ -1,10 +1,9 @@
 <template>
   <div class="matching-page mt--3">
     <!-- Jump-off to the find map. Shown on every tab. Access needs an active map
-         presence (position set AND visible); otherwise the click guides to Position.
-         The "map coming soon" branch is a placeholder for the real map navigation. -->
+         presence (position set AND visible); otherwise the click guides to Position. -->
     <div class="matching-header d-flex justify-content-end mx-lg-5 mb-3">
-      <button type="button" class="find-btn" @click="showFind = true">
+      <button type="button" class="find-btn" @click="openFind">
         <i-bi-map class="find-btn-icon" />
         <span class="find-btn-text">
           <span class="find-btn-title">{{ $t('matching.find.title') }}</span>
@@ -269,32 +268,25 @@
       </template>
     </BModal>
 
-    <!-- Find-map access dialog: guide to Position, or (placeholder) coming-soon note -->
+    <!-- Access gate. Only shown when there is no map presence yet — with one, the
+         find button goes straight to the map instead of asking for a click. -->
     <BModal v-model="showFind" centered>
       <template #title>
-        <span style="font-size: 18px">
-          {{ findHasAccess ? $t('matching.find.title') : $t('matching.find.gateTitle') }}
-        </span>
+        <span style="font-size: 18px">{{ $t('matching.find.gateTitle') }}</span>
       </template>
       <template #default>
-        <p v-if="findHasAccess" class="mb-0">{{ $t('matching.find.comingSoon') }}</p>
-        <p v-else class="mb-0">{{ $t('matching.find.gateText') }}</p>
+        <p class="mb-0">{{ $t('matching.find.gateText') }}</p>
       </template>
       <template #footer>
-        <BButton v-if="findHasAccess" variant="gradido" @click="showFind = false">
-          {{ $t('matching.find.gotIt') }}
+        <BButton variant="secondary" @click="showFind = false">
+          {{ $t('matching.find.later') }}
         </BButton>
-        <template v-else>
-          <BButton variant="secondary" @click="showFind = false">
-            {{ $t('matching.find.later') }}
-          </BButton>
-          <BButton v-if="tab === 'position'" variant="gradido" @click="showFind = false">
-            {{ $t('matching.find.understood') }}
-          </BButton>
-          <BButton v-else variant="gradido" @click="goPositionFromFind">
-            {{ $t('matching.find.toPosition') }}
-          </BButton>
-        </template>
+        <BButton v-if="tab === 'position'" variant="gradido" @click="showFind = false">
+          {{ $t('matching.find.understood') }}
+        </BButton>
+        <BButton v-else variant="gradido" @click="goPositionFromFind">
+          {{ $t('matching.find.toPosition') }}
+        </BButton>
       </template>
     </BModal>
 
@@ -549,6 +541,13 @@ async function savePosition() {
 // --- Find-map access dialog ---
 const showFind = ref(false)
 const findHasAccess = computed(() => Boolean(store.state.gmsAllowed) && hasPosition.value)
+function openFind() {
+  if (findHasAccess.value) {
+    router.push('/matching/karte')
+    return
+  }
+  showFind.value = true
+}
 function goPositionFromFind() {
   showFind.value = false
   goTab('position')

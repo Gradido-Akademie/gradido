@@ -87,6 +87,16 @@ const routes = [
     },
   },
   {
+    // Ahead of /matching/:tab so the map is a place of its own rather than a
+    // fourth tab: it is where you go looking, and it wants the whole canvas.
+    path: '/matching/karte',
+    component: () => import('@/pages/MatchingMap'),
+    meta: {
+      requiresAuth: true,
+      pageTitle: 'matching',
+    },
+  },
+  {
     path: '/matching/:tab',
     component: () => import('@/pages/Matching'),
     meta: {

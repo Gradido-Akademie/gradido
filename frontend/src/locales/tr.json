@@ -357,10 +357,8 @@
       "remote": "Bölge üstü"
     },
     "find": {
-      "comingSoon": "Harita yakında geliyor. Hazır olduğunda burada sana uygun kişileri bulacaksın.",
       "gateText": "Konumunu ayarlayıp haritada görünür olduğunda, yakınındaki diğer kişileri de bulabilirsin.",
       "gateTitle": "Önce haritada kendini göster",
-      "gotIt": "Tamam",
       "later": "Daha sonra",
       "subtitle": "Sana uyanları keşfet",
       "title": "Haritada bul",
