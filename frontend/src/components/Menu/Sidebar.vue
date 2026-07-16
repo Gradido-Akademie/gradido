@@ -95,6 +95,13 @@
         </BNav>
       </div>
     </div>
+
+    <!-- The logo lives in the navbar. A route that hides the navbar would take
+         the logo down with it, so the menu takes it in — below the items, where
+         it does not compete with the first thing you read. -->
+    <router-link v-if="showLogo" to="/overview" class="sidebar-logo d-none d-lg-block">
+      <BImg :src="logo" width="160" alt="Logo" />
+    </router-link>
   </div>
 </template>
 <script setup>
@@ -103,7 +110,13 @@ import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   shadow: { type: Boolean, default: true },
+  // Set by routes that hide the navbar — see DashboardLayout's bareChrome.
+  showLogo: { type: Boolean, default: false },
 })
+
+// Same asset the navbar uses, at 80 % of its width: down here it is a mark, not
+// a masthead.
+const logo = '/img/brand/gradido-logo.png'
 
 const emit = defineEmits(['closeSidebar'])
 
@@ -133,6 +146,12 @@ watch(
 )
 </script>
 <style scoped>
+.sidebar-logo {
+  display: block;
+  margin-top: 1.5rem;
+  padding-left: 0.5rem;
+}
+
 :deep(.nav-item > a) {
   color: rgb(56 56 56) !important;
   border-left: 4px transparent solid;

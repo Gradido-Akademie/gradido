@@ -94,9 +94,11 @@ const routes = [
     meta: {
       requiresAuth: true,
       pageTitle: 'matching',
-      // On a phone the map wants the whole screen: everything above and below it
-      // is chrome you did not come here for. Desktop keeps its surroundings.
-      hideChromeOnMobile: true,
+      // This route brings its own head, so the layout drops the navbar, the page
+      // heading and the content header. On a phone it drops everything and the
+      // map takes the screen; on desktop the menu stays and the logo moves under
+      // it, because the navbar it used to live in is gone.
+      bareChrome: true,
     },
   },
   {

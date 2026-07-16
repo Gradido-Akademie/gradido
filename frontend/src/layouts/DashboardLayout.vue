@@ -5,7 +5,7 @@
     </div>
     <div v-else class="mx-lg-0">
       <!-- navbar -->
-      <BRow :class="bareOnMobile">
+      <BRow :class="chromeHidden">
         <BCol>
           <navbar class="main-navbar" :balance="balance"></navbar>
         </BCol>
@@ -13,7 +13,7 @@
       <mobile-sidebar @admin="admin" @logout="logoutUser" />
 
       <!-- Breadcrumb -->
-      <BRow class="breadcrumb" :class="bareOnMobile">
+      <BRow class="breadcrumb" :class="chromeHidden">
         <BCol cols="10" offset-lg="2">
           <breadcrumb />
         </BCol>
@@ -22,13 +22,18 @@
       <BRow fluid class="d-flex">
         <!-- Sidebar left -->
         <BCol cols="2" class="d-none d-lg-block">
-          <sidebar class="main-sidebar" @admin="admin" @logout="logoutUser" />
+          <sidebar
+            class="main-sidebar"
+            :show-logo="bareChrome"
+            @admin="admin"
+            @logout="logoutUser"
+          />
         </BCol>
         <!-- ContentHeader && Content -->
         <BCol>
           <BRow class="px-lg-3">
             <BCol cols="12">
-              <BRow class="d-lg-flex" cols="12" :class="bareOnMobile">
+              <BRow class="d-lg-flex" cols="12" :class="chromeHidden">
                 <!-- ContentHeader -->
                 <BCol>
                   <content-header
@@ -119,7 +124,7 @@
               </BRow>
             </BCol>
             <!-- Right Side Mobil -->
-            <BCol :class="hideChromeOnMobile ? 'd-none' : 'd-block d-lg-none'">
+            <BCol :class="bareChrome ? 'd-none' : 'd-block d-lg-none'">
               <right-side>
                 <template #transactions>
                   <last-transactions
@@ -176,7 +181,7 @@
           </right-side>
         </BCol>
       </BRow>
-      <BRow :class="bareOnMobile">
+      <BRow :class="mobileHidden">
         <!-- footer -->
         <BCol>
           <content-footer v-if="!$route.meta.hideFooter" />
@@ -215,11 +220,14 @@ import { useAppToast } from '@/composables/useToast'
 const store = useStore()
 const route = useRoute()
 
-// A route may ask to be left alone on small screens — the map does, because a
-// phone has no room to spare for a menu, a heading and a footer around it.
-// Desktop is unaffected: there the surroundings cost nothing.
-const hideChromeOnMobile = computed(() => Boolean(route.meta.hideChromeOnMobile))
-const bareOnMobile = computed(() => (hideChromeOnMobile.value ? 'd-none d-lg-block' : ''))
+// A route may bring its own head — the map does. Then the navbar, the page
+// heading and the content header are just distance between you and what you came
+// for, at every size. On a phone the map takes the whole screen, so the footer
+// goes too; on desktop it stays, and the menu keeps the logo the navbar took with
+// it. Every other route leaves these empty and is untouched.
+const bareChrome = computed(() => Boolean(route.meta.bareChrome))
+const chromeHidden = computed(() => (bareChrome.value ? 'd-none' : ''))
+const mobileHidden = computed(() => (bareChrome.value ? 'd-none d-lg-block' : ''))
 const router = useRouter()
 const {
   refetch: useRefetchTransactionsQuery,
