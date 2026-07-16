@@ -323,24 +323,6 @@
       </template>
     </BModal>
 
-    <!-- Leaving with unsaved changes: say so rather than discard in silence. -->
-    <BModal v-model="showLeaveConfirm" centered>
-      <template #title>
-        <span style="font-size: 18px">{{ $t('matching.position.leaveTitle') }}</span>
-      </template>
-      <template #default>
-        <p class="mb-0">{{ $t('matching.position.leaveText') }}</p>
-      </template>
-      <template #footer>
-        <BButton variant="secondary" @click="cancelLeave">
-          {{ $t('matching.position.cancel') }}
-        </BButton>
-        <BButton variant="gradido" @click="confirmLeave">
-          {{ $t('matching.position.leaveAnyway') }}
-        </BButton>
-      </template>
-    </BModal>
-
     <!-- Delete confirmation (replaces the browser confirm dialog) -->
     <BModal v-model="showDelete" centered>
       <template #title>
@@ -364,9 +346,9 @@
 
 <script setup>
 import { useMutation, useQuery } from '@vue/apollo-composable'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useAppToast } from '@/composables/useToast'
 import {
@@ -593,6 +575,12 @@ function onPickFindable(value) {
   draftFindable.value = value === Boolean(store.state.gmsAllowed) ? null : value
 }
 
+function clearDrafts() {
+  draftPosition.value = null
+  draftAccuracy.value = null
+  draftFindable.value = null
+}
+
 const showSaveConfirm = ref(false)
 
 async function confirmSavePosition() {
@@ -620,39 +608,22 @@ async function confirmSavePosition() {
     if (variables.gmsPublishLocation)
       store.commit('gmsPublishLocation', variables.gmsPublishLocation)
     if (variables.gmsAllowed !== undefined) store.commit('gmsAllowed', variables.gmsAllowed)
-    draftPosition.value = null
-    draftAccuracy.value = null
-    draftFindable.value = null
+    clearDrafts()
     toastSuccess(t('settings.GMS.location.updateSuccess'))
   } catch (error) {
     toastError(error.message)
   }
 }
 
-// --- Leaving with unsaved changes ---
-const showLeaveConfirm = ref(false)
-let pendingLeave = null
-
-onBeforeRouteLeave((to) => {
-  if (!positionDirty.value) return true
-  pendingLeave = to.fullPath
-  showLeaveConfirm.value = true
-  return false
+// Leaving the tab drops the drafts. There is deliberately no "are you sure":
+// the map is torn down with the tab and comes back showing the saved pin, so a
+// surviving draft would be a ghost — the button lit for a change nothing shows.
+// And the loss it would warn about is the harmless one: what is saved stays put.
+// A guard that fires next to the point is worse than none — it teaches people to
+// click dialogs away, and the save confirmation is the one that must land.
+watch(tab, (next) => {
+  if (next !== 'position') clearDrafts()
 })
-
-function cancelLeave() {
-  showLeaveConfirm.value = false
-  pendingLeave = null
-}
-function confirmLeave() {
-  showLeaveConfirm.value = false
-  draftPosition.value = null
-  draftAccuracy.value = null
-  draftFindable.value = null
-  const target = pendingLeave
-  pendingLeave = null
-  if (target) router.push(target)
-}
 
 // --- Find-map access dialog ---
 const showFind = ref(false)
