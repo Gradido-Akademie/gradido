@@ -30,6 +30,10 @@ const { toastError, toastSuccess } = useAppToast()
 const props = defineProps({
   exactToast: { type: String, default: undefined },
   approximateToast: { type: String, default: undefined },
+  // Off by default, so a page that says nothing keeps saving on the spot. The
+  // matching page sets it: there the accuracy travels with the position and the
+  // whole set reaches the server only when someone presses save.
+  defer: { type: Boolean, default: false },
 })
 
 const selectedOption = ref(
@@ -64,6 +68,12 @@ const { mutate: updateUserData } = useMutation(updateUserInfos)
 
 const update = async (option) => {
   if (option.value === selectedOption.value) {
+    return
+  }
+  if (props.defer) {
+    // Show the choice, tell the page, save nothing.
+    selectedOption.value = option.value
+    emit('gmsPublishLocation', option.value)
     return
   }
   try {

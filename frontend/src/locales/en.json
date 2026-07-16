@@ -414,11 +414,18 @@
     "position": {
       "accuracyApprox": "A slightly shifted location is shown",
       "accuracyExact": "Your exact location is shown",
+      "cancel": "Cancel",
       "findable": "Am I findable?",
       "findableHint": "Turns your map presence on/off",
       "findableOff": "You are no longer findable on the map",
       "findableOn": "You are now findable on the map",
-      "intro": "Place yourself on the map to take part in matching — you only appear once you do."
+      "intro": "Place yourself on the map to take part in matching — you only appear once you do.",
+      "leaveAnyway": "Leave anyway",
+      "leaveText": "Your position settings have changed but have not been saved yet. Do you want to leave the page anyway?",
+      "leaveTitle": "Not saved yet",
+      "saveText": "Do you want to save your position settings now?",
+      "saveTitle": "Save position",
+      "unsaved": "Not saved yet"
     },
     "save": "Save",
     "tabs": {

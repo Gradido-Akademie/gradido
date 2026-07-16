@@ -414,11 +414,18 @@
     "position": {
       "accuracyApprox": "Eine leicht veränderte Position wird angezeigt",
       "accuracyExact": "Die genaue Position wird angezeigt",
+      "cancel": "Abbrechen",
       "findable": "Bin ich auffindbar?",
       "findableHint": "Schaltet Deine Karten-Präsenz an/aus",
       "findableOff": "Du bist nicht mehr auf der Karte auffindbar",
       "findableOn": "Du bist jetzt auf der Karte auffindbar",
-      "intro": "Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust."
+      "intro": "Verorte Dich auf der Karte, um beim Matching dabei zu sein — Du erscheinst erst, wenn Du das tust.",
+      "leaveAnyway": "Trotzdem verlassen",
+      "leaveText": "Deine Positionseinstellungen wurden geändert, aber noch nicht gespeichert. Möchtest Du die Seite trotzdem verlassen?",
+      "leaveTitle": "Noch nicht gespeichert",
+      "saveText": "Möchtest Du Deine Positionseinstellungen jetzt speichern?",
+      "saveTitle": "Position speichern",
+      "unsaved": "Noch nicht gespeichert"
     },
     "save": "Speichern",
     "tabs": {

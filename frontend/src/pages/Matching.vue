@@ -164,8 +164,9 @@
       <p class="small text-muted ps-2">{{ $t('matching.position.intro') }}</p>
 
       <!-- Inline map: address search (lupe) + draggable marker, reused from the
-           settings page. Coordinates readout hidden to keep the map compact; the
-           pin auto-saves on move. -->
+           settings page. Coordinates readout hidden to keep the map compact.
+           Dragging only remembers — a map is easy to touch by accident, and a
+           stray touch must not move where you live. Saving is the button below. -->
       <div class="bg-white app-box-shadow gradido-border-radius p-2 my-3">
         <UserLocationMap
           v-if="userLocationLoaded"
@@ -177,12 +178,14 @@
         />
       </div>
 
-      <!-- Accuracy — self-saving dropdown, right-aligned below the map
-           (self-explanatory: "exact" / "approximate", so no label needed) -->
+      <!-- Accuracy — right-aligned below the map (self-explanatory: "exact" /
+           "approximate", so no label needed). Deferred like everything here. -->
       <div class="d-flex justify-content-end mt-3">
         <UserGMSLocationFormat
+          defer
           :exact-toast="$t('matching.position.accuracyExact')"
           :approximate-toast="$t('matching.position.accuracyApprox')"
+          @gms-publish-location="onPickAccuracy"
         />
       </div>
 
@@ -191,15 +194,27 @@
         <div class="d-flex align-items-center justify-content-end gap-3">
           <span class="fw-bold">{{ $t('matching.position.findable') }}</span>
           <UserSettingsSwitch
+            defer
             :initial-value="store.state.gmsAllowed"
             attr-name="gmsAllowed"
             :enabled-text="$t('matching.position.findableOn')"
             :disabled-text="$t('matching.position.findableOff')"
+            @value-changed="onPickFindable"
           />
         </div>
         <div class="small text-muted text-end mt-1">
           {{ $t('matching.position.findableHint') }}
         </div>
+      </div>
+
+      <!-- Nothing on this tab reaches the server until this is pressed. -->
+      <div class="d-flex justify-content-end align-items-center gap-3 mt-4">
+        <span v-if="positionDirty" class="small text-muted">
+          {{ $t('matching.position.unsaved') }}
+        </span>
+        <BButton variant="gradido" :disabled="!positionDirty" @click="showSaveConfirm = true">
+          {{ $t('matching.save') }}
+        </BButton>
       </div>
     </div>
 
@@ -290,6 +305,42 @@
       </template>
     </BModal>
 
+    <!-- Saving your own whereabouts is worth one deliberate breath. -->
+    <BModal v-model="showSaveConfirm" centered>
+      <template #title>
+        <span style="font-size: 18px">{{ $t('matching.position.saveTitle') }}</span>
+      </template>
+      <template #default>
+        <p class="mb-0">{{ $t('matching.position.saveText') }}</p>
+      </template>
+      <template #footer>
+        <BButton variant="secondary" @click="showSaveConfirm = false">
+          {{ $t('matching.position.cancel') }}
+        </BButton>
+        <BButton variant="gradido" @click="confirmSavePosition">
+          {{ $t('matching.save') }}
+        </BButton>
+      </template>
+    </BModal>
+
+    <!-- Leaving with unsaved changes: say so rather than discard in silence. -->
+    <BModal v-model="showLeaveConfirm" centered>
+      <template #title>
+        <span style="font-size: 18px">{{ $t('matching.position.leaveTitle') }}</span>
+      </template>
+      <template #default>
+        <p class="mb-0">{{ $t('matching.position.leaveText') }}</p>
+      </template>
+      <template #footer>
+        <BButton variant="secondary" @click="cancelLeave">
+          {{ $t('matching.position.cancel') }}
+        </BButton>
+        <BButton variant="gradido" @click="confirmLeave">
+          {{ $t('matching.position.leaveAnyway') }}
+        </BButton>
+      </template>
+    </BModal>
+
     <!-- Delete confirmation (replaces the browser confirm dialog) -->
     <BModal v-model="showDelete" centered>
       <template #title>
@@ -315,7 +366,7 @@
 import { useMutation, useQuery } from '@vue/apollo-composable'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useAppToast } from '@/composables/useToast'
 import {
@@ -486,7 +537,6 @@ const userLocation = ref({ lat: 0, lng: 0 })
 const communityLocation = ref({ lat: 0, lng: 0 })
 const userLocationLoaded = ref(false)
 const hasPosition = ref(false)
-const pickedLocation = ref(null)
 
 const { onResult: onUserLocation, onError: onUserLocationError } = useQuery(
   userLocationQuery,
@@ -511,31 +561,97 @@ onUserLocationError((error) => toastError(error.message))
 
 // The pin auto-saves on move (consistent with the other self-saving controls).
 // The map echoes its current position on load/remount, so skip saves that match
-// the stored location; update userLocation up front so the map's paired emit
-// (marker drag + watcher) does not trigger a second save for the same spot.
+// --- Position tab: nothing here saves itself ---
+//
+// A map is easy to touch by accident — on a phone you land on this tab and brush
+// the display, and where you live has moved. So the three settings of this tab
+// (pin, accuracy, findable) only ever get remembered, and reach the server
+// together when the save button is pressed. The settings page has always worked
+// this way for its map; this tab used to be the exception.
+
+// What was picked but not yet saved. null = untouched since the last save.
+const draftPosition = ref(null)
+const draftAccuracy = ref(null)
+const draftFindable = ref(null)
+
+const positionDirty = computed(
+  () =>
+    draftPosition.value !== null || draftAccuracy.value !== null || draftFindable.value !== null,
+)
+
 function onPickPosition(coords) {
-  pickedLocation.value = coords
   const cur = userLocation.value
   if (cur && Math.abs(coords.lat - cur.lat) < 1e-7 && Math.abs(coords.lng - cur.lng) < 1e-7) {
     return
   }
-  userLocation.value = { lat: coords.lat, lng: coords.lng }
-  savePosition()
+  draftPosition.value = { lat: coords.lat, lng: coords.lng }
 }
-async function savePosition() {
-  if (!pickedLocation.value) return
-  try {
-    const gmsLocation = {
-      latitude: pickedLocation.value.lat,
-      longitude: pickedLocation.value.lng,
+function onPickAccuracy(value) {
+  draftAccuracy.value = value === store.state.gmsPublishLocation ? null : value
+}
+function onPickFindable(value) {
+  draftFindable.value = value === Boolean(store.state.gmsAllowed) ? null : value
+}
+
+const showSaveConfirm = ref(false)
+
+async function confirmSavePosition() {
+  showSaveConfirm.value = false
+  // One mutation for whatever changed: three separate saves could half-succeed
+  // and leave the user guessing which half.
+  const variables = {}
+  if (draftPosition.value) {
+    variables.gmsLocation = {
+      latitude: draftPosition.value.lat,
+      longitude: draftPosition.value.lng,
     }
-    await saveLocation({ gmsLocation })
-    store.commit('userLocation', gmsLocation)
-    hasPosition.value = true
+  }
+  if (draftAccuracy.value !== null) variables.gmsPublishLocation = draftAccuracy.value
+  if (draftFindable.value !== null) variables.gmsAllowed = draftFindable.value
+  if (!Object.keys(variables).length) return
+
+  try {
+    await saveLocation(variables)
+    if (variables.gmsLocation) {
+      userLocation.value = { ...draftPosition.value }
+      store.commit('userLocation', variables.gmsLocation)
+      hasPosition.value = true
+    }
+    if (variables.gmsPublishLocation)
+      store.commit('gmsPublishLocation', variables.gmsPublishLocation)
+    if (variables.gmsAllowed !== undefined) store.commit('gmsAllowed', variables.gmsAllowed)
+    draftPosition.value = null
+    draftAccuracy.value = null
+    draftFindable.value = null
     toastSuccess(t('settings.GMS.location.updateSuccess'))
   } catch (error) {
     toastError(error.message)
   }
+}
+
+// --- Leaving with unsaved changes ---
+const showLeaveConfirm = ref(false)
+let pendingLeave = null
+
+onBeforeRouteLeave((to) => {
+  if (!positionDirty.value) return true
+  pendingLeave = to.fullPath
+  showLeaveConfirm.value = true
+  return false
+})
+
+function cancelLeave() {
+  showLeaveConfirm.value = false
+  pendingLeave = null
+}
+function confirmLeave() {
+  showLeaveConfirm.value = false
+  draftPosition.value = null
+  draftAccuracy.value = null
+  draftFindable.value = null
+  const target = pendingLeave
+  pendingLeave = null
+  if (target) router.push(target)
 }
 
 // --- Find-map access dialog ---
