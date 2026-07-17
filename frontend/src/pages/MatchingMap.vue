@@ -31,16 +31,6 @@
           <i-bi-arrow-left />
         </button>
 
-        <!-- On a phone there is no navbar and no menu, so the coin is the only
-             mark left. A mark, not a button: a stray tap while panning should not
-             throw you off the map. -->
-        <img
-          class="map-coin d-lg-none"
-          src="/img/brand/gradido_coin_128x128.png"
-          alt=""
-          aria-hidden="true"
-        />
-
         <!-- The crosshair marks the map's centre, and the centre is what the next
              search will use. Hollow and half-transparent on purpose: on the first
              open it sits exactly on your own crown, and it has to let it through
@@ -693,19 +683,6 @@ watch(look, redraw)
 /* The air above belongs to the layout, not here: this page sits in the content
    column, and padding here would leave the menu column glued to the top on its
    own. See bareChrome in DashboardLayout. */
-
-/* A third larger than the back arrow — big enough to read as the mark, small
-   enough to stay out of the way of the map underneath. */
-.map-coin {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  z-index: 500;
-  width: 41px;
-  height: 41px;
-  pointer-events: none;
-  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 45%));
-}
 
 .map-back {
   position: absolute;
