@@ -62,7 +62,7 @@
       <div class="map-controls bg-white app-box-shadow gradido-border-radius p-3 mt-3">
         <BRow>
           <BCol cols="12" md="7">
-            <div class="controls-heading">{{ $t('matching.map.channels.label') }}</div>
+            <div class="controls-heading">{{ $t('matching.map.found', { n: foundCount }) }}</div>
             <div class="d-flex flex-wrap gap-3">
               <label v-for="channel in FILTERS" :key="channel" class="map-check">
                 <input v-model="visible[channel]" type="checkbox" />
@@ -141,6 +141,25 @@ let canvasRenderer = null
 
 const ownPosition = ref(null)
 
+// The matches the map is showing right now. Drawing and counting both read this
+// one list, so the heading can never claim a person the map does not draw.
+const visibleMatches = computed(() => {
+  const shown = []
+  for (const match of matches.value) {
+    const stages = stagesOf(match, DEFAULTS, breite.value, visible)
+    const peak = peakStage(stages)
+    if (peak < 1) continue
+    shown.push({ match, stages, peak })
+  }
+  return shown
+})
+
+// Everyone the map is showing — the glowing matches plus the grey rings. They are
+// people too, so they count; the filter itself breaks the number down.
+const foundCount = computed(
+  () => visibleMatches.value.length + (visible.andere ? presence.value.length : 0),
+)
+
 const enabled = computed(() => Boolean(store.state.gmsAllowed))
 const { onResult, onError } = useQuery(
   userLocationQuery,
@@ -208,11 +227,7 @@ function drawMatches() {
   matchLayer = L.layerGroup().addTo(map)
 
   const glowing = look.value === 'dunkel'
-  for (const match of matches.value) {
-    const stages = stagesOf(match, DEFAULTS, breite.value, visible)
-    const peak = peakStage(stages)
-    if (peak < 1) continue
-
+  for (const { match, stages, peak } of visibleMatches.value) {
     const colour = markerColor(stages, DEFAULTS)
     const size = glowing ? GLOW_SIZE[peak] : DISC_SIZE[peak]
     const html = glowing

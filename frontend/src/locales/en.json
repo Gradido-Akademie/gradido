@@ -391,9 +391,9 @@
         "andere": "everyone else",
         "angebot": "Offers",
         "gesuch": "Needs",
-        "interesse": "Interests",
-        "label": "Channels"
+        "interesse": "Interests"
       },
+      "found": "{n} people found",
       "look": {
         "dunkel": "dark",
         "hell": "light",
