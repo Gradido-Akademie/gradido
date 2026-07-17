@@ -7,6 +7,15 @@ import { ref } from 'vue'
  * only `load()` below changes — the map component never learns which side it got
  * its people from, so going live swaps the source, not the component.
  *
+ * A search, as both sides of this seam mean it:
+ *
+ *   { center: { lat, lng }, radius }   // radius in km
+ *
+ * The centre is the deliberate one, not the map's — panning around is looking,
+ * and looking must not search. Both routes take the radius as a required
+ * parameter, so the stub demands it too: a stub that answers questions the real
+ * thing would refuse teaches the caller a contract that does not exist.
+ *
  * A match, as the map wants it:
  *
  *   {
@@ -24,6 +33,17 @@ import { ref } from 'vue'
  *
  *   { uuid: string, position: { lat, lng }, hasEntries: boolean }
  */
+
+/** Great-circle distance in km — the sphere the backend measures on. */
+export function distanceKm(a, b) {
+  const R = 6371.0088
+  const lat1 = (a.lat * Math.PI) / 180
+  const lat2 = (b.lat * Math.PI) / 180
+  const dLat = lat2 - lat1
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)))
+}
 
 // --- stub ------------------------------------------------------------------
 // The scores are real: they were measured against the seed corpus. The people,
@@ -58,6 +78,11 @@ const STUB_PEOPLE = [
 ]
 
 const PRESENCE_COUNT = 240
+// Roughly ±55 km by ±66 km around the centre. Wide enough that the radius has
+// something to cut: packed into 25 km they would all sit inside the default
+// circle, and turning the dial would show nothing happening.
+const PRESENCE_SPREAD_LAT = 1.0
+const PRESENCE_SPREAD_LNG = 1.8
 
 /** Deterministic noise, so the stub does not jump around between reloads. */
 function wobble(seed) {
@@ -65,24 +90,24 @@ function wobble(seed) {
   return x - Math.floor(x) - 0.5
 }
 
-function stubMatches(center) {
+function stubMatches({ center, radius }) {
   return STUB_PEOPLE.map((person, index) => ({
     uuid: `stub-match-${index}`,
     name: person.name,
     position: { lat: center.lat + person.dLat, lng: center.lng + person.dLng },
     scores: person.scores,
-  }))
+  })).filter((match) => distanceKm(center, match.position) <= radius)
 }
 
-function stubPresence(center) {
+function stubPresence({ center, radius }) {
   return Array.from({ length: PRESENCE_COUNT }, (_, index) => ({
     uuid: `stub-presence-${index}`,
     position: {
-      lat: center.lat + wobble(index + 1) * 0.22,
-      lng: center.lng + wobble(index + 101) * 0.42,
+      lat: center.lat + wobble(index + 1) * PRESENCE_SPREAD_LAT,
+      lng: center.lng + wobble(index + 101) * PRESENCE_SPREAD_LNG,
     },
     hasEntries: index % 3 !== 0,
-  }))
+  })).filter((person) => distanceKm(center, person.position) <= radius)
 }
 
 // --- end of stub -----------------------------------------------------------
@@ -94,15 +119,16 @@ export function useMatches() {
   const error = ref(null)
 
   /**
-   * @param {{lat: number, lng: number}} center the searching user's own position
+   * @param {{center: {lat: number, lng: number}, radius: number}} search
+   *   where the member chose to search, and how far out
    */
-  async function load(center) {
-    if (!center) return
+  async function load(search) {
+    if (!search?.center || !(search.radius > 0)) return
     loading.value = true
     error.value = null
     try {
-      matches.value = stubMatches(center)
-      presence.value = stubPresence(center)
+      matches.value = stubMatches(search)
+      presence.value = stubPresence(search)
     } catch (err) {
       error.value = err
       matches.value = []

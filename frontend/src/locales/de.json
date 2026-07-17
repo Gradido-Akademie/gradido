@@ -394,13 +394,18 @@
         "interesse": "Interessen"
       },
       "found": "{n} Menschen gefunden",
+      "km": "km",
       "look": {
         "dunkel": "dunkel",
         "hell": "hell",
         "label": "Erscheinungsbild",
         "normal": "normal"
       },
+      "radius": "Radius",
+      "radiusLabel": "In welchem Umkreis suchst Du? (km)",
+      "radiusTitle": "Suchradius",
       "search": "Ort oder Adresse suchen",
+      "searchHere": "Hier suchen",
       "subtitle": "Deine Treffer in der Umgebung",
       "title": "Auf der Karte finden",
       "you": "Du"

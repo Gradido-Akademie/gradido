@@ -41,6 +41,27 @@
           aria-hidden="true"
         />
 
+        <!-- The crosshair marks the map's centre, and the centre is what the next
+             search will use. Hollow and half-transparent on purpose: on the first
+             open it sits exactly on your own crown, and it has to let it through
+             rather than shove it aside — the crown marks a real place. -->
+        <button
+          type="button"
+          class="map-crosshair"
+          :aria-label="$t('matching.map.searchHere')"
+          :title="$t('matching.map.searchHere')"
+          @click="searchHere"
+        >
+          <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              d="M3.05,13H1V11H3.05C3.5,6.83 6.83,3.5 11,3.05V1H13V3.05C17.17,3.5 20.5,6.83 20.95,11H23V13H20.95C20.5,17.17 17.17,20.5 13,20.95V23H11V20.95C6.83,20.5 3.5,17.17 3.05,13M12,5A7,7 0 0,0 5,12A7,7 0 0,0 12,19A7,7 0 0,0 19,12A7,7 0 0,0 12,5Z"
+            />
+          </svg>
+        </button>
+
         <!-- Appearance: dark / normal / light. Deliberately its own switch, not the
              wallet's theme — the three looks each serve a different job, and the
              difference between them is itself what the eye reads. -->
@@ -62,7 +83,14 @@
       <div class="map-controls bg-white app-box-shadow gradido-border-radius p-3 mt-3">
         <BRow>
           <BCol cols="12" md="7">
-            <div class="controls-heading">{{ $t('matching.map.found', { n: foundCount }) }}</div>
+            <!-- The radius asks, the count answers — so they stand together. -->
+            <div class="controls-heading radius-row">
+              <span>{{ $t('matching.map.radius') }}</span>
+              <button type="button" class="radius-field" @click="openRadius">{{ radius }}</button>
+              <span>{{ $t('matching.map.km') }}</span>
+              <span class="radius-dot" aria-hidden="true" />
+              <span>{{ $t('matching.map.found', { n: foundCount }) }}</span>
+            </div>
             <div class="d-flex flex-wrap gap-3">
               <label v-for="channel in FILTERS" :key="channel" class="map-check">
                 <input v-model="visible[channel]" type="checkbox" />
@@ -87,6 +115,28 @@
         </BRow>
       </div>
     </div>
+
+    <!-- Closing this window is the brake: nothing is searched until you say so.
+         That is what buys the map its freedom to be panned and zoomed for free. -->
+    <BModal
+      v-model="radiusModal"
+      :title="$t('matching.map.radiusTitle')"
+      :ok-title="$t('form.save')"
+      :cancel-title="$t('form.cancel')"
+      :ok-disabled="!radiusValid"
+      centered
+      @ok="applyRadius"
+    >
+      <label class="form-label" for="map-radius-input">{{ $t('matching.map.radiusLabel') }}</label>
+      <BFormInput
+        id="map-radius-input"
+        v-model.number="radiusDraft"
+        type="number"
+        min="1"
+        :max="MAX_RADIUS"
+        @keyup.enter="submitRadius"
+      />
+    </BModal>
   </div>
 </template>
 
@@ -113,13 +163,32 @@ import {
 
 const LOOKS = ['dunkel', 'normal', 'hell']
 const FILTERS = ['interesse', 'angebot', 'gesuch', 'andere']
-const LOOK_STORAGE_KEY = 'gms.map.look'
-const DEFAULT_ZOOM = 12
+
+// Everything the map remembers lives under `pref.`, the prefix that survives a
+// logout (see store/storage.js). All of it belongs there: the auto-logout is
+// rarely a decision the member made, and there is no sense in punishing them for
+// it by forgetting where they were searching.
+const PREF = 'pref.gms.map.'
+const DEFAULT_RADIUS = 25
+const MAX_RADIUS = 20000
+// Leaflet wants a zoom to construct with. The real one arrives a tick later,
+// from the remembered view or from the circle.
+const BOOTSTRAP_ZOOM = 8
 
 // Marker sizes in screen pixels per step. They stay constant while zooming, the
 // way a pin does — a glow that grew with the zoom would read as a bigger match.
 const GLOW_SIZE = { 1: 48, 2: 64, 3: 82, 4: 104 }
 const DISC_SIZE = { 1: 20, 2: 28, 3: 38, 4: 48 }
+
+// The veil over everything outside the search. It dims by taking contrast away,
+// not light: on the dark map the stars are bright, so a pale wash costs them
+// their edge — on the light maps a dark one does. The inside stays untouched;
+// that is where the people are.
+const MASK = {
+  dunkel: { fill: '#ffffff', opacity: 0.08, edge: 'rgb(255 255 255 / 30%)' },
+  normal: { fill: '#000000', opacity: 0.08, edge: 'rgb(0 0 0 / 35%)' },
+  hell: { fill: '#000000', opacity: 0.08, edge: 'rgb(0 0 0 / 35%)' },
+}
 
 const { t } = useI18n()
 const router = useRouter()
@@ -131,12 +200,18 @@ const look = ref(readLook())
 const breite = ref(false)
 const visible = reactive({ interesse: true, angebot: true, gesuch: true, andere: true })
 
+const radius = ref(readRadius())
+const searchCenter = ref(readCenter())
+const radiusModal = ref(false)
+const radiusDraft = ref(DEFAULT_RADIUS)
+
 const { matches, presence, load } = useMatches()
 
 let map = null
 let matchLayer = null
 let presenceLayer = null
 let ownLayer = null
+let circleLayer = null
 let canvasRenderer = null
 
 const ownPosition = ref(null)
@@ -180,24 +255,106 @@ onResult(({ data }) => {
     lat: location.userLocation.latitude,
     lng: location.userLocation.longitude,
   }
-  load(ownPosition.value)
+  // First visit ever: the search starts where the member is. That is the normal
+  // search — who is near me — and the only moment we get to choose it for them.
+  if (!searchCenter.value) {
+    searchCenter.value = { ...ownPosition.value }
+    writePref('center', searchCenter.value)
+  }
   drawOwn()
-  centerOnOwn()
+  drawCircle()
+  restoreView()
+  runSearch()
 })
 onError((error) => toastError(error.message))
 
+function readPref(key, fallback) {
+  try {
+    const raw = window.localStorage?.getItem(PREF + key)
+    return raw ? JSON.parse(raw) : fallback
+  } catch {
+    // A stale or hand-edited value must not take the map down with it.
+    return fallback
+  }
+}
+
+function writePref(key, value) {
+  try {
+    window.localStorage?.setItem(PREF + key, JSON.stringify(value))
+  } catch {
+    // Storage full or blocked: losing the preference beats losing the map.
+  }
+}
+
 function readLook() {
-  const stored = window.localStorage?.getItem(LOOK_STORAGE_KEY)
+  const stored = readPref('look', null)
   return LOOKS.includes(stored) ? stored : 'dunkel'
+}
+
+function readRadius() {
+  const stored = readPref('radius', null)
+  return Number.isFinite(stored) && stored >= 1 && stored <= MAX_RADIUS ? stored : DEFAULT_RADIUS
+}
+
+function readCenter() {
+  const stored = readPref('center', null)
+  return stored && Number.isFinite(stored.lat) && Number.isFinite(stored.lng) ? stored : null
 }
 
 function setLook(next) {
   look.value = next
-  window.localStorage?.setItem(LOOK_STORAGE_KEY, next)
+  writePref('look', next)
 }
 
 function goBack() {
   router.push('/matching/entries')
+}
+
+/** The one place a search is actually asked for. */
+function runSearch() {
+  if (!searchCenter.value) return
+  load({ center: searchCenter.value, radius: radius.value })
+}
+
+function moveSearchTo(next) {
+  searchCenter.value = next
+  writePref('center', next)
+  drawCircle()
+  runSearch()
+}
+
+/** The crosshair: make the map's centre the search's centre, and look there. */
+function searchHere() {
+  if (!map) return
+  const centre = map.getCenter()
+  moveSearchTo({ lat: centre.lat, lng: centre.lng })
+}
+
+function openRadius() {
+  radiusDraft.value = radius.value
+  radiusModal.value = true
+}
+
+const radiusValid = computed(
+  () =>
+    Number.isFinite(radiusDraft.value) && radiusDraft.value >= 1 && radiusDraft.value <= MAX_RADIUS,
+)
+
+/** Enter does what the save button does, including closing up behind itself. */
+function submitRadius() {
+  if (!radiusValid.value) return
+  radiusModal.value = false
+  applyRadius()
+}
+
+function applyRadius() {
+  if (!radiusValid.value) return
+  radius.value = Math.round(radiusDraft.value)
+  writePref('radius', radius.value)
+  drawCircle()
+  // Frame the new circle: a radius you cannot see is a number without an answer.
+  zoomToCircle()
+  runSearch()
 }
 
 function rgb(channels) {
@@ -271,6 +428,82 @@ function drawPresence() {
   presenceLayer.addTo(map)
 }
 
+/**
+ * A ring of real metres around a point.
+ *
+ * The backend measures with ST_DistanceSphere, so the circle the member sees has
+ * to walk the same sphere. A box of degrees would drift from it — imperceptibly
+ * at 25 km, visibly at the radius you use to look across a continent.
+ */
+function ringPoints(centre, metres, steps = 96) {
+  const R = 6371008.8
+  const d = metres / R
+  const lat1 = (centre.lat * Math.PI) / 180
+  const lng1 = (centre.lng * Math.PI) / 180
+  const points = []
+  for (let i = 0; i <= steps; i++) {
+    const bearing = (i / steps) * 2 * Math.PI
+    const lat2 = Math.asin(
+      Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(bearing),
+    )
+    const lng2 =
+      lng1 +
+      Math.atan2(
+        Math.sin(bearing) * Math.sin(d) * Math.cos(lat1),
+        Math.cos(d) - Math.sin(lat1) * Math.sin(lat2),
+      )
+    points.push([(lat2 * 180) / Math.PI, (lng2 * 180) / Math.PI])
+  }
+  return points
+}
+
+function drawCircle() {
+  if (!map || !searchCenter.value) return
+  if (circleLayer) circleLayer.remove()
+  circleLayer = L.layerGroup().addTo(map)
+
+  const metres = radius.value * 1000
+  // A circle wide enough to swallow a pole has no outside left to dim, and its
+  // ring wraps the globe instead of closing — a mask there would draw nonsense.
+  // At that size the count in the heading is the whole answer anyway; the circle
+  // was never the point of a search across half the world.
+  const toPole = (90 - Math.abs(searchCenter.value.lat)) * 111320
+  if (metres >= toPole) return
+
+  const ring = ringPoints(searchCenter.value, metres)
+  const mask = MASK[look.value]
+
+  // The world with a hole in it. It has to be a polygon on the map, not a veil
+  // over the container: it belongs to the ground and moves with it.
+  const world = [
+    [-89.9, -359.9],
+    [-89.9, 359.9],
+    [89.9, 359.9],
+    [89.9, -359.9],
+  ]
+  L.polygon([world, ring], {
+    stroke: false,
+    fillColor: mask.fill,
+    fillOpacity: mask.opacity,
+    fillRule: 'evenodd',
+    interactive: false,
+  }).addTo(circleLayer)
+
+  // A line, not a ring: a ring would read as one of the grey circles.
+  L.polygon(ring, {
+    fill: false,
+    weight: 1,
+    color: mask.edge,
+    interactive: false,
+  }).addTo(circleLayer)
+}
+
+function zoomToCircle() {
+  if (!map || !searchCenter.value) return
+  const centre = L.latLng(searchCenter.value.lat, searchCenter.value.lng)
+  map.fitBounds(centre.toBounds(radius.value * 2000))
+}
+
 function drawOwn() {
   if (!map || !ownPosition.value) return
   if (ownLayer) ownLayer.remove()
@@ -288,15 +521,39 @@ function drawOwn() {
   }).addTo(map)
 }
 
-function centerOnOwn() {
-  if (map && ownPosition.value) {
-    map.setView([ownPosition.value.lat, ownPosition.value.lng], DEFAULT_ZOOM)
+function saveView() {
+  if (!map) return
+  const centre = map.getCenter()
+  writePref('view', { lat: centre.lat, lng: centre.lng, zoom: map.getZoom() })
+}
+
+/**
+ * Where the map opens.
+ *
+ * Remembered, if we have been here before — that is what makes the round trip to
+ * the send form survive, and what brings you back to Berlin after an auto-logout
+ * you never asked for. Otherwise the circle decides: no fixed zoom can, because
+ * at 12 a 25 km circle is 2000 px across and you would sit inside it without ever
+ * seeing its edge.
+ */
+function restoreView() {
+  if (!map) return
+  const saved = readPref('view', null)
+  if (
+    saved &&
+    Number.isFinite(saved.lat) &&
+    Number.isFinite(saved.lng) &&
+    Number.isFinite(saved.zoom)
+  ) {
+    map.setView([saved.lat, saved.lng], saved.zoom)
+    return
   }
+  zoomToCircle()
 }
 
 function initMap() {
   if (!mapContainer.value || map) return
-  map = L.map(mapContainer.value, { center: [0, 0], zoom: DEFAULT_ZOOM, zoomControl: false })
+  map = L.map(mapContainer.value, { center: [0, 0], zoom: BOOTSTRAP_ZOOM, zoomControl: false })
   L.control.zoom({ position: 'topleft' }).addTo(map)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
@@ -316,12 +573,26 @@ function initMap() {
   })
   map.addControl(searchControl)
 
+  // Looking up a town takes the search with it. Typing an address is a
+  // deliberate act — and it is what stands in for a reset button: type where you
+  // live and you are home, circle and all.
+  map.on('geosearch/showlocation', (result) => {
+    const lat = result?.location?.y
+    const lng = result?.location?.x
+    if (Number.isFinite(lat) && Number.isFinite(lng)) moveSearchTo({ lat, lng })
+  })
+
+  // Remembering where you looked is what lets you leave and come back to it.
+  map.on('moveend', saveView)
+
   drawOwn()
-  centerOnOwn()
+  drawCircle()
+  restoreView()
   redraw()
 }
 
 function redraw() {
+  drawCircle()
   drawPresence()
   drawMatches()
 }
@@ -505,10 +776,60 @@ watch(look, redraw)
   }
 }
 
+/* Sits under the look switch and the way back (z-index 500), because those are
+   controls and this belongs to the map underneath them. */
+.map-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 450;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 0;
+  color: rgb(255 255 255 / 50%);
+  transform: translate(-50%, -50%);
+}
+
+.map-shell.look-hell .map-crosshair,
+.map-shell.look-normal .map-crosshair {
+  color: rgb(0 0 0 / 50%);
+}
+
 .controls-heading {
   font-weight: 700;
   font-size: 13px;
   margin-bottom: 8px;
+}
+
+.radius-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.radius-field {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 23px;
+  padding: 0 6px;
+  border: 1.5px solid #178d81;
+  border-radius: 5px;
+  background: rgb(23 141 129 / 7%);
+  color: #178d81;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Decoration, not text — so it lives here rather than in the markup, where it
+   would look like something to translate. Same separator the entry count uses. */
+.radius-dot::before {
+  content: '·';
+  font-weight: 400;
+  opacity: 0.35;
 }
 
 .map-check {
