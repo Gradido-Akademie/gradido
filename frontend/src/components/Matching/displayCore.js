@@ -28,17 +28,17 @@ export const CANON = {
 
 /**
  * Label colours — for the filter legend swatches and the profile dots, NOT the
- * glow. These are the very colours the member sees when TYPING an entry (the
- * semantic tokens danger / success / info), so a dot reads the same as the form
- * it came from. They are deliberately not the CANON primaries: pure red and pure
- * green are the one pair red-green colour vision cannot tell apart, and the
- * danger red is tuned to sit apart from the success green. The glow keeps CANON,
- * because only clean R/G/B primaries mix additively (red + green = yellow).
+ * glow markers. Red and blue stay the vibrant glow primaries: they were never
+ * the problem, and Bernd likes them strong. Only the green is pulled towards
+ * emerald — a touch of blue in it — so it parts clearly from the red for
+ * red-green colour vision, which cannot tell pure red from pure green apart.
+ * The markers keep CANON, because only clean R/G/B primaries mix additively
+ * (red + green = yellow). Chosen by eye against both a dark and a light ground.
  */
 export const LABEL_COLORS = {
-  interesse: '#c62828',
-  angebot: '#047006',
-  gesuch: '#0e79bc',
+  interesse: '#ff0000',
+  angebot: '#10b981',
+  gesuch: '#4658ff',
 }
 
 export const DEFAULTS = {
