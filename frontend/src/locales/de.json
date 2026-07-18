@@ -362,6 +362,7 @@
       "later": "Später",
       "subtitle": "Entdecke, wer zu Dir passt",
       "title": "Auf der Karte finden",
+      "titleList": "In der Liste finden",
       "toPosition": "Zur Position",
       "understood": "Verstanden"
     },
@@ -382,6 +383,34 @@
         "p2": "Ohne Position bist Du nicht auf der Karte. Der Schalter nimmt Dich jederzeit wieder heraus."
       }
     },
+    "list": {
+      "dir": {
+        "e": "östlich",
+        "n": "nördlich",
+        "ne": "nordöstlich",
+        "nw": "nordwestlich",
+        "s": "südlich",
+        "se": "südöstlich",
+        "sw": "südwestlich",
+        "w": "westlich"
+      },
+      "empty": "Hier ist gerade niemand. Vergrößere den Radius oder such einen anderen Ort.",
+      "kmEtwa": "etwa {n} km",
+      "kmExact": "{n} km",
+      "line": {
+        "angebot": "bietet {thing} — das suchst Du",
+        "gesuch": "sucht {thing} — das bietest Du",
+        "interesse": "teilt Dein Interesse an {thing}"
+      },
+      "matchesHeading": "Deine Treffer",
+      "meets": "trifft {n} Deiner Einträge",
+      "near": "im Nahbereich",
+      "othersHeading": "Weitere Menschen in Deiner Nähe",
+      "sortBreite": "wer auf das meiste passt",
+      "sortBy": "Sortieren nach",
+      "sortNaehe": "Nähe",
+      "sortPassung": "Passung"
+    },
     "map": {
       "amplifier": "Verstärker",
       "back": "Zurück",
@@ -389,6 +418,8 @@
       "breiteHint": "Hebt Menschen hervor, die mehrere Deiner Einträge beantworten.",
       "channels": {
         "andere": "alle anderen",
+        "andereMit": "andere mit Angaben",
+        "andereOhne": "andere ohne Angaben",
         "angebot": "Angebote",
         "gesuch": "Gesuche",
         "interesse": "Interessen"
@@ -399,6 +430,7 @@
         "dunkel": "dunkel",
         "hell": "hell",
         "label": "Erscheinungsbild",
+        "liste": "Liste",
         "normal": "normal"
       },
       "radius": "Radius",

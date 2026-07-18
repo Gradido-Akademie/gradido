@@ -3,11 +3,15 @@ import {
   CANON,
   DEFAULTS,
   applyBreite,
+  bearing8,
   channelStage,
+  describeDistance,
+  listPeak,
   markerColor,
   peakStage,
   scoreToStage,
   stagesOf,
+  topScore,
 } from './displayCore'
 
 // These tests pin the calibration. They are not here to prove the arithmetic —
@@ -124,6 +128,93 @@ describe('displayCore', () => {
         angebot: 3,
         gesuch: 0,
       })
+    })
+  })
+
+  // The list view. Same score, read as text and order instead of shown as light.
+  describe('bearing8', () => {
+    const here = { lat: 0, lng: 0 }
+
+    it('snaps the four cardinals', () => {
+      expect(bearing8(here, { lat: 1, lng: 0 })).toBe('n')
+      expect(bearing8(here, { lat: 0, lng: 1 })).toBe('e')
+      expect(bearing8(here, { lat: -1, lng: 0 })).toBe('s')
+      expect(bearing8(here, { lat: 0, lng: -1 })).toBe('w')
+    })
+
+    it('snaps a diagonal to its eighth', () => {
+      expect(bearing8(here, { lat: 1, lng: 1 })).toBe('ne')
+      expect(bearing8(here, { lat: -1, lng: -1 })).toBe('sw')
+    })
+  })
+
+  describe('describeDistance', () => {
+    const approx = { mine: 'genau', theirs: 'ungefaehr' }
+    const exact = { mine: 'genau', theirs: 'genau' }
+
+    it('keeps the near band silent and directionless when a side is blurred', () => {
+      expect(describeDistance(4.9, approx)).toEqual({
+        band: 'near',
+        km: null,
+        showDirection: false,
+        etwa: false,
+      })
+    })
+
+    it('adds "etwa" and a direction from five kilometres out', () => {
+      expect(describeDistance(6.4, approx)).toEqual({
+        band: 'approx',
+        km: 6,
+        showDirection: true,
+        etwa: true,
+      })
+    })
+
+    it('drops the "etwa" from ten kilometres, where two off change nothing', () => {
+      expect(describeDistance(12.6, approx)).toEqual({
+        band: 'far',
+        km: 13,
+        showDirection: true,
+        etwa: false,
+      })
+    })
+
+    it('speaks the exact figure and a bearing when both sides are precise', () => {
+      expect(describeDistance(1.53, exact)).toEqual({
+        band: 'exact',
+        km: 1.5,
+        showDirection: true,
+        etwa: false,
+      })
+    })
+
+    it('rounds an exact figure to whole kilometres once it is far', () => {
+      expect(describeDistance(42.3, exact).km).toBe(42)
+    })
+  })
+
+  describe('listPeak', () => {
+    const twoNeeds = { scores: { angebot: [0.41, 0.45] } }
+
+    it('ranks by the same peak the map glows by', () => {
+      expect(listPeak({ scores: { angebot: [0.55] } }, 'passung')).toBe(3)
+    })
+
+    it('counts breadth only when the sort asks for it', () => {
+      expect(listPeak(twoNeeds, 'passung')).toBe(2)
+      expect(listPeak(twoNeeds, 'breite')).toBe(3)
+    })
+  })
+
+  describe('topScore', () => {
+    const match = { scores: { angebot: [0.4, 0.55], interesse: [0.2] } }
+
+    it('takes the strongest score across the visible channels', () => {
+      expect(topScore(match)).toBeCloseTo(0.55)
+    })
+
+    it('ignores a channel the filter hides', () => {
+      expect(topScore(match, { interesse: true, angebot: false, gesuch: true })).toBeCloseTo(0.2)
     })
   })
 })

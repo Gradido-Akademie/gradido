@@ -323,6 +323,33 @@ const PRESENCE_COUNT = 240
 const PRESENCE_SPREAD_LAT = 1.0
 const PRESENCE_SPREAD_LNG = 1.8
 
+// stub-only: the presence route returns none of this — no uuid, no name. The list
+// needs a name to render a silent row, so we invent one here. Live, this whole
+// enrichment waits on the presence route (Dario's domain); until then the silent
+// rows show but do not open a profile or a contact, exactly like the grey rings.
+const PRESENCE_NAMES = [
+  'Lea',
+  'Paul',
+  'Mia',
+  'Finn',
+  'Emma',
+  'Noah',
+  'Lina',
+  'Elias',
+  'Clara',
+  'Jan',
+  'Ida',
+  'Timo',
+  'Ruth',
+  'Kurt',
+  'Frida',
+  'Bela',
+  'Nora',
+  'Sven',
+  'Alma',
+  'Ove',
+]
+
 /** Deterministic noise, so the stub does not jump around between reloads. */
 function wobble(seed) {
   const x = Math.sin(seed * 12.9898) * 43758.5453
@@ -340,13 +367,21 @@ function stubMatches({ center, radius }) {
       aboutMe: person.aboutMe,
       channels,
       scores: scoresOf(channels),
+      // Which precision this person chose to be found at. The map shows everyone
+      // alike; the list speaks a distance no finer than this. Live, it comes from
+      // the GMS with the position — stubbed here as a mix so the list shows both.
+      precision: index % 3 === 0 ? 'ungefaehr' : 'genau',
     }
   }).filter((match) => distanceKm(center, match.position) <= radius)
 }
 
 function stubPresence({ center, radius }) {
+  const communities = Object.values(COMMUNITIES)
   return Array.from({ length: PRESENCE_COUNT }, (_, index) => ({
     uuid: `stub-presence-${index}`,
+    name: PRESENCE_NAMES[index % PRESENCE_NAMES.length],
+    community: communities[index % communities.length],
+    precision: index % 2 === 0 ? 'genau' : 'ungefaehr',
     position: {
       lat: center.lat + wobble(index + 1) * PRESENCE_SPREAD_LAT,
       lng: center.lng + wobble(index + 101) * PRESENCE_SPREAD_LNG,

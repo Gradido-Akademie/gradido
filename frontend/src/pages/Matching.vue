@@ -4,9 +4,12 @@
          presence (position set AND visible); otherwise the click guides to Position. -->
     <div class="matching-header d-flex justify-content-end mx-lg-5 mb-3">
       <button type="button" class="find-btn" @click="openFind">
-        <i-bi-map class="find-btn-icon" />
+        <i-bi-list-ul v-if="findList" class="find-btn-icon" />
+        <i-bi-map v-else class="find-btn-icon" />
         <span class="find-btn-text">
-          <span class="find-btn-title">{{ $t('matching.find.title') }}</span>
+          <span class="find-btn-title">
+            {{ $t(findList ? 'matching.find.titleList' : 'matching.find.title') }}
+          </span>
           <span class="find-btn-sub">{{ $t('matching.find.subtitle') }}</span>
         </span>
       </button>
@@ -629,6 +632,18 @@ watch(tab, (next) => {
 
 // --- Find-map access dialog ---
 const showFind = ref(false)
+// The button follows the saved view: come back to the list and it invites you back
+// to the list, not the map. Read once — the mode is set over on the map page, and
+// this page mounts fresh when you return, so a plain read is enough.
+function readMapMode() {
+  try {
+    const raw = window.localStorage?.getItem('pref.gms.map.mode')
+    return raw ? JSON.parse(raw) : 'karte'
+  } catch {
+    return 'karte'
+  }
+}
+const findList = readMapMode() === 'liste'
 const findHasAccess = computed(() => Boolean(store.state.gmsAllowed) && hasPosition.value)
 function openFind() {
   if (findHasAccess.value) {

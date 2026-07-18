@@ -362,6 +362,7 @@
       "later": "Later",
       "subtitle": "Discover who fits you",
       "title": "Find on the map",
+      "titleList": "Find in the list",
       "toPosition": "Go to Position",
       "understood": "Got it"
     },
@@ -382,6 +383,34 @@
         "p2": "Without a position you are not on the map. The switch takes you out again at any time."
       }
     },
+    "list": {
+      "dir": {
+        "e": "east",
+        "n": "north",
+        "ne": "north-east",
+        "nw": "north-west",
+        "s": "south",
+        "se": "south-east",
+        "sw": "south-west",
+        "w": "west"
+      },
+      "empty": "No one here right now. Widen the radius or search another place.",
+      "kmEtwa": "about {n} km",
+      "kmExact": "{n} km",
+      "line": {
+        "angebot": "offers {thing} — you're looking for that",
+        "gesuch": "seeks {thing} — you offer that",
+        "interesse": "shares your interest in {thing}"
+      },
+      "matchesHeading": "Your matches",
+      "meets": "matches {n} of your entries",
+      "near": "nearby",
+      "othersHeading": "More people near you",
+      "sortBreite": "who fits the most",
+      "sortBy": "Sort by",
+      "sortNaehe": "Proximity",
+      "sortPassung": "Fit"
+    },
     "map": {
       "amplifier": "Amplifier",
       "back": "Back",
@@ -389,6 +418,8 @@
       "breiteHint": "Highlights people who answer several of your entries.",
       "channels": {
         "andere": "everyone else",
+        "andereMit": "others with entries",
+        "andereOhne": "others without entries",
         "angebot": "Offers",
         "gesuch": "Needs",
         "interesse": "Interests"
@@ -399,6 +430,7 @@
         "dunkel": "dark",
         "hell": "light",
         "label": "Appearance",
+        "liste": "List",
         "normal": "normal"
       },
       "radius": "Radius",

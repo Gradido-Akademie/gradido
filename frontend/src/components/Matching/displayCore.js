@@ -125,3 +125,75 @@ export function stagesOf(match, cfg = DEFAULTS, breiteOn = false, visible = null
   }
   return stages
 }
+
+// --- the list view --------------------------------------------------------
+// The map renders the same information as light; a screen reader reads it as a
+// line. These functions carry the score into text and order without ever naming
+// a number, and speak a distance no more precisely than the person let themselves
+// be found. Pure, like the rest of this file.
+
+/**
+ * Eight compass points as stable keys — the component maps each to a spoken word.
+ * Kept to eight on purpose: that is the granularity a spoken bearing can honestly
+ * carry, and the one that lets two people in the same direction cluster by ear.
+ */
+export const COMPASS8 = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
+
+/** Initial bearing from `from` to `to`, snapped to one of the eight points. */
+export function bearing8(from, to) {
+  const lat1 = (from.lat * Math.PI) / 180
+  const lat2 = (to.lat * Math.PI) / 180
+  const dLng = ((to.lng - from.lng) * Math.PI) / 180
+  const y = Math.sin(dLng) * Math.cos(lat2)
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng)
+  const deg = (Math.atan2(y, x) * 180) / Math.PI
+  const norm = ((deg % 360) + 360) % 360
+  return COMPASS8[Math.round(norm / 45) % 8]
+}
+
+/**
+ * How to speak a distance, honestly. The blur is a displacement the person chose,
+ * already baked into the point we hold — so "near"/"etwa" is the disc in words,
+ * and its coarseness follows the coarser of the two ends. Both ends precise → the
+ * exact figure and a bearing from the start; otherwise a band, with a direction
+ * only once it is far enough out to be trustworthy.
+ *
+ * @param {number} km  great-circle distance to the (published) point
+ * @param {{ mine?: string, theirs?: string }} tiers  each 'genau' | 'ungefaehr'
+ * @returns {{ band: 'exact'|'near'|'approx'|'far', km: number|null,
+ *             showDirection: boolean, etwa: boolean }}
+ */
+export function describeDistance(km, tiers = {}) {
+  const bothExact = tiers.mine === 'genau' && tiers.theirs === 'genau'
+  if (bothExact) {
+    const rounded = km < 10 ? Math.round(km * 10) / 10 : Math.round(km)
+    return { band: 'exact', km: rounded, showDirection: true, etwa: false }
+  }
+  if (km < 5) return { band: 'near', km: null, showDirection: false, etwa: false }
+  if (km < 10) return { band: 'approx', km: Math.round(km), showDirection: true, etwa: true }
+  return { band: 'far', km: Math.round(km), showDirection: true, etwa: false }
+}
+
+/**
+ * The list's sort intensity for one person — the same discrete peak the map glows
+ * by, but with breadth counted only when the list is sorted by breadth, so picking
+ * a list sort never quietly flips the map's amplifier.
+ */
+export function listPeak(match, sortMode = 'passung', visible = null) {
+  return peakStage(stagesOf(match, DEFAULTS, sortMode === 'breite', visible))
+}
+
+/**
+ * The strongest continuous score across the visible channels — a tiebreaker,
+ * since the peak is only 0..4 and would otherwise leave many people level.
+ */
+export function topScore(match, visible = null) {
+  let top = 0
+  for (const channel of CHANNELS) {
+    if (visible && !visible[channel]) continue
+    for (const score of match.scores?.[channel] || []) {
+      if (score > top) top = score
+    }
+  }
+  return top
+}

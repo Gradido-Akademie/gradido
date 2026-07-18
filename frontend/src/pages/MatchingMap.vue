@@ -20,9 +20,27 @@
       <div class="map-shell gradido-border-radius app-box-shadow" :class="`look-${look}`">
         <div ref="mapContainer" class="map-canvas" />
 
+        <!-- The same search, read as a line instead of lit as a field. It covers
+             the map rather than unmounting it, so Leaflet keeps its size and the
+             way back is instant. -->
+        <MatchList
+          v-if="mode === 'liste'"
+          class="list-cover"
+          :matches="sortedMatches"
+          :silent="sortedPresence"
+          :center="searchCenter"
+          :my-precision="MY_PRECISION"
+          :count="foundCount"
+          :sort-mode="sortMode"
+          @open="openProfile"
+          @sort="setSort"
+          @recenter="moveSearchTo"
+        />
+
         <!-- With the head and the wallet's own bars gone on a phone, this is the
              only way out — so it sits on the map, where the eye already is. -->
         <button
+          v-show="mode === 'karte'"
           type="button"
           class="map-back d-lg-none"
           :aria-label="$t('matching.map.back')"
@@ -36,6 +54,7 @@
              open it sits exactly on your own crown, and it has to let it through
              rather than shove it aside — the crown marks a real place. -->
         <button
+          v-show="mode === 'karte'"
           type="button"
           class="map-crosshair"
           :aria-label="$t('matching.map.searchHere')"
@@ -52,20 +71,33 @@
           </svg>
         </button>
 
-        <!-- Appearance: dark / normal / light. Deliberately its own switch, not the
-             wallet's theme — the three looks each serve a different job, and the
-             difference between them is itself what the eye reads. -->
-        <div class="look-switch" role="group" :aria-label="$t('matching.map.look.label')">
+        <!-- Two axes, one control. Dark / normal / light is colour; list is a
+             different kind of thing — representation — so it sits past a divider,
+             its own element. The eye sees the rule between them; a screen reader
+             hears the looks as one group and the list on its own. -->
+        <div class="look-switch">
+          <div class="look-group" role="group" :aria-label="$t('matching.map.look.label')">
+            <button
+              v-for="option in LOOKS"
+              :key="option"
+              type="button"
+              class="look-btn"
+              :class="{ 'is-on': mode === 'karte' && look === option }"
+              :aria-pressed="mode === 'karte' && look === option"
+              @click="chooseLook(option)"
+            >
+              {{ $t(`matching.map.look.${option}`) }}
+            </button>
+          </div>
+          <span class="look-divide" aria-hidden="true" />
           <button
-            v-for="option in LOOKS"
-            :key="option"
             type="button"
             class="look-btn"
-            :class="{ 'is-on': look === option }"
-            :aria-pressed="look === option"
-            @click="setLook(option)"
+            :class="{ 'is-on': mode === 'liste' }"
+            :aria-pressed="mode === 'liste'"
+            @click="setMode('liste')"
           >
-            {{ $t(`matching.map.look.${option}`) }}
+            {{ $t('matching.map.look.liste') }}
           </button>
         </div>
       </div>
@@ -88,9 +120,17 @@
                 <span class="swatch" :style="swatchStyle(channel)" />
                 {{ $t(`matching.map.channels.${channel}`) }}
               </label>
+              <label v-for="bucket in OTHERS" :key="bucket" class="map-check">
+                <input v-model="visible[bucket]" type="checkbox" />
+                <span class="box" />
+                <span class="swatch" :style="swatchStyle(bucket)" />
+                {{ $t(`matching.map.channels.${bucket}`) }}
+              </label>
             </div>
           </BCol>
-          <BCol cols="12" md="5" class="mt-3 mt-md-0">
+          <!-- The amplifier is the map's reveal tool; in the list it becomes the
+               "who fits the most" sort, so it steps aside there. -->
+          <BCol v-if="mode === 'karte'" cols="12" md="5" class="mt-3 mt-md-0">
             <div class="controls-heading">{{ $t('matching.map.amplifier') }}</div>
             <label class="map-check">
               <input v-model="breite" type="checkbox" />
@@ -141,7 +181,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
@@ -151,7 +191,7 @@ import 'leaflet/dist/leaflet.css'
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch'
 import 'leaflet-geosearch/dist/geosearch.css'
 import { userLocationQuery } from '@/graphql/queries'
-import { useMatches } from '@/composables/useMatches'
+import { useMatches, distanceKm } from '@/composables/useMatches'
 import { useAppToast } from '@/composables/useToast'
 import {
   LABEL_COLORS,
@@ -159,11 +199,23 @@ import {
   markerColor,
   peakStage,
   stagesOf,
+  listPeak,
+  topScore,
 } from '@/components/Matching/displayCore'
 import MatchProfile from '@/components/Matching/MatchProfile.vue'
+import MatchList from '@/components/Matching/MatchList.vue'
 
 const LOOKS = ['dunkel', 'normal', 'hell']
-const FILTERS = ['interesse', 'angebot', 'gesuch', 'andere']
+const FILTERS = ['interesse', 'angebot', 'gesuch']
+// The two grey buckets of "everyone else", split so the list can silence the ones
+// with nothing to read on their own. On the map both draw as rings and the fill
+// tells them apart (GMS-74); here two checkboxes do. Both start on — while the
+// network is small the silent are most of it, and a name nearby is a lead.
+const OTHERS = ['andereMit', 'andereOhne']
+// Stub: the searcher's own precision. Live it comes from their position setting.
+// With it 'genau', the exact people read exactly and the approximate ones blur —
+// the coarser of the two ends always wins (describeDistance).
+const MY_PRECISION = 'genau'
 
 // Everything the map remembers lives under `pref.`, the prefix that survives a
 // logout (see store/storage.js). All of it belongs there: the auto-logout is
@@ -198,8 +250,10 @@ const { toastError } = useAppToast()
 
 const mapContainer = ref(null)
 const look = ref(readLook())
-const breite = ref(false)
-const visible = reactive({ interesse: true, angebot: true, gesuch: true, andere: true })
+const mode = ref(readMode())
+const sortMode = ref(readSort())
+const breite = ref(readBreite())
+const visible = reactive(readVisible())
 
 const radius = ref(readRadius())
 const searchCenter = ref(readCenter())
@@ -236,10 +290,43 @@ const visibleMatches = computed(() => {
   return shown
 })
 
+// The presence rings the filter lets through, split by whether they have entries.
+const visiblePresence = computed(() =>
+  presence.value.filter((person) => (person.hasEntries ? visible.andereMit : visible.andereOhne)),
+)
+
 // Everyone the map is showing — the glowing matches plus the grey rings. They are
 // people too, so they count; the filter itself breaks the number down.
-const foundCount = computed(
-  () => visibleMatches.value.length + (visible.andere ? presence.value.length : 0),
+const foundCount = computed(() => visibleMatches.value.length + visiblePresence.value.length)
+
+// The map lets the eye roam; a list must pick an order, and that choice is the one
+// stance a list takes where the map could stay neutral. Proximity opens it: early
+// on almost everyone is silent, so there is little glow to rank and distance always
+// means something. Fit and breadth sort by the same peak the map glows by — breadth
+// counted only here, so a list sort never quietly flips the map's amplifier — with
+// the continuous score breaking ties and distance behind that.
+function centreDistance(person) {
+  return searchCenter.value ? distanceKm(searchCenter.value, person.position) : 0
+}
+
+const sortedMatches = computed(() => {
+  const items = [...visibleMatches.value]
+  if (sortMode.value === 'naehe') {
+    return items.sort((a, b) => centreDistance(a.match) - centreDistance(b.match))
+  }
+  return items.sort((a, b) => {
+    const pa = listPeak(a.match, sortMode.value, visible)
+    const pb = listPeak(b.match, sortMode.value, visible)
+    if (pb !== pa) return pb - pa
+    const ta = topScore(a.match, visible)
+    const tb = topScore(b.match, visible)
+    if (tb !== ta) return tb - ta
+    return centreDistance(a.match) - centreDistance(b.match)
+  })
+})
+
+const sortedPresence = computed(() =>
+  [...visiblePresence.value].sort((a, b) => centreDistance(a) - centreDistance(b)),
 )
 
 const enabled = computed(() => Boolean(store.state.gmsAllowed))
@@ -313,6 +400,50 @@ function setLook(next) {
   writePref('look', next)
 }
 
+function readMode() {
+  return readPref('mode', null) === 'liste' ? 'liste' : 'karte'
+}
+
+function readSort() {
+  const stored = readPref('sort', null)
+  return ['naehe', 'passung', 'breite'].includes(stored) ? stored : 'naehe'
+}
+
+function readBreite() {
+  return readPref('breite', false) === true
+}
+
+function readVisible() {
+  const base = { interesse: true, angebot: true, gesuch: true, andereMit: true, andereOhne: true }
+  const stored = readPref('filters', null)
+  if (!stored || typeof stored !== 'object') return base
+  for (const key of Object.keys(base)) {
+    if (typeof stored[key] === 'boolean') base[key] = stored[key]
+  }
+  return base
+}
+
+// A standing preference, not a switch to flip each visit: set 'liste' once and it
+// stays (the blind member sets it in the position flow; the sighted flip back and
+// forth). It rides in the same pref bag as look/radius/centre — no new mechanism.
+function setMode(next) {
+  mode.value = next
+  writePref('mode', next)
+}
+
+function setSort(next) {
+  if (!['naehe', 'passung', 'breite'].includes(next)) return
+  sortMode.value = next
+  writePref('sort', next)
+}
+
+// A look click leaves list mode: the three colours are the map's, and choosing one
+// is asking for the map back.
+function chooseLook(next) {
+  setLook(next)
+  setMode('karte')
+}
+
 function goBack() {
   router.push('/matching/entries')
 }
@@ -369,7 +500,9 @@ function rgb(channels) {
 }
 
 function swatchStyle(channel) {
-  if (channel === 'andere') return { border: '2px solid rgb(116, 121, 131)' }
+  if (channel === 'andereMit' || channel === 'andereOhne') {
+    return { border: '2px solid rgb(116, 121, 131)' }
+  }
   // The legend swatch wears the entry colour (the input's danger/success/info),
   // not the glow's additive primary — so the three stay apart for red-green
   // colour vision. The glowing markers keep CANON; only these labels change.
@@ -458,14 +591,13 @@ function drawPresence() {
   if (!map) return
   if (presenceLayer) presenceLayer.remove()
   presenceLayer = L.layerGroup()
-  if (!visible.andere) return
 
   // Thousands of rings would choke the DOM, so these go on a canvas. The handful
   // of matches above stay divIcons — they are few and they carry real CSS.
   const dark = look.value === 'dunkel'
   const stroke = dark ? 'rgb(116, 121, 131)' : 'rgb(95, 99, 107)'
   const fill = dark ? 'rgb(80, 84, 94)' : 'rgb(150, 154, 162)'
-  for (const person of presence.value) {
+  for (const person of visiblePresence.value) {
     L.circleMarker([person.position.lat, person.position.lng], {
       renderer: canvasRenderer,
       radius: 5,
@@ -667,8 +799,15 @@ onUnmounted(() => {
 watch([matches, presence], redraw, { deep: true })
 watch(matches, syncProfile)
 watch(breite, drawMatches)
+watch(breite, (value) => writePref('breite', value))
 watch(visible, redraw, { deep: true })
+watch(visible, () => writePref('filters', { ...visible }), { deep: true })
 watch(look, redraw)
+// Coming back to the map: it kept its size under the cover, but a resize tick
+// re-lays Leaflet's panes cleanly once the list lifts off.
+watch(mode, (value) => {
+  if (value === 'karte' && map) nextTick(() => map && map.invalidateSize())
+})
 </script>
 
 <style lang="scss" scoped>
@@ -699,6 +838,14 @@ watch(look, redraw)
   height: 65vh;
   min-height: 380px;
   width: 100%;
+}
+
+/* The list sits over the map (which stays mounted and sized beneath it), under
+   the look switch and the way back so both stay reachable to switch away. */
+.list-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 400;
 }
 
 /* On a phone the page IS the map: it fills the screen, the controls sit right
@@ -797,6 +944,18 @@ watch(look, redraw)
   background: rgb(255 255 255 / 90%);
   border-radius: 26px;
   box-shadow: 0 1px 5px rgb(0 0 0 / 40%);
+}
+
+.look-group {
+  display: flex;
+  gap: 2px;
+}
+
+.look-divide {
+  align-self: stretch;
+  width: 1px;
+  margin: 3px 1px;
+  background: rgb(0 0 0 / 22%);
 }
 
 .look-btn {
