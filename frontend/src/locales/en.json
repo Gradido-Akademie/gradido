@@ -429,6 +429,7 @@
       "look": {
         "dunkel": "dark",
         "hell": "light",
+        "karte": "Map",
         "label": "Appearance",
         "liste": "List",
         "normal": "normal"

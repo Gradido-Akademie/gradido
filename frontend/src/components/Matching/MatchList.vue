@@ -4,8 +4,6 @@
          is centred. On the map these sit around a canvas the eye scans at will; a
          screen reader has no such freedom, so what you reach for comes first. -->
     <div class="list-controls">
-      <h2 class="list-count">{{ $t('matching.map.found', { n: count }) }}</h2>
-
       <div class="list-sort">
         <label class="control-label" for="match-list-sort">{{ $t('matching.list.sortBy') }}</label>
         <select id="match-list-sort" class="sort-select" :value="sortMode" @change="onSort">
@@ -147,7 +145,6 @@ const props = defineProps({
   silent: { type: Array, default: () => [] },
   center: { type: Object, default: null },
   myPrecision: { type: String, default: 'genau' },
-  count: { type: Number, default: 0 },
   sortMode: { type: String, default: 'naehe' },
 })
 
@@ -237,12 +234,21 @@ const PlaceText = {
             {
               class: 'dir-arrow',
               viewBox: '0 0 16 16',
-              width: 12,
-              height: 12,
+              width: 14,
+              height: 14,
               'aria-hidden': 'true',
               style: { transform: `rotate(${deg}deg)` },
             },
-            [h('path', { d: 'M8 1 L12 9 L8 7 L4 9 Z', fill: 'currentColor' })],
+            [
+              h('path', {
+                d: 'M8 14 V4 M4.5 7 L8 3.5 L11.5 7',
+                fill: 'none',
+                stroke: 'currentColor',
+                'stroke-width': 1.6,
+                'stroke-linecap': 'round',
+                'stroke-linejoin': 'round',
+              }),
+            ],
           ),
         )
         parts.push(h('span', { class: 'dir-word' }, t(`matching.list.dir.${dir}`)))
@@ -311,8 +317,10 @@ function closeResults() {
   height: 100%;
   overflow-y: auto;
   padding: 14px 16px 24px;
-  background: var(--bs-body-bg, #fff);
-  color: var(--bs-body-color, #2c2c2c);
+  /* The semantic tokens, not --bs-body-*: these are what the wallet's dark mode
+     flips (.dark-mode on #app/body), the same ones the detail window rides. */
+  background: var(--surface);
+  color: var(--text);
 }
 
 .list-controls {
@@ -322,13 +330,6 @@ function closeResults() {
   gap: 14px 20px;
   padding-right: 120px; /* room for the look switch pinned top-right */
   margin-bottom: 16px;
-}
-
-.list-count {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0;
-  flex: 1 0 100%;
 }
 
 .control-label {
@@ -344,9 +345,9 @@ function closeResults() {
   font: inherit;
   font-size: 14px;
   padding: 6px 10px;
-  border: 1.5px solid #cdd2da;
+  border: 1.5px solid var(--border);
   border-radius: 8px;
-  background: var(--bs-body-bg, #fff);
+  background: var(--surface);
   color: inherit;
 }
 
@@ -367,8 +368,8 @@ function closeResults() {
   margin: 0;
   padding: 4px;
   list-style: none;
-  background: var(--bs-body-bg, #fff);
-  border: 1px solid #cdd2da;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 6px 20px rgb(0 0 0 / 18%);
 }
@@ -405,7 +406,7 @@ function closeResults() {
   text-align: left;
   padding: 12px 6px;
   border: 0;
-  border-bottom: 1px solid rgb(128 128 128 / 18%);
+  border-bottom: 1px solid var(--border);
   background: transparent;
   color: inherit;
 }
@@ -490,7 +491,7 @@ function closeResults() {
 .row-breadth {
   font-size: 13px;
   font-weight: 600;
-  color: #0e7a6e;
+  color: var(--success);
 }
 
 .list-empty {

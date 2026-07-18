@@ -101,7 +101,6 @@ function mountList(props = {}) {
       silent: [],
       center: CENTRE,
       myPrecision: 'genau',
-      count: 0,
       sortMode: 'naehe',
       ...props,
     },
@@ -111,11 +110,10 @@ function mountList(props = {}) {
 
 describe('MatchList', () => {
   it('names the group, the person and their community', () => {
-    const wrapper = mountList({ matches: [matchItem()], count: 1 })
+    const wrapper = mountList({ matches: [matchItem()] })
     expect(wrapper.find('.section-head').text()).toBe('Deine Treffer')
     expect(wrapper.find('.row-name').text()).toBe('Sofia')
     expect(wrapper.find('.row-community').text()).toBe('Gradido Künzelsau')
-    expect(wrapper.find('.list-count').text()).toBe('1 Menschen gefunden')
   })
 
   it('reads the strongest matched entry as a reciprocal line', () => {

@@ -17,7 +17,10 @@
     </div>
 
     <div class="map-frame mx-lg-5">
-      <div class="map-shell gradido-border-radius app-box-shadow" :class="`look-${look}`">
+      <div
+        class="map-shell gradido-border-radius app-box-shadow"
+        :class="[`look-${look}`, { 'is-list': mode === 'liste' }]"
+      >
         <div ref="mapContainer" class="map-canvas" />
 
         <!-- The same search, read as a line instead of lit as a field. It covers
@@ -30,7 +33,6 @@
           :silent="sortedPresence"
           :center="searchCenter"
           :my-precision="MY_PRECISION"
-          :count="foundCount"
           :sort-mode="sortMode"
           @open="openProfile"
           @sort="setSort"
@@ -75,29 +77,31 @@
              different kind of thing — representation — so it sits past a divider,
              its own element. The eye sees the rule between them; a screen reader
              hears the looks as one group and the list on its own. -->
+        <!-- On the map: appearance (dark/normal/light) plus a way into the list.
+             In the list those looks mean nothing (it follows the wallet theme), so
+             there the switch is only the way back — a single "Karte" on the right. -->
         <div class="look-switch">
-          <div class="look-group" role="group" :aria-label="$t('matching.map.look.label')">
-            <button
-              v-for="option in LOOKS"
-              :key="option"
-              type="button"
-              class="look-btn"
-              :class="{ 'is-on': mode === 'karte' && look === option }"
-              :aria-pressed="mode === 'karte' && look === option"
-              @click="chooseLook(option)"
-            >
-              {{ $t(`matching.map.look.${option}`) }}
+          <template v-if="mode === 'karte'">
+            <div class="look-group" role="group" :aria-label="$t('matching.map.look.label')">
+              <button
+                v-for="option in LOOKS"
+                :key="option"
+                type="button"
+                class="look-btn"
+                :class="{ 'is-on': look === option }"
+                :aria-pressed="look === option"
+                @click="chooseLook(option)"
+              >
+                {{ $t(`matching.map.look.${option}`) }}
+              </button>
+            </div>
+            <span class="look-divide" aria-hidden="true" />
+            <button type="button" class="look-btn" @click="setMode('liste')">
+              {{ $t('matching.map.look.liste') }}
             </button>
-          </div>
-          <span class="look-divide" aria-hidden="true" />
-          <button
-            type="button"
-            class="look-btn"
-            :class="{ 'is-on': mode === 'liste' }"
-            :aria-pressed="mode === 'liste'"
-            @click="setMode('liste')"
-          >
-            {{ $t('matching.map.look.liste') }}
+          </template>
+          <button v-else type="button" class="look-btn" @click="setMode('karte')">
+            {{ $t('matching.map.look.karte') }}
           </button>
         </div>
       </div>
@@ -832,6 +836,14 @@ watch(mode, (value) => {
 .map-shell {
   position: relative;
   overflow: hidden;
+}
+
+/* In list mode the map stays mounted underneath (kept sized), but Leaflet's own
+   controls — the zoom buttons, the search button, the attribution — carry a high
+   z-index and would poke through the list cover and sit on its text. The list has
+   its own address search up top, so hide the map's controls while it is showing. */
+.map-shell.is-list :deep(.leaflet-control-container) {
+  display: none;
 }
 
 .map-canvas {
