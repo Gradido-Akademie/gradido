@@ -463,6 +463,10 @@ function moveSearchTo(next) {
   searchCenter.value = next
   writePref('center', next)
   drawCircle()
+  // Move the view to the new centre too. On the map the geosearch control pans
+  // itself, but a search from the list has no map to move — without this the map
+  // would still sit on the old place when you switch back to it.
+  zoomToCircle()
   runSearch()
 }
 

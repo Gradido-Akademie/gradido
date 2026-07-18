@@ -4,17 +4,9 @@
          is centred. On the map these sit around a canvas the eye scans at will; a
          screen reader has no such freedom, so what you reach for comes first. -->
     <div class="list-controls">
-      <div class="list-sort">
-        <label class="control-label" for="match-list-sort">{{ $t('matching.list.sortBy') }}</label>
-        <select id="match-list-sort" class="sort-select" :value="sortMode" @change="onSort">
-          <option value="naehe">{{ $t('matching.list.sortNaehe') }}</option>
-          <option value="passung">{{ $t('matching.list.sortPassung') }}</option>
-          <option value="breite">{{ $t('matching.list.sortBreite') }}</option>
-        </select>
-      </div>
-
-      <!-- Typing an address is the only way a blind member can set the centre — a
-           map click is not open to them — so this rises from an extra to the way. -->
+      <!-- Address search first: it is the way in (and a blind member's only way to
+           set the centre — a map click is not open to them). Same order on desktop
+           for consistency. -->
       <div class="list-search">
         <label class="control-label" for="match-list-search">{{ $t('matching.map.search') }}</label>
         <div class="search-box">
@@ -56,7 +48,22 @@
           </ul>
         </div>
       </div>
+
+      <div class="list-sort">
+        <label class="control-label" for="match-list-sort">{{ $t('matching.list.sortBy') }}</label>
+        <select id="match-list-sort" class="sort-select" :value="sortMode" @change="onSort">
+          <option value="naehe">{{ $t('matching.list.sortNaehe') }}</option>
+          <option value="passung">{{ $t('matching.list.sortPassung') }}</option>
+          <option value="breite">{{ $t('matching.list.sortBreite') }}</option>
+        </select>
+      </div>
     </div>
+
+    <!-- Confirmation that the search took hold: the place stays named here (and is
+         announced), so the member knows the centre moved even with no map to watch. -->
+    <p v-if="centerLabel" class="center-label" role="status" aria-live="polite">
+      {{ $t('matching.list.centeredOn', { place: centerLabel }) }}
+    </p>
 
     <!-- Your matches. The heading names the group; each person is one item; the
          order is the ranking, spoken as sequence and never as a number. -->
@@ -265,6 +272,7 @@ const searchInput = ref(null)
 const query = ref('')
 const results = ref([])
 const activeResult = ref(-1)
+const centerLabel = ref('')
 let searchTimer = null
 
 function onQuery() {
@@ -297,6 +305,9 @@ function choose(index) {
   const result = results.value[index]
   if (!result) return
   emit('recenter', { lat: result.y, lng: result.x })
+  // The place stays named in the confirmation line; the field clears, ready for
+  // the next search.
+  centerLabel.value = result.label
   query.value = ''
   results.value = []
   activeResult.value = -1
@@ -344,6 +355,12 @@ function closeResults() {
   gap: 14px 20px;
   padding-right: 120px; /* room for the look switch pinned top-right */
   margin-bottom: 16px;
+}
+
+.center-label {
+  margin: -6px 0 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .control-label {

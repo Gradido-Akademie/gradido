@@ -384,6 +384,7 @@
       }
     },
     "list": {
+      "centeredOn": "Centred on {place}",
       "dir": {
         "e": "east",
         "n": "north",

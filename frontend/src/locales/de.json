@@ -384,6 +384,7 @@
       }
     },
     "list": {
+      "centeredOn": "Umkreis um {place}",
       "dir": {
         "e": "östlich",
         "n": "nördlich",
