@@ -36,12 +36,15 @@ const i18n = createI18n({
 // care about the profile's own logic, not those two house widgets, so we stub
 // them to render their slots inline and read the open state off the heading.
 const stubs = {
-  BModal: { template: '<div class="modal-stub"><slot name="title" /><slot /></div>' },
+  BModal: {
+    template: '<div class="modal-stub"><slot name="title" /><slot /><slot name="footer" /></div>',
+  },
   BCollapse: {
     props: ['modelValue'],
     template: '<div class="collapse-stub" :data-open="String(modelValue)"><slot /></div>',
   },
   CollapseIcon: true,
+  'i-mdi-email-fast-outline': true,
 }
 
 const entry = (uuid, summary, strength, details = null, remote = false) => ({
