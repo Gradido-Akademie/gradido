@@ -432,12 +432,14 @@ function onProfileModel(open) {
 }
 
 /**
- * Keep the open window in step with the search.
+ * Restore the open profile after the map is rebuilt.
  *
- * The remembered uuid is the single source of truth. On a fresh open it reopens
- * whoever was showing; after a new search it refreshes them with the new object,
- * or closes the window if they fell outside the radius — keeping the note, so
- * widening the circle brings both the person and their profile back.
+ * The window can only be left open in two ways — tapping a send button (off to
+ * the send form) or an auto-logout — because any touch of the map dismisses the
+ * modal first (its backdrop), which forgets the note. So the whole job is: on a
+ * fresh mount, if the remembered person is in the first search, reopen them.
+ * There is deliberately nothing here that reopens a profile unbidden: to search
+ * elsewhere you must dismiss the window, and that has already cleared the note.
  */
 function syncProfile() {
   const savedUuid = readPref('profile', null)
@@ -446,9 +448,6 @@ function syncProfile() {
   if (found) {
     activeMatch.value = found
     profileOpen.value = true
-  } else {
-    profileOpen.value = false
-    activeMatch.value = null
   }
 }
 
