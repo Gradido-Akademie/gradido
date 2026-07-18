@@ -429,6 +429,12 @@
       "saveTitle": "Save position",
       "unsaved": "Not saved yet"
     },
+    "profile": {
+      "aria": "Profile of {name}",
+      "more": "{n} more",
+      "sendEmail": "Send e-mail",
+      "sendGradido": "Send Gradido"
+    },
     "save": "Save",
     "tabs": {
       "about": "About me",

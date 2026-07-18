@@ -127,6 +127,14 @@
         @keyup.enter="submitRadius"
       />
     </BModal>
+
+    <!-- The profile of whoever was clicked. One window: a person with no matches
+         opens the same one, only with nothing standing open. -->
+    <MatchProfile
+      :model-value="profileOpen"
+      :match="activeMatch"
+      @update:model-value="onProfileModel"
+    />
   </div>
 </template>
 
@@ -150,6 +158,7 @@ import {
   peakStage,
   stagesOf,
 } from '@/components/Matching/displayCore'
+import MatchProfile from '@/components/Matching/MatchProfile.vue'
 
 const LOOKS = ['dunkel', 'normal', 'hell']
 const FILTERS = ['interesse', 'angebot', 'gesuch', 'andere']
@@ -196,6 +205,12 @@ const radiusModal = ref(false)
 const radiusDraft = ref(DEFAULT_RADIUS)
 
 const { matches, presence, load } = useMatches()
+
+// The profile window. `pref.gms.map.profile` holds the uuid of the open person,
+// so it survives the round trip to the send form and the auto-logout — you come
+// back to the map AND to whoever you were looking at.
+const profileOpen = ref(false)
+const activeMatch = ref(null)
 
 let map = null
 let matchLayer = null
@@ -381,15 +396,57 @@ function drawMatches() {
       ? glowHtml(colour, size, DEFAULTS.stageBright[peak - 1])
       : discHtml(colour, size)
 
+    // Clickable, unlike the grey rings: a coloured marker is a match, and we have
+    // their whole profile to show. The rings stay quiet until the backend can
+    // name them (no uuid on the presence route yet — GMS-115, Dario's domain).
     L.marker([match.position.lat, match.position.lng], {
       icon: L.divIcon({
-        className: 'gk-marker',
+        className: 'gk-marker gk-clickable',
         html,
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
       }),
-      interactive: false,
-    }).addTo(matchLayer)
+      interactive: true,
+      keyboard: false,
+    })
+      .on('click', () => openProfile(match))
+      .addTo(matchLayer)
+  }
+}
+
+function openProfile(match) {
+  activeMatch.value = match
+  profileOpen.value = true
+  writePref('profile', match.uuid)
+}
+
+/** The window's v-model. A close by the member forgets the person for good. */
+function onProfileModel(open) {
+  profileOpen.value = open
+  if (!open) {
+    activeMatch.value = null
+    writePref('profile', null)
+  }
+}
+
+/**
+ * Keep the open window in step with the search.
+ *
+ * The remembered uuid is the single source of truth. On a fresh open it reopens
+ * whoever was showing; after a new search it refreshes them with the new object,
+ * or closes the window if they fell outside the radius — keeping the note, so
+ * widening the circle brings both the person and their profile back.
+ */
+function syncProfile() {
+  const savedUuid = readPref('profile', null)
+  if (!savedUuid) return
+  const found = matches.value.find((entry) => entry.uuid === savedUuid)
+  if (found) {
+    activeMatch.value = found
+    profileOpen.value = true
+  } else {
+    profileOpen.value = false
+    activeMatch.value = null
   }
 }
 
@@ -604,6 +661,7 @@ onUnmounted(() => {
 })
 
 watch([matches, presence], redraw, { deep: true })
+watch(matches, syncProfile)
 watch(breite, drawMatches)
 watch(visible, redraw, { deep: true })
 watch(look, redraw)
@@ -869,6 +927,10 @@ watch(look, redraw)
 .gk-marker {
   background: transparent;
   border: 0;
+}
+
+.gk-clickable {
+  cursor: pointer;
 }
 
 .gk-glow {

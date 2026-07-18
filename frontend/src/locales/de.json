@@ -429,6 +429,12 @@
       "saveTitle": "Position speichern",
       "unsaved": "Noch nicht gespeichert"
     },
+    "profile": {
+      "aria": "Profil von {name}",
+      "more": "{n} weitere",
+      "sendEmail": "E-Mail senden",
+      "sendGradido": "Gradido senden"
+    },
     "save": "Speichern",
     "tabs": {
       "about": "Über mich",
