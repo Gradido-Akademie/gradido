@@ -57,13 +57,14 @@
           <option value="breite">{{ $t('matching.list.sortBreite') }}</option>
         </select>
       </div>
-    </div>
 
-    <!-- Confirmation that the search took hold: the place stays named here (and is
-         announced), so the member knows the centre moved even with no map to watch. -->
-    <p v-if="centerLabel" class="center-label" role="status" aria-live="polite">
-      {{ $t('matching.list.centeredOn', { place: centerLabel }) }}
-    </p>
+      <!-- Confirmation that the search took hold: the place stays named (and is
+           announced). Its own full-width row inside the controls; on a phone it is
+           ordered directly under the search field, not under the sort. -->
+      <p v-if="centerLabel" class="center-label" role="status" aria-live="polite">
+        {{ $t('matching.list.centeredOn', { place: centerLabel }) }}
+      </p>
+    </div>
 
     <!-- Your matches. The heading names the group; each person is one item; the
          order is the ranking, spoken as sequence and never as a number. -->
@@ -346,6 +347,20 @@ function closeResults() {
   .list-controls {
     padding-right: 0;
   }
+
+  /* On a phone search and sort wrap to their own rows; order the confirmation
+     between them so it reads directly under the search, not under the sort. */
+  .list-search {
+    order: 1;
+  }
+
+  .center-label {
+    order: 2;
+  }
+
+  .list-sort {
+    order: 3;
+  }
 }
 
 .list-controls {
@@ -358,7 +373,8 @@ function closeResults() {
 }
 
 .center-label {
-  margin: -6px 0 14px;
+  flex: 0 0 100%;
+  margin: 0;
   font-size: 13px;
   color: var(--text-secondary);
 }
