@@ -40,6 +40,12 @@ const props = defineProps({
   height: { type: String, default: '400px' },
   // the settings page shows the coordinates readout; the matching tab hides it
   showCoordinates: { type: Boolean, default: true },
+  // 'pin' (default, the settings page) or 'crown' — the matching tab shows the
+  // same gold crown as the big map, so "you" reads the same everywhere.
+  userIcon: { type: String, default: 'pin' },
+  // label carried on the crown itself (e.g. "Du"); when empty the marker keeps
+  // its popup with the settings label.
+  userLabel: { type: String, default: '' },
 })
 
 const { t } = useI18n()
@@ -78,28 +84,51 @@ function initMap() {
       maxZoom: 19,
     }).addTo(map.value)
 
-    // User marker (movable)
+    // User marker (movable). The matching tab asks for the crown — the same
+    // "you" as the big map; the settings page keeps the classic pin.
+    const crown = props.userIcon === 'crown'
+    const userIconDef = crown
+      ? L.divIcon({
+          className: 'own-crown',
+          html: `<div style="position:relative;width:34px;">
+              <svg viewBox="0 0 32 26" width="34" height="27" style="display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))" aria-hidden="true">
+                <polygon points="1,25 1,7 9,13 16,1 23,13 31,7 31,25" fill="#c69130" stroke="#3a2600" stroke-width="1.4" stroke-linejoin="round"/>
+                <rect x="1" y="22" width="30" height="3" fill="#3a2600"/>
+              </svg>${
+                props.userLabel
+                  ? `<span style="position:absolute;left:40px;top:2px;font-size:13px;font-weight:700;white-space:nowrap;color:#8a6407;text-shadow:0 0 3px #fff,0 0 3px #fff">${props.userLabel}</span>`
+                  : ''
+              }</div>`,
+          iconSize: [34, 40],
+          iconAnchor: [17, 34],
+        })
+      : L.icon({
+          iconUrl:
+            'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+          shadowUrl:
+            'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        })
+
     userMarker.value = L.marker([userPosition.value.lat, userPosition.value.lng], {
       draggable: true,
       interactive: false,
-      icon: L.icon({
-        iconUrl:
-          'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
-      }),
+      icon: userIconDef,
     }).addTo(map.value)
 
-    userMarker.value
-      .bindPopup(t('settings.GMS.map.userLocationLabel'), {
-        autoClose: false,
-        closeOnClick: false,
-        closeButton: false,
-      })
-      .openPopup()
+    // The crown carries its own label; the pin explains itself with a popup.
+    if (!crown) {
+      userMarker.value
+        .bindPopup(t('settings.GMS.map.userLocationLabel'), {
+          autoClose: false,
+          closeOnClick: false,
+          closeButton: false,
+        })
+        .openPopup()
+    }
 
     // Community marker (fixed)
     communityMarker.value = L.marker([communityPosition.value.lat, communityPosition.value.lng], {
@@ -219,6 +248,13 @@ watch(userPosition, (newPosition) => {
 .map-container {
   height: 400px;
   width: 100%;
+}
+
+/* Leaflet paints div-icons on a white bordered box by default; the crown rides
+   transparent, the way the big map's own-marker does. */
+:deep(.own-crown) {
+  background: transparent;
+  border: 0;
 }
 
 .leaflet-control-custom a {

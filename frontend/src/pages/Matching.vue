@@ -174,6 +174,8 @@
           :community-marker-coords="communityLocation"
           :show-coordinates="false"
           height="320px"
+          user-icon="crown"
+          :user-label="$t('matching.map.you')"
           @update:userPosition="onPickPosition"
         />
       </div>
@@ -733,7 +735,9 @@ function goPositionFromFind() {
 /* Entry-type colours — the three channel colours, kept in sync with LABEL_COLORS
    in components/Matching/displayCore.js (interesse #ff0000 · angebot emerald
    #10b981 · gesuch #4658ff). Red and blue vibrant; the green is emerald so it
-   parts from the red for red-green colour vision. */
+   parts from the red for red-green colour vision. Where a white icon or label
+   sits ON the green (the avatar, the selected button), the green is one step
+   darker (#059669) so the white keeps its contrast — the dots stay #10b981. */
 .entry-avatar {
   width: 64px;
   height: 64px;
@@ -775,7 +779,7 @@ function goPositionFromFind() {
 }
 
 .type-angebot {
-  background: #10b981;
+  background: #059669;
 }
 
 .type-gesuch {
@@ -824,7 +828,7 @@ function goPositionFromFind() {
 }
 
 .type-choice-btn.is-sel.type-angebot {
-  background: #10b981;
+  background: #059669;
 }
 
 .type-choice-btn.is-sel.type-gesuch {
