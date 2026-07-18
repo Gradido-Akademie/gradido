@@ -154,7 +154,7 @@ import { userLocationQuery } from '@/graphql/queries'
 import { useMatches } from '@/composables/useMatches'
 import { useAppToast } from '@/composables/useToast'
 import {
-  CANON,
+  LABEL_COLORS,
   DEFAULTS,
   markerColor,
   peakStage,
@@ -370,7 +370,10 @@ function rgb(channels) {
 
 function swatchStyle(channel) {
   if (channel === 'andere') return { border: '2px solid rgb(116, 121, 131)' }
-  return { background: rgb(CANON[channel]) }
+  // The legend swatch wears the entry colour (the input's danger/success/info),
+  // not the glow's additive primary — so the three stay apart for red-green
+  // colour vision. The glowing markers keep CANON; only these labels change.
+  return { background: LABEL_COLORS[channel] }
 }
 
 function glowHtml(colour, size, share) {

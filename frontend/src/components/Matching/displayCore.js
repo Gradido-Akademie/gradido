@@ -26,6 +26,21 @@ export const CANON = {
   ganz: [255, 255, 255],
 }
 
+/**
+ * Label colours — for the filter legend swatches and the profile dots, NOT the
+ * glow. These are the very colours the member sees when TYPING an entry (the
+ * semantic tokens danger / success / info), so a dot reads the same as the form
+ * it came from. They are deliberately not the CANON primaries: pure red and pure
+ * green are the one pair red-green colour vision cannot tell apart, and the
+ * danger red is tuned to sit apart from the success green. The glow keeps CANON,
+ * because only clean R/G/B primaries mix additively (red + green = yellow).
+ */
+export const LABEL_COLORS = {
+  interesse: '#c62828',
+  angebot: '#047006',
+  gesuch: '#0e79bc',
+}
+
 export const DEFAULTS = {
   // Below the cut a person shows as a grey presence ring, not as a match.
   cut: 0.17,

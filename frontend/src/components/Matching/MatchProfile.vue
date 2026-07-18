@@ -94,7 +94,7 @@
 <script setup>
 import { computed, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { CANON } from '@/components/Matching/displayCore'
+import { LABEL_COLORS } from '@/components/Matching/displayCore'
 import CollapseIcon from '@/components/TransactionRows/CollapseIcon'
 
 // Heart first, then offer, then need — GMS-82's "Herz zuerst".
@@ -159,8 +159,9 @@ function toggleArea(key) {
 }
 
 function dotColor(key) {
-  const [r, g, b] = CANON[key]
-  return `rgb(${r}, ${g}, ${b})`
+  // The dot wears the colour the member typed the entry in, not the glow's
+  // additive primary — so it stays legible for red-green colour vision.
+  return LABEL_COLORS[key]
 }
 
 function shownEntries(area) {
