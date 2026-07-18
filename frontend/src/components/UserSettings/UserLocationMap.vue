@@ -295,6 +295,13 @@ watch(userPosition, (newPosition) => {
   pointer-events: none;
 }
 
+/* A touch see-through, so the map faintly shows through the bubble — the text
+   stays crisp because only the white behind it is softened, not the letters. */
+:deep(.community-through .leaflet-popup-content-wrapper),
+:deep(.community-through .leaflet-popup-tip) {
+  background: rgb(255 255 255 / 82%);
+}
+
 .leaflet-control-custom a {
   background-color: #fff;
   width: 30px;
