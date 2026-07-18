@@ -8,7 +8,8 @@
         <i-bi-map v-else class="find-btn-icon" />
         <span class="find-btn-text">
           <span class="find-btn-title">
-            {{ $t(findList ? 'matching.find.titleList' : 'matching.find.title') }}
+            <template v-if="findList">{{ $t('matching.find.titleList') }}</template>
+            <template v-else>{{ $t('matching.find.title') }}</template>
           </span>
           <span class="find-btn-sub">{{ $t('matching.find.subtitle') }}</span>
         </span>

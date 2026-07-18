@@ -32,7 +32,16 @@ const i18n = createI18n({
           kmExact: '{n} km',
           meets: 'trifft {n} Deiner Einträge',
           empty: 'Hier ist gerade niemand.',
-          dir: { n: 'nördlich', ne: 'nordöstlich', e: 'östlich', se: 'südöstlich', s: 'südlich', sw: 'südwestlich', w: 'westlich', nw: 'nordwestlich' },
+          dir: {
+            n: 'nördlich',
+            ne: 'nordöstlich',
+            e: 'östlich',
+            se: 'südöstlich',
+            s: 'südlich',
+            sw: 'südwestlich',
+            w: 'westlich',
+            nw: 'nordwestlich',
+          },
           line: {
             angebot: 'bietet {thing} — das suchst Du',
             gesuch: 'sucht {thing} — das bietest Du',
@@ -50,7 +59,13 @@ const CENTRE = { lat: 50, lng: 10 }
 const NEAR = { lat: 50.009, lng: 10 }
 const FAR = { lat: 50.18, lng: 10 }
 
-const entry = (summary, strength) => ({ uuid: summary, summary, details: null, strength, remote: false })
+const entry = (summary, strength) => ({
+  uuid: summary,
+  summary,
+  details: null,
+  strength,
+  remote: false,
+})
 
 function matchItem(over = {}) {
   return {
@@ -114,7 +129,10 @@ describe('MatchList', () => {
 
     const many = mountList({
       matches: [
-        matchItem({ channels: { angebot: [entry('a', 0.5), entry('b', 0.45)] }, scores: { angebot: [0.5, 0.45] } }),
+        matchItem({
+          channels: { angebot: [entry('a', 0.5), entry('b', 0.45)] },
+          scores: { angebot: [0.5, 0.45] },
+        }),
       ],
     })
     expect(many.find('.row-breadth').text()).toBe('trifft 2 Deiner Einträge')
