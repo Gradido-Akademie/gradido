@@ -258,6 +258,20 @@ function toSend(art) {
   font-variant-numeric: tabular-nums;
 }
 
+/* The chevron is a shared house icon carrying bootstrap's .h1, whose 0.5rem
+   margin-bottom lifts it a few pixels above the row centre — just out of line
+   with the count beside it. Zero it here (not in the shared component) so the
+   arrow and the number sit on one centre line. */
+.area-head :deep(.collapse-icon) {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.area-head :deep(.collapse-icon svg) {
+  margin: 0;
+}
+
 .entry-list {
   list-style: none;
   margin: 0;
