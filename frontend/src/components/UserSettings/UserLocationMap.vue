@@ -87,6 +87,16 @@ function initMap() {
     // User marker (movable). The matching tab asks for the crown — the same
     // "you" as the big map; the settings page keeps the classic pin.
     const crown = props.userIcon === 'crown'
+
+    // A pane below the markers for the community label, so it never sits over the
+    // crown: you can drop your location right where the label is, and your crown
+    // lands on top of it (the label is read by then anyway). Its clicks fall
+    // through to the map via the pass-through class below.
+    if (crown) {
+      map.value.createPane('communityLabel')
+      map.value.getPane('communityLabel').style.zIndex = '550'
+    }
+
     const userIconDef = crown
       ? L.divIcon({
           className: 'own-crown',
@@ -166,6 +176,10 @@ function initMap() {
         autoClose: false,
         closeOnClick: false,
         closeButton: false,
+        // In crown mode the label rides low and lets clicks through, so it never
+        // stands between you and dropping your location there.
+        pane: crown ? 'communityLabel' : undefined,
+        className: crown ? 'community-through' : '',
       })
       .openPopup()
 
@@ -272,6 +286,13 @@ watch(userPosition, (newPosition) => {
 :deep(.home-community) {
   background: transparent;
   border: 0;
+}
+
+/* The community label must not catch clicks — you set your own location by
+   clicking the map, and the label sits right where you may want to click. */
+:deep(.community-through),
+:deep(.community-through) * {
+  pointer-events: none;
 }
 
 .leaflet-control-custom a {
