@@ -401,6 +401,14 @@ body.dark-mode {
   border-color: var(--text-muted);
 }
 
+// The list's two top fields (sort, address search) — var(--border) sits too close
+// to the dark surface for a field edge, so lift them to a visible outline like the
+// switch above.
+.dark-mode .sort-select,
+.dark-mode .search-input {
+  border-color: var(--text-muted);
+}
+
 // Matching position "Bin ich auffindbar?" label inherits a hardcoded #383838 from
 // the scoped matching styles -> light. (The hint below already uses text-muted.)
 #app.dark-mode .matching-page .fw-bold {

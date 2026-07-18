@@ -40,9 +40,10 @@
         />
 
         <!-- With the head and the wallet's own bars gone on a phone, this is the
-             only way out — so it sits on the map, where the eye already is. -->
+             only way out — so it sits on the map, where the eye already is. It
+             stays in list mode too (a phone has no other way back), pinned over
+             the scrolling list like the Karte switch. -->
         <button
-          v-show="mode === 'karte'"
           type="button"
           class="map-back d-lg-none"
           :aria-label="$t('matching.map.back')"

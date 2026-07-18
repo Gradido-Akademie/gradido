@@ -317,10 +317,24 @@ function closeResults() {
   height: 100%;
   overflow-y: auto;
   padding: 14px 16px 24px;
+
   /* The semantic tokens, not --bs-body-*: these are what the wallet's dark mode
      flips (.dark-mode on #app/body), the same ones the detail window rides. */
   background: var(--surface);
   color: var(--text);
+}
+
+/* On a phone the round back button (top-left) and the Karte switch (top-right) are
+   pinned over the scrolling list; push the first line clear of them, and drop the
+   right inset the desktop switch needed (the content now sits below them). */
+@media (width <= 991.98px) {
+  .match-list {
+    padding-top: 56px;
+  }
+
+  .list-controls {
+    padding-right: 0;
+  }
 }
 
 .list-controls {
