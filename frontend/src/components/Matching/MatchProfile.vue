@@ -8,6 +8,7 @@
     :aria-label="match ? $t('matching.profile.aria', { name: match.name }) : ''"
     scrollable
     centered
+    hide-footer
     body-class="profile-body"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -69,25 +70,19 @@
           </button>
         </BCollapse>
       </div>
-    </div>
 
-    <!-- The real actions live in the footer, so they stay put while the profile
-         scrolls. No OK/Cancel: those only closed the window, and the × up top
-         already does that. The window is a go-between, not a till — the buttons
-         point at the send form, the e-mail one carrying its mode (?art=email).
-         Icons are the wallet's own send-form glyphs: the coin, the fast mail. -->
-    <template #footer>
-      <div v-if="match" class="profile-actions">
+      <!-- The window is a go-between, not a till: it points at the send form, it
+           does not rebuild it. Two buttons that land right — the e-mail one
+           carries its mode in the route (?art=email). -->
+      <div class="profile-actions">
         <button type="button" class="send-btn send-gradido" @click="toSend('send')">
-          <img src="/img/svg/gdd_coin_sw.svg" class="send-coin" alt="" aria-hidden="true" />
           {{ $t('matching.profile.sendGradido') }}
         </button>
         <button type="button" class="send-btn send-email" @click="toSend('email')">
-          <i-mdi-email-fast-outline class="send-mail-icon" aria-hidden="true" />
           {{ $t('matching.profile.sendEmail') }}
         </button>
       </div>
-    </template>
+    </div>
   </BModal>
 </template>
 
@@ -314,14 +309,12 @@ function toSend(art) {
 .profile-actions {
   display: flex;
   gap: 10px;
-  width: 100%;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 .send-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
   flex: 1;
   padding: 10px 14px;
   border-radius: 26px;
@@ -339,21 +332,6 @@ function toSend(art) {
 .send-email {
   background: transparent;
   color: #178d81;
-}
-
-/* The coin ships as a dark monochrome glyph; on the teal button it turns white —
-   exactly how the send form flips it on its active tab. */
-.send-coin {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
-  filter: brightness(0) invert(1);
-}
-
-.send-mail-icon {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
 }
 
 @media (width <= 420px) {
