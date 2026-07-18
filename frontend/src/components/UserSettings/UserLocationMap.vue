@@ -130,19 +130,35 @@ function initMap() {
         .openPopup()
     }
 
-    // Community marker (fixed)
+    // Community marker (fixed). In crown mode (the matching tab) it becomes the
+    // "house with heart" — your home community; the settings page keeps the pin.
+    const communityIconDef = crown
+      ? L.divIcon({
+          className: 'home-community',
+          html: `<div style="width:32px;height:32px;color:#178d81;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45))">
+              <svg viewBox="0 0 16 16" width="32" height="32" aria-hidden="true">
+                <g fill="currentColor"><path d="M7.293 1.5a1 1 0 0 1 1.414 0L11 3.793V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v3.293l2.354 2.353a.5.5 0 0 1-.708.707L8 2.207L1.354 8.853a.5.5 0 1 1-.708-.707z"/><path d="m14 9.293l-6-6l-6 6V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5zm-6-.811c1.664-1.673 5.825 1.254 0 5.018c-5.825-3.764-1.664-6.691 0-5.018"/></g>
+              </svg>
+            </div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 30],
+          popupAnchor: [0, -28],
+        })
+      : L.icon({
+          iconUrl:
+            'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+          shadowUrl:
+            'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        })
+
     communityMarker.value = L.marker([communityPosition.value.lat, communityPosition.value.lng], {
       draggable: false,
       interactive: false,
-      icon: L.icon({
-        iconUrl:
-          'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
-      }),
+      icon: communityIconDef,
     }).addTo(map.value)
 
     communityMarker.value
@@ -250,9 +266,10 @@ watch(userPosition, (newPosition) => {
   width: 100%;
 }
 
-/* Leaflet paints div-icons on a white bordered box by default; the crown rides
-   transparent, the way the big map's own-marker does. */
-:deep(.own-crown) {
+/* Leaflet paints div-icons on a white bordered box by default; the crown and the
+   home-community house ride transparent, the way the big map's markers do. */
+:deep(.own-crown),
+:deep(.home-community) {
   background: transparent;
   border: 0;
 }
