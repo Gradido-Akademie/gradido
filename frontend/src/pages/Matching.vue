@@ -83,8 +83,8 @@
             </BCol>
             <BCol class="min-w-0">
               <div class="small text-muted">{{ e.date }}</div>
-              <div class="fw-bold">{{ $t(`matching.type.${e.type}.word`) }}</div>
-              <div class="word-break">{{ e.summary }}</div>
+              <div class="entry-type">{{ $t(`matching.type.${e.type}.word`) }}</div>
+              <div class="entry-title word-break">{{ e.summary }}</div>
               <div class="mt-2">
                 <span v-if="e.remote" class="badge-soft me-2">
                   <i-bi-globe2 />
@@ -730,12 +730,30 @@ function goPositionFromFind() {
   color: #383838;
 }
 
-/* Entry-type colors (Matching meaning Interest/Offer/Request = RGB) */
+/* Entry-type colours — the three channel colours, kept in sync with LABEL_COLORS
+   in components/Matching/displayCore.js (interesse #ff0000 · angebot emerald
+   #10b981 · gesuch #4658ff). Red and blue vibrant; the green is emerald so it
+   parts from the red for red-green colour vision. */
 .entry-avatar {
   width: 64px;
   height: 64px;
   color: #fff;
   font-size: 28px;
+}
+
+/* The big avatar icon already carries the type, so the type word is a small
+   label and the entry itself (the summary) is the heading that stands out. */
+.entry-type {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.entry-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
 }
 
 /* Inline sentence in the new-entry modal: a neutral prefix ("Ich suche") sits
@@ -753,15 +771,15 @@ function goPositionFromFind() {
 }
 
 .type-interesse {
-  background: #c62828;
+  background: #f00;
 }
 
 .type-angebot {
-  background: #047006;
+  background: #10b981;
 }
 
 .type-gesuch {
-  background: #0e79bc;
+  background: #4658ff;
 }
 
 /* Type-choice buttons: unselected = pale tint with black text/icon;
@@ -780,15 +798,15 @@ function goPositionFromFind() {
 }
 
 .type-choice-btn.type-interesse {
-  background: #f2caca;
+  background: #ffd6d6;
 }
 
 .type-choice-btn.type-angebot {
-  background: #d3e9c8;
+  background: #d1f0e5;
 }
 
 .type-choice-btn.type-gesuch {
-  background: #cfe6f6;
+  background: #dce0ff;
 }
 
 .type-choice-btn svg {
@@ -802,15 +820,15 @@ function goPositionFromFind() {
 }
 
 .type-choice-btn.is-sel.type-interesse {
-  background: #c62828;
+  background: #f00;
 }
 
 .type-choice-btn.is-sel.type-angebot {
-  background: #047006;
+  background: #10b981;
 }
 
 .type-choice-btn.is-sel.type-gesuch {
-  background: #0e79bc;
+  background: #4658ff;
 }
 
 /* small status badges on an entry */
