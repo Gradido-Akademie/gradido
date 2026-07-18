@@ -112,7 +112,9 @@
       v-model="radiusModal"
       :title="$t('matching.map.radiusTitle')"
       :ok-title="$t('form.save')"
+      ok-variant="gradido"
       :cancel-title="$t('form.cancel')"
+      cancel-variant="secondary"
       :ok-disabled="!radiusValid"
       centered
       @ok="applyRadius"
