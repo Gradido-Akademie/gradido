@@ -19,7 +19,7 @@
     <div class="map-frame mx-lg-5">
       <div
         class="map-shell gradido-border-radius app-box-shadow"
-        :class="[`look-${look}`, { 'is-list': mode === 'liste' }]"
+        :class="[`look-${look}`, { 'is-list': mode === 'liste', 'is-cluster': clusterOpen }]"
       >
         <div ref="mapContainer" class="map-canvas" />
 
@@ -1308,6 +1308,20 @@ watch(mode, (value) => {
     border-radius: 50%;
     flex: 0 0 auto;
   }
+}
+
+/* The cluster overlay covers the map while the mode is still "karte", so is-list
+   does not apply — hide the map controls while it shows, so nothing sits over the
+   overlay or its close cross. Placed last, after the plain control selectors, to
+   keep specificity ascending. */
+.map-shell.is-cluster .look-switch,
+.map-shell.is-cluster .map-back,
+.map-shell.is-cluster .map-crosshair {
+  display: none;
+}
+
+.map-shell.is-cluster :deep(.leaflet-control-container) {
+  display: none;
 }
 </style>
 
