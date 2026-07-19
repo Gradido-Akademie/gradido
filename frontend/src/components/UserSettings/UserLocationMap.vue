@@ -40,12 +40,9 @@ const props = defineProps({
   height: { type: String, default: '400px' },
   // the settings page shows the coordinates readout; the matching tab hides it
   showCoordinates: { type: Boolean, default: true },
-  // 'pin' (default, the settings page) or 'crown' — the matching tab shows the
-  // same gold crown as the big map, so "you" reads the same everywhere.
+  // 'pin' (default, the settings page) or 'home' — the matching tab shows the
+  // same gold heart-house as the big map, so home reads the same everywhere.
   userIcon: { type: String, default: 'pin' },
-  // label carried on the crown itself (e.g. "Du"); when empty the marker keeps
-  // its popup with the settings label.
-  userLabel: { type: String, default: '' },
 })
 
 const { t } = useI18n()
@@ -84,33 +81,29 @@ function initMap() {
       maxZoom: 19,
     }).addTo(map.value)
 
-    // User marker (movable). The matching tab asks for the crown — the same
+    // User marker (movable). The matching tab asks for the home house — the same
     // "you" as the big map; the settings page keeps the classic pin.
-    const crown = props.userIcon === 'crown'
+    const homeIcon = props.userIcon === 'home'
 
     // A pane below the markers for the community label, so it never sits over the
-    // crown: you can drop your location right where the label is, and your crown
-    // lands on top of it (the label is read by then anyway). Its clicks fall
+    // home house: you can drop your location right where the label is, and your
+    // house lands on top of it (the label is read by then anyway). Its clicks fall
     // through to the map via the pass-through class below.
-    if (crown) {
+    if (homeIcon) {
       map.value.createPane('communityLabel')
       map.value.getPane('communityLabel').style.zIndex = '550'
     }
 
-    const userIconDef = crown
+    const userIconDef = homeIcon
       ? L.divIcon({
-          className: 'own-crown',
-          html: `<div style="position:relative;width:34px;">
-              <svg viewBox="0 0 32 26" width="34" height="27" style="display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))" aria-hidden="true">
-                <polygon points="1,25 1,7 9,13 16,1 23,13 31,7 31,25" fill="#c69130" stroke="#3a2600" stroke-width="1.4" stroke-linejoin="round"/>
-                <rect x="1" y="22" width="30" height="3" fill="#3a2600"/>
-              </svg>${
-                props.userLabel
-                  ? `<span style="position:absolute;left:40px;top:2px;font-size:13px;font-weight:700;white-space:nowrap;color:#8a6407;text-shadow:0 0 3px #fff,0 0 3px #fff">${props.userLabel}</span>`
-                  : ''
-              }</div>`,
-          iconSize: [34, 40],
-          iconAnchor: [17, 34],
+          className: 'own-home',
+          html: `<div style="width:32px;height:32px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))">
+              <svg viewBox="0 0 16 16" width="32" height="32" style="display:block" aria-hidden="true">
+                <g fill="#c69130"><path d="M7.293 1.5a1 1 0 0 1 1.414 0L11 3.793V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v3.293l2.354 2.353a.5.5 0 0 1-.708.707L8 2.207L1.354 8.853a.5.5 0 1 1-.708-.707z"/><path d="m14 9.293l-6-6l-6 6V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5zm-6-.811c1.664-1.673 5.825 1.254 0 5.018c-5.825-3.764-1.664-6.691 0-5.018"/></g>
+              </svg>
+            </div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 30],
         })
       : L.icon({
           iconUrl:
@@ -129,8 +122,8 @@ function initMap() {
       icon: userIconDef,
     }).addTo(map.value)
 
-    // The crown carries its own label; the pin explains itself with a popup.
-    if (!crown) {
+    // The home house needs no label; the pin explains itself with a popup.
+    if (!homeIcon) {
       userMarker.value
         .bindPopup(t('settings.GMS.map.userLocationLabel'), {
           autoClose: false,
@@ -140,14 +133,14 @@ function initMap() {
         .openPopup()
     }
 
-    // Community marker (fixed). In crown mode (the matching tab) it becomes the
-    // "house with heart" — your home community; the settings page keeps the pin.
-    const communityIconDef = crown
+    // Community marker (fixed). In home mode (the matching tab) it becomes the
+    // group of people — your home community; the settings page keeps the pin.
+    const communityIconDef = homeIcon
       ? L.divIcon({
           className: 'home-community',
           html: `<div style="width:32px;height:32px;color:#178d81;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45))">
-              <svg viewBox="0 0 16 16" width="32" height="32" aria-hidden="true">
-                <g fill="currentColor"><path d="M7.293 1.5a1 1 0 0 1 1.414 0L11 3.793V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v3.293l2.354 2.353a.5.5 0 0 1-.708.707L8 2.207L1.354 8.853a.5.5 0 1 1-.708-.707z"/><path d="m14 9.293l-6-6l-6 6V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5zm-6-.811c1.664-1.673 5.825 1.254 0 5.018c-5.825-3.764-1.664-6.691 0-5.018"/></g>
+              <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
+                <path fill="currentColor" d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9A3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42c-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3a3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13zM0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9c-.59.68-.95 1.62-.95 2.65V20zm24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65c2.56.34 4.45 1.51 4.45 2.9z"/>
               </svg>
             </div>`,
           iconSize: [32, 32],
@@ -176,10 +169,10 @@ function initMap() {
         autoClose: false,
         closeOnClick: false,
         closeButton: false,
-        // In crown mode the label rides low and lets clicks through, so it never
+        // In home mode the label rides low and lets clicks through, so it never
         // stands between you and dropping your location there.
-        pane: crown ? 'communityLabel' : undefined,
-        className: crown ? 'community-through' : '',
+        pane: homeIcon ? 'communityLabel' : undefined,
+        className: homeIcon ? 'community-through' : '',
       })
       .openPopup()
 
@@ -280,9 +273,9 @@ watch(userPosition, (newPosition) => {
   width: 100%;
 }
 
-/* Leaflet paints div-icons on a white bordered box by default; the crown and the
-   home-community house ride transparent, the way the big map's markers do. */
-:deep(.own-crown),
+/* Leaflet paints div-icons on a white bordered box by default; the home house and
+   the community group ride transparent, the way the big map's markers do. */
+:deep(.own-home),
 :deep(.home-community) {
   background: transparent;
   border: 0;

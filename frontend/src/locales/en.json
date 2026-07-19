@@ -430,6 +430,7 @@
         "interesse": "Interests"
       },
       "found": "{n} people found",
+      "home": "Home",
       "km": "km",
       "look": {
         "dunkel": "dark",
@@ -445,8 +446,7 @@
       "search": "Search for a place or address",
       "searchHere": "Search here",
       "subtitle": "Your matches nearby",
-      "title": "Find on the map",
-      "you": "You"
+      "title": "Find on the map"
     },
     "new": {
       "cancel": "Cancel",

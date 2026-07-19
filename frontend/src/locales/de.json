@@ -430,6 +430,7 @@
         "interesse": "Interessen"
       },
       "found": "{n} Menschen gefunden",
+      "home": "Zur Heimat",
       "km": "km",
       "look": {
         "dunkel": "dunkel",
@@ -445,8 +446,7 @@
       "search": "Ort oder Adresse suchen",
       "searchHere": "Hier suchen",
       "subtitle": "Deine Treffer in der Umgebung",
-      "title": "Auf der Karte finden",
-      "you": "Du"
+      "title": "Auf der Karte finden"
     },
     "new": {
       "cancel": "Abbrechen",

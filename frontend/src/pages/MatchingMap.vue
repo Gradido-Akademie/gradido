@@ -65,8 +65,8 @@
 
         <!-- The crosshair marks the map's centre, and the centre is what the next
              search will use. Hollow and half-transparent on purpose: on the first
-             open it sits exactly on your own crown, and it has to let it through
-             rather than shove it aside — the crown marks a real place. -->
+             open it sits exactly on your own house, and it has to let it through
+             rather than shove it aside — the house marks a real place. -->
         <button
           v-show="mode === 'karte'"
           type="button"
@@ -790,18 +790,27 @@ function zoomToCircle() {
   map.fitBounds(centre.toBounds(radius.value * 2000))
 }
 
+// Home again: frame your own place the way the map first opened — a pure view, like
+// the cluster dive, so it never touches the search or its centre.
+function recenterHome() {
+  if (!map || !ownPosition.value) return
+  const home = L.latLng(ownPosition.value.lat, ownPosition.value.lng)
+  map.fitBounds(home.toBounds(radius.value * 2000))
+}
+
 function drawOwn() {
   if (!map || !ownPosition.value) return
   if (ownLayer) ownLayer.remove()
+  // Your home: the heart-house in gold. The crown moved on — this marks a place you
+  // live, not a badge — and it needs no label; the house speaks for itself. The same
+  // marker stands on the settings map, so "home" reads the same in both places.
   const html = `<div class="gk-own">
-      <svg viewBox="0 0 32 26" aria-hidden="true">
-        <polygon points="1,25 1,7 9,13 16,1 23,13 31,7 31,25" fill="#c69130" stroke="#3a2600" stroke-width="1.4" stroke-linejoin="round"/>
-        <rect x="1" y="22" width="30" height="3" fill="#3a2600"/>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <g fill="#c69130"><path d="M7.293 1.5a1 1 0 0 1 1.414 0L11 3.793V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v3.293l2.354 2.353a.5.5 0 0 1-.708.707L8 2.207L1.354 8.853a.5.5 0 1 1-.708-.707z"/><path d="m14 9.293l-6-6l-6 6V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5zm-6-.811c1.664-1.673 5.825 1.254 0 5.018c-5.825-3.764-1.664-6.691 0-5.018"/></g>
       </svg>
-      <span class="gk-own-label">${t('matching.map.you')}</span>
     </div>`
   ownLayer = L.marker([ownPosition.value.lat, ownPosition.value.lng], {
-    icon: L.divIcon({ className: 'gk-marker', html, iconSize: [34, 40], iconAnchor: [17, 34] }),
+    icon: L.divIcon({ className: 'gk-marker', html, iconSize: [32, 32], iconAnchor: [16, 30] }),
     interactive: false,
     zIndexOffset: 500,
   }).addTo(map)
@@ -813,8 +822,8 @@ function drawCentre() {
     centreLayer = null
   }
   if (!map || !searchCenter.value) return
-  // A quiet disc under the crown: it marks where the search is centred, so that when
-  // the crown wanders off — a search point away from home — the centre stays shown.
+  // A quiet disc under the house: it marks where the search is centred, so that when
+  // the house wanders off — a search point away from home — the centre stays shown.
   centreLayer = L.marker([searchCenter.value.lat, searchCenter.value.lng], {
     icon: L.divIcon({
       className: 'gk-marker',
@@ -984,6 +993,26 @@ function initMap() {
   })
   map.addControl(searchControl)
 
+  // A way home under the search lens: a gold heart-house button that frames your own
+  // place again, wherever you have panned. It joins the Leaflet controls (white, round)
+  // and, sitting in the same corner after the lens, stacks directly below it.
+  const HomeControl = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd() {
+      const bar = L.DomUtil.create('div', 'leaflet-bar gk-home')
+      const link = L.DomUtil.create('a', '', bar)
+      link.href = '#'
+      link.setAttribute('role', 'button')
+      link.title = t('matching.map.home')
+      link.setAttribute('aria-label', t('matching.map.home'))
+      link.innerHTML =
+        '<svg viewBox="0 0 16 16" aria-hidden="true"><g fill="#c69130"><path d="M7.293 1.5a1 1 0 0 1 1.414 0L11 3.793V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v3.293l2.354 2.353a.5.5 0 0 1-.708.707L8 2.207L1.354 8.853a.5.5 0 1 1-.708-.707z"/><path d="m14 9.293l-6-6l-6 6V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5zm-6-.811c1.664-1.673 5.825 1.254 0 5.018c-5.825-3.764-1.664-6.691 0-5.018"/></g></svg>'
+      L.DomEvent.on(link, 'click', L.DomEvent.stop).on(link, 'click', recenterHome)
+      return bar
+    },
+  })
+  map.addControl(new HomeControl())
+
   // Looking up a town takes the search with it. Typing an address is a
   // deliberate act — and it is what stands in for a reset button: type where you
   // live and you are home, circle and all.
@@ -1085,6 +1114,19 @@ watch(mode, (value) => {
    its own address search up top, so hide the map's controls while it is showing. */
 .map-shell.is-list :deep(.leaflet-control-container) {
   display: none;
+}
+
+/* The home button rides Leaflet's white, rounded control chrome; only the gold
+   house inside needs centring and a marker-ish size. */
+:deep(.gk-home a) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.gk-home a svg) {
+  width: 18px;
+  height: 18px;
 }
 
 .map-canvas {
@@ -1402,36 +1444,14 @@ watch(mode, (value) => {
 }
 
 .gk-own {
-  position: relative;
-  width: 34px;
+  width: 32px;
 
   svg {
-    width: 34px;
+    width: 32px;
     height: auto;
     display: block;
     filter: drop-shadow(0 1px 1px rgb(0 0 0 / 50%));
   }
-}
-
-.gk-own-label {
-  position: absolute;
-  left: 40px;
-  top: 2px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #e9c518;
-  text-shadow:
-    0 0 3px #000,
-    0 0 3px #000;
-  white-space: nowrap;
-}
-
-.look-hell .gk-own-label,
-.look-normal .gk-own-label {
-  color: #8a6407;
-  text-shadow:
-    0 0 3px #fff,
-    0 0 3px #fff;
 }
 
 /* Leaflet gives an interactive marker icon pointer-events:auto at 0,2,0 specificity;

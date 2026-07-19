@@ -178,8 +178,7 @@
           :community-marker-coords="communityLocation"
           :show-coordinates="false"
           height="320px"
-          user-icon="crown"
-          :user-label="$t('matching.map.you')"
+          user-icon="home"
           @update:userPosition="onPickPosition"
         />
       </div>
