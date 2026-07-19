@@ -790,12 +790,13 @@ function zoomToCircle() {
   map.fitBounds(centre.toBounds(radius.value * 2000))
 }
 
-// Home again: frame your own place the way the map first opened — a pure view, like
-// the cluster dive, so it never touches the search or its centre.
+// Home again: put the search itself back on your own place — the same as clicking
+// the crosshair there. moveSearchTo centres the map on home and sets the search
+// centre to it, so the crosshair comes to rest on the disc and the matches gather
+// round home, exactly as on first open.
 function recenterHome() {
   if (!map || !ownPosition.value) return
-  const home = L.latLng(ownPosition.value.lat, ownPosition.value.lng)
-  map.fitBounds(home.toBounds(radius.value * 2000))
+  moveSearchTo({ lat: ownPosition.value.lat, lng: ownPosition.value.lng })
 }
 
 function drawOwn() {
@@ -810,7 +811,7 @@ function drawOwn() {
       </svg>
     </div>`
   ownLayer = L.marker([ownPosition.value.lat, ownPosition.value.lng], {
-    icon: L.divIcon({ className: 'gk-marker', html, iconSize: [32, 32], iconAnchor: [16, 30] }),
+    icon: L.divIcon({ className: 'gk-marker', html, iconSize: [34, 34], iconAnchor: [17, 17.5] }),
     interactive: false,
     zIndexOffset: 500,
   }).addTo(map)
@@ -1444,10 +1445,10 @@ watch(mode, (value) => {
 }
 
 .gk-own {
-  width: 32px;
+  width: 34px;
 
   svg {
-    width: 32px;
+    width: 34px;
     height: auto;
     display: block;
     filter: drop-shadow(0 1px 1px rgb(0 0 0 / 50%));
