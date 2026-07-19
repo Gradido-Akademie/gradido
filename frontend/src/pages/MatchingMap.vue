@@ -61,6 +61,7 @@
           v-show="mode === 'karte'"
           type="button"
           class="map-crosshair"
+          :style="crosshairStyle"
           :aria-label="$t('matching.map.searchHere')"
           :title="$t('matching.map.searchHere')"
           @click="searchHere"
@@ -247,6 +248,13 @@ const MASK = {
   hell: { fill: '#000000', opacity: 0.08, edge: 'rgb(0 0 0 / 35%)' },
 }
 
+// The crosshair fades from full at COVER_FADE px between the map's middle and the
+// search centre down to gone at COVER_TOL; within SNAP_TOL the map eases the last
+// pixels onto the centre so "on the centre" is exact at any zoom.
+const COVER_TOL = 14
+const COVER_FADE = 72
+const SNAP_TOL = 24
+
 const { t, locale } = useI18n()
 const router = useRouter()
 const store = useStore()
@@ -281,9 +289,19 @@ let matchLayer = null
 let presenceLayer = null
 let ownLayer = null
 let circleLayer = null
+let centreLayer = null
+let snapping = false
 let canvasRenderer = null
 
 const ownPosition = ref(null)
+// 0 when the map's middle sits on the search centre — the crosshair fades out then,
+// and only the disc marks the spot; 1 when it is far enough that setting a new centre
+// there makes sense.
+const crosshairOpacity = ref(1)
+const crosshairStyle = computed(() => ({
+  opacity: crosshairOpacity.value,
+  pointerEvents: crosshairOpacity.value < 0.06 ? 'none' : 'auto',
+}))
 
 // The matches the map is showing right now. Drawing and counting both read this
 // one list, so the heading can never claim a person the map does not draw.
@@ -467,6 +485,7 @@ function moveSearchTo(next) {
   searchCenter.value = { lat: next.lat, lng: next.lng }
   writePref('center', searchCenter.value)
   drawCircle()
+  drawCentre()
   // Move the view to the new centre too. On the map the geosearch control pans
   // itself, but a search from the list has no map to move — without this the map
   // would still sit on the old place when you switch back to it.
@@ -759,6 +778,52 @@ function drawOwn() {
   }).addTo(map)
 }
 
+function drawCentre() {
+  if (centreLayer) {
+    centreLayer.remove()
+    centreLayer = null
+  }
+  if (!map || !searchCenter.value) return
+  // A quiet disc under the crown: it marks where the search is centred, so that when
+  // the crown wanders off — a search point away from home — the centre stays shown.
+  centreLayer = L.marker([searchCenter.value.lat, searchCenter.value.lng], {
+    icon: L.divIcon({
+      className: 'gk-marker',
+      html: '<div class="gk-centre"></div>',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+    }),
+    interactive: false,
+    zIndexOffset: 400,
+  }).addTo(map)
+}
+
+// The crosshair sets the centre; it says nothing about where the centre already is. So
+// when the map's middle sits on the search centre, the crosshair fades away — only the
+// disc is left — and it returns as the middle drifts off.
+function updateCentreCover() {
+  if (!map || !searchCenter.value) {
+    crosshairOpacity.value = 1
+    return
+  }
+  const here = map.latLngToContainerPoint([searchCenter.value.lat, searchCenter.value.lng])
+  const middle = map.getSize().divideBy(2)
+  const gap = here.distanceTo(middle)
+  crosshairOpacity.value = Math.max(0, Math.min(1, (gap - COVER_TOL) / (COVER_FADE - COVER_TOL)))
+}
+
+// Coming to rest just off the centre eases the last pixels onto it, so it lands exact
+// at any zoom. The flag keeps the snap's own moveend from snapping again.
+function snapToCentre() {
+  if (snapping || !map || !searchCenter.value) return
+  const here = map.latLngToContainerPoint([searchCenter.value.lat, searchCenter.value.lng])
+  const middle = map.getSize().divideBy(2)
+  if (here.distanceTo(middle) < SNAP_TOL) {
+    snapping = true
+    map.panTo([searchCenter.value.lat, searchCenter.value.lng], { animate: true, duration: 0.25 })
+  }
+}
+
 function saveView() {
   if (!map) return
   const centre = map.getCenter()
@@ -821,17 +886,30 @@ function initMap() {
     if (Number.isFinite(lat) && Number.isFinite(lng)) moveSearchTo({ lat, lng, label })
   })
 
-  // Remembering where you looked is what lets you leave and come back to it.
-  map.on('moveend', saveView)
+  // Remembering where you looked is what lets you leave and come back to it. And the
+  // crosshair answers the middle: it fades as the middle nears the centre, and a rest
+  // close by eases exactly onto it.
+  map.on('move', updateCentreCover)
+  map.on('moveend', () => {
+    saveView()
+    updateCentreCover()
+    if (snapping) {
+      snapping = false
+      return
+    }
+    snapToCentre()
+  })
 
   drawOwn()
   drawCircle()
   restoreView()
   redraw()
+  updateCentreCover()
 }
 
 function redraw() {
   drawCircle()
+  drawCentre()
   drawPresence()
   drawMatches()
 }
@@ -1051,6 +1129,7 @@ watch(mode, (value) => {
   line-height: 0;
   color: rgb(255 255 255 / 50%);
   transform: translate(-50%, -50%);
+  transition: opacity 0.28s ease;
 }
 
 .map-shell.look-hell .map-crosshair,
@@ -1170,6 +1249,21 @@ watch(mode, (value) => {
   border-radius: 50%;
   box-sizing: border-box;
   border: 1.8px solid rgb(12 12 12 / 95%);
+}
+
+.gk-centre {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 8%);
+  border: 1px solid rgb(255 255 255 / 30%);
+}
+
+.map-shell.look-hell .gk-centre,
+.map-shell.look-normal .gk-centre {
+  background: rgb(0 0 0 / 8%);
+  border-color: rgb(0 0 0 / 35%);
 }
 
 .gk-own {
