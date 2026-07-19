@@ -1,7 +1,6 @@
 <template>
   <div
     class="cluster-cover"
-    :class="`look-${look}`"
     role="dialog"
     aria-modal="true"
     :aria-label="$t('matching.cluster.title', { n: people.length })"
@@ -48,7 +47,6 @@ defineProps({
   // Each item is { match, stages, peak } — the map's own shape, already sorted by
   // fit by the parent. Distance is left out on purpose: on one point it says nothing.
   people: { type: Array, default: () => [] },
-  look: { type: String, default: 'dunkel' },
 })
 defineEmits(['open', 'close'])
 
@@ -79,24 +77,20 @@ function lineFor(item) {
 </script>
 
 <style scoped>
+/* Like the detail window and the full list, the cluster overlay follows the wallet
+   theme — the semantic tokens flip on .dark-mode at #app/body — never the map look,
+   so it is a light or dark panel regardless of how the map underneath is tinted. It
+   stays translucent so the map reads through; 82% keeps the text legible over any
+   look, including a dark panel over a light map. */
 .cluster-cover {
   position: absolute;
   inset: 0;
   z-index: 500;
   overflow-y: auto;
   padding: 16px 16px 24px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  color: var(--text);
   animation: cluster-rise 0.34s cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-
-.cluster-cover.look-dunkel {
-  background: rgb(16 23 37 / 75%);
-  color: #fff;
-}
-
-.cluster-cover.look-normal,
-.cluster-cover.look-hell {
-  background: rgb(247 245 240 / 82%);
-  color: #1a1d24;
 }
 
 .cluster-close {

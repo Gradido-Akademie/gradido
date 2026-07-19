@@ -46,7 +46,6 @@
         <MatchCluster
           v-if="clusterOpen"
           :people="activeCluster"
-          :look="look"
           @open="openProfile"
           @close="closeCluster"
         />
