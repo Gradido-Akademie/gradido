@@ -505,6 +505,7 @@ function runSearch() {
 
 function moveSearchTo(next) {
   inClusterZoom = false
+  closeCluster()
   searchCenter.value = { lat: next.lat, lng: next.lng }
   writePref('center', searchCenter.value)
   drawCircle()
@@ -898,11 +899,32 @@ function openClusterList(crowd) {
     (a, b) => topScore(b.match, visible) - topScore(a.match, visible),
   )
   clusterOpen.value = true
+  writePref(
+    'cluster',
+    activeCluster.value.map((item) => item.match.uuid),
+  )
 }
 
 function closeCluster() {
   clusterOpen.value = false
   activeCluster.value = []
+  writePref('cluster', null)
+}
+
+// Restore the cluster overlay after a rebuild, the way syncProfile restores the
+// window: its members were saved by uuid, so rebuild them from the fresh matches.
+// This keeps the list under a profile that also came back — the stack survives a
+// trip to the send form.
+function syncCluster() {
+  const savedUuids = readPref('cluster', null)
+  if (!savedUuids || !savedUuids.length) return
+  const restored = savedUuids
+    .map((uuid) => visibleMatches.value.find((item) => item.match.uuid === uuid))
+    .filter(Boolean)
+  if (restored.length) {
+    activeCluster.value = restored
+    clusterOpen.value = true
+  }
 }
 
 function saveView() {
@@ -1015,6 +1037,7 @@ onUnmounted(() => {
 
 watch([matches, presence], redraw, { deep: true })
 watch(matches, syncProfile)
+watch(matches, syncCluster)
 watch(breite, drawMatches)
 watch(breite, (value) => writePref('breite', value))
 watch(visible, redraw, { deep: true })
