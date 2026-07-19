@@ -607,12 +607,18 @@ function swatchStyle(channel) {
   return { background: LABEL_COLORS[channel] }
 }
 
-function glowHtml(colour, size, share) {
+// The glow is a wide, soft light, but its box would take a click across its whole
+// span — so a bright neighbour, stacked on top, could steal a tap meant for the
+// crowd beneath it (only on the dark map; the disc look's box is too small to
+// reach). The box is therefore made click-through (the pointer-events rule at the
+// end of the style block), and only this small centred core — the size of the disc
+// look's dot — takes the click. Both looks then share one hit footprint.
+function glowHtml(colour, size, share, hit) {
   const core = (share * 0.9).toFixed(2)
   const tint = `${colour[0]}, ${colour[1]}, ${colour[2]}`
   return `<div class="gk-glow" style="width:${size}px;height:${size}px;background:
     radial-gradient(circle closest-side, rgba(255,255,255,${core}) 0%, rgba(255,255,255,0) 20%),
-    radial-gradient(circle closest-side, rgba(${tint},1) 0%, rgba(${tint},.5) 32%, rgba(${tint},0) 68%)"></div>`
+    radial-gradient(circle closest-side, rgba(${tint},1) 0%, rgba(${tint},.5) 32%, rgba(${tint},0) 68%)"></div><div class="gk-hit" style="width:${hit}px;height:${hit}px"></div>`
 }
 
 function discHtml(colour, size) {
@@ -629,7 +635,7 @@ function drawMatches() {
     const colour = markerColor(stages, DEFAULTS)
     const size = glowing ? GLOW_SIZE[peak] : DISC_SIZE[peak]
     const html = glowing
-      ? glowHtml(colour, size, DEFAULTS.stageBright[peak - 1])
+      ? glowHtml(colour, size, DEFAULTS.stageBright[peak - 1], DISC_SIZE[peak])
       : discHtml(colour, size)
 
     // Clickable, unlike the grey rings: a coloured marker is a match, and we have
@@ -1355,20 +1361,30 @@ watch(mode, (value) => {
   border: 0;
 }
 
-.gk-clickable {
-  cursor: pointer;
-}
-
 .gk-glow {
   border-radius: 50%;
   filter: blur(3px);
   mix-blend-mode: screen;
 }
 
+/* The click core of a glowing marker: invisible, centred on the point, the size of
+   the disc look's dot. It is the only part of a wide glow that takes a tap. */
+.gk-hit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .gk-disc {
   border-radius: 50%;
   box-sizing: border-box;
   border: 1.8px solid rgb(12 12 12 / 95%);
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .gk-centre {
@@ -1417,5 +1433,14 @@ watch(mode, (value) => {
   text-shadow:
     0 0 3px #fff,
     0 0 3px #fff;
+}
+
+/* Leaflet gives an interactive marker icon pointer-events:auto at 0,2,0 specificity;
+   beating it needs 0,3,0. The coloured match markers hand their click to the core or
+   disc inside (both pointer-events:auto), so the icon box around them — much of it
+   invisible glow on the dark map — is click-through and cannot steal a tap. Kept at
+   the end of the block so specificity only ever ascends (no-descending-specificity). */
+.leaflet-interactive.gk-marker.gk-clickable {
+  pointer-events: none;
 }
 </style>
