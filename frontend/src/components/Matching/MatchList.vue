@@ -152,6 +152,9 @@ const props = defineProps({
   // Presence people, filtered and sorted by the parent. Names are a stub today.
   silent: { type: Array, default: () => [] },
   center: { type: Object, default: null },
+  // The place name of the search centre, resolved by the parent (typed name or a
+  // reverse lookup) and persisted there — so it survives a mode switch or a reload.
+  centerLabel: { type: String, default: '' },
   myPrecision: { type: String, default: 'genau' },
   sortMode: { type: String, default: 'naehe' },
 })
@@ -273,7 +276,6 @@ const searchInput = ref(null)
 const query = ref('')
 const results = ref([])
 const activeResult = ref(-1)
-const centerLabel = ref('')
 let searchTimer = null
 
 function onQuery() {
@@ -305,10 +307,9 @@ function moveResult(step) {
 function choose(index) {
   const result = results.value[index]
   if (!result) return
-  emit('recenter', { lat: result.y, lng: result.x })
-  // The place stays named in the confirmation line; the field clears, ready for
-  // the next search.
-  centerLabel.value = result.label
+  // Pass the chosen name up: the parent names the confirmation without a reverse
+  // lookup. The field clears, ready for the next search.
+  emit('recenter', { lat: result.y, lng: result.x, label: result.label })
   query.value = ''
   results.value = []
   activeResult.value = -1

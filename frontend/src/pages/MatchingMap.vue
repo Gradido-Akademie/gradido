@@ -32,6 +32,7 @@
           :matches="sortedMatches"
           :silent="sortedPresence"
           :center="searchCenter"
+          :center-label="centerLabel"
           :my-precision="MY_PRECISION"
           :sort-mode="sortMode"
           @open="openProfile"
@@ -75,10 +76,8 @@
         </button>
 
         <!-- Two axes, one control. Dark / normal / light is colour; list is a
-             different kind of thing — representation — so it sits past a divider,
-             its own element. The eye sees the rule between them; a screen reader
-             hears the looks as one group and the list on its own. -->
-        <!-- On the map: appearance (dark/normal/light) plus a way into the list.
+             different kind — representation — so it sits past a divider, its own
+             element (a screen reader hears the looks as one group, the list apart).
              In the list those looks mean nothing (it follows the wallet theme), so
              there the switch is only the way back — a single "Karte" on the right. -->
         <div class="look-switch">
@@ -248,7 +247,7 @@ const MASK = {
   hell: { fill: '#000000', opacity: 0.08, edge: 'rgb(0 0 0 / 35%)' },
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
 const store = useStore()
 const { toastError } = useAppToast()
@@ -262,6 +261,10 @@ const visible = reactive(readVisible())
 
 const radius = ref(readRadius())
 const searchCenter = ref(readCenter())
+// The place name of the current centre, for the list's confirmation line. Kept in
+// `pref` so it survives a mode switch, another page, and the logout — the label was
+// the only part that used to be lost; the centre itself was always saved.
+const centerLabel = ref(readPref('centerLabel', ''))
 const radiusModal = ref(false)
 const radiusDraft = ref(DEFAULT_RADIUS)
 
@@ -359,6 +362,7 @@ onResult(({ data }) => {
   if (!searchCenter.value) {
     searchCenter.value = { ...ownPosition.value }
     writePref('center', searchCenter.value)
+    if (!centerLabel.value) resolveCenterLabel({ ...ownPosition.value })
   }
   drawOwn()
   drawCircle()
@@ -460,14 +464,56 @@ function runSearch() {
 }
 
 function moveSearchTo(next) {
-  searchCenter.value = next
-  writePref('center', next)
+  searchCenter.value = { lat: next.lat, lng: next.lng }
+  writePref('center', searchCenter.value)
   drawCircle()
   // Move the view to the new centre too. On the map the geosearch control pans
   // itself, but a search from the list has no map to move — without this the map
   // would still sit on the old place when you switch back to it.
   zoomToCircle()
   runSearch()
+  resolveCenterLabel(next)
+}
+
+/**
+ * Name the centre for the list's confirmation line. A typed search already carries
+ * its name; a point set on the map (and the first home centre) is looked up in
+ * reverse. Privacy-safe: the search centre is a point you chose for yourself, never
+ * a member's blurred position — this only ever geocodes your own search point.
+ */
+function setCenterLabel(label) {
+  centerLabel.value = label || ''
+  writePref('centerLabel', centerLabel.value)
+}
+
+async function resolveCenterLabel(next) {
+  if (next.label) {
+    setCenterLabel(next.label)
+    return
+  }
+  setCenterLabel(await reverseGeocode(next.lat, next.lng))
+}
+
+/**
+ * Coordinates → a concise place name, finest available first: the street when there
+ * is one, the region when there is not (the tool returns whatever the point has).
+ * Nominatim — the same OSM service the address search already speaks to.
+ */
+async function reverseGeocode(lat, lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&lat=${lat}&lon=${lng}&accept-language=${locale.value}`
+    const res = await fetch(url, { headers: { Accept: 'application/json' } })
+    if (!res.ok) return ''
+    const data = await res.json()
+    const a = data?.address || {}
+    const fine =
+      a.road || a.pedestrian || a.neighbourhood || a.suburb || a.city_district || a.hamlet
+    const place = a.suburb || a.city || a.town || a.village || a.municipality || a.county || a.state
+    const parts = [...new Set([fine, place].filter(Boolean))]
+    return parts.slice(0, 2).join(', ') || data?.name || ''
+  } catch {
+    return ''
+  }
 }
 
 /** The crosshair: make the map's centre the search's centre, and look there. */
@@ -771,7 +817,8 @@ function initMap() {
   map.on('geosearch/showlocation', (result) => {
     const lat = result?.location?.y
     const lng = result?.location?.x
-    if (Number.isFinite(lat) && Number.isFinite(lng)) moveSearchTo({ lat, lng })
+    const label = result?.location?.label
+    if (Number.isFinite(lat) && Number.isFinite(lng)) moveSearchTo({ lat, lng, label })
   })
 
   // Remembering where you looked is what lets you leave and come back to it.
