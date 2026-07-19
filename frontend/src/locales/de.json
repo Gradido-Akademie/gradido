@@ -341,6 +341,10 @@
       "placeholder": "Erzähl, wer Du bist, was Dich bewegt, was Du teilst — das schafft Vertrauen, bevor jemand Dich anschreibt.",
       "saved": "Dein Profil wurde gespeichert"
     },
+    "cluster": {
+      "close": "Liste schließen",
+      "title": "{n} Menschen an diesem Ort"
+    },
     "entries": {
       "activate": "Aktivieren",
       "count": "{total} Einträge · {live} live · {paused} pausiert",

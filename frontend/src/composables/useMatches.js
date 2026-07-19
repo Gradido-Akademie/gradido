@@ -283,6 +283,81 @@ const STUB_PEOPLE = [
       gesuch: [m('einen Schlosser', 'für eine alte Haustür', 0.4239)],
     },
   },
+  // --- Zuschnitt 2: two clusters for the pixel-overlap cascade ---------------
+  // A house-share on one address (Juri's building): identical coordinates, so no
+  // zoom ever separates them — the case that must fall through to the list.
+  {
+    name: 'Juri',
+    dLat: 0.024,
+    dLng: 0.02,
+    community: 'kuenzelsau',
+    aboutMe: 'Ich trage Gradido in unsere Wohnanlage.',
+    channels: {
+      angebot: [m('Werkzeug zum Ausleihen', 'Bohrmaschine, Leiter, Akkuschrauber', 0.4056)],
+    },
+  },
+  {
+    name: 'Mara',
+    dLat: 0.024,
+    dLng: 0.02,
+    community: 'kuenzelsau',
+    aboutMe: null,
+    channels: {
+      gesuch: [m('jemanden fürs Fahrrad', 'die Kette springt immer wieder ab', 0.4239)],
+    },
+  },
+  {
+    name: 'Piet',
+    dLat: 0.024,
+    dLng: 0.02,
+    community: 'kuenzelsau',
+    aboutMe: null,
+    channels: {
+      angebot: [m('Klavierunterricht', 'für die Kinder aus dem Haus', 0.4949)],
+    },
+  },
+  {
+    name: 'Silke',
+    dLat: 0.024,
+    dLng: 0.02,
+    community: 'kuenzelsau',
+    aboutMe: 'Ich koche gern für viele.',
+    channels: {
+      interesse: [m('Gemeinschaftsgarten', 'im Innenhof der Anlage', 0.5724)],
+    },
+  },
+  // A cluster the blur has spread just enough — near but distinct, so a zoom step
+  // or two separates them into single, clickable pins.
+  {
+    name: 'Rosa',
+    dLat: -0.028,
+    dLng: 0.052,
+    community: 'hamburg',
+    aboutMe: null,
+    channels: {
+      angebot: [m('Lastenrad-Service', null, 0.5617)],
+    },
+  },
+  {
+    name: 'Bruno',
+    dLat: -0.0262,
+    dLng: 0.0538,
+    community: 'hamburg',
+    aboutMe: null,
+    channels: {
+      interesse: [m('Klaviermusik', null, 0.6688)],
+    },
+  },
+  {
+    name: 'Elif',
+    dLat: -0.0299,
+    dLng: 0.0508,
+    community: 'hamburg',
+    aboutMe: null,
+    channels: {
+      gesuch: [m('einen Schlosser für die Werkstatt', null, 0.4239)],
+    },
+  },
 ]
 
 const CHANNELS = ['interesse', 'angebot', 'gesuch']

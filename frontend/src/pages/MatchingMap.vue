@@ -40,6 +40,17 @@
           @recenter="moveSearchTo"
         />
 
+        <!-- The people of one spot no zoom could open — a slim, half-see-through
+             overlay over the map, wiped away with its close cross. A row opens the
+             profile, stacked above it. -->
+        <MatchCluster
+          v-if="clusterOpen"
+          :people="activeCluster"
+          :look="look"
+          @open="openProfile"
+          @close="closeCluster"
+        />
+
         <!-- With the head and the wallet's own bars gone on a phone, this is the
              only way out — so it sits on the map, where the eye already is. It
              stays in list mode too (a phone has no other way back), pinned over
@@ -209,6 +220,7 @@ import {
 } from '@/components/Matching/displayCore'
 import MatchProfile from '@/components/Matching/MatchProfile.vue'
 import MatchList from '@/components/Matching/MatchList.vue'
+import MatchCluster from '@/components/Matching/MatchCluster.vue'
 
 const LOOKS = ['dunkel', 'normal', 'hell']
 const FILTERS = ['interesse', 'angebot', 'gesuch']
@@ -254,6 +266,9 @@ const MASK = {
 const COVER_TOL = 14
 const COVER_FADE = 72
 const SNAP_TOL = 24
+// Matches whose screen points fall within CLUSTER_PX of the clicked one share the
+// spot — the click resolves the crowd instead of blindly opening the top marker.
+const CLUSTER_PX = 26
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -283,6 +298,13 @@ const { matches, presence, load } = useMatches()
 // back to the map AND to whoever you were looking at.
 const profileOpen = ref(false)
 const activeMatch = ref(null)
+const clusterOpen = ref(false)
+const activeCluster = ref([])
+// True while zoomed into a cluster: the map is centred on the crowd, not on the
+// search centre, so the crosshair stays hidden — a tap must not move the search
+// there. clusterZoomBase is the zoom we came from; dropping back to it ends it.
+let inClusterZoom = false
+let clusterZoomBase = 0
 
 let map = null
 let matchLayer = null
@@ -482,6 +504,7 @@ function runSearch() {
 }
 
 function moveSearchTo(next) {
+  inClusterZoom = false
   searchCenter.value = { lat: next.lat, lng: next.lng }
   writePref('center', searchCenter.value)
   drawCircle()
@@ -621,7 +644,7 @@ function drawMatches() {
       interactive: true,
       keyboard: false,
     })
-      .on('click', () => openProfile(match))
+      .on('click', () => handleMatchClick(match))
       .addTo(matchLayer)
   }
 }
@@ -806,6 +829,12 @@ function updateCentreCover() {
     crosshairOpacity.value = 1
     return
   }
+  // Zoomed into a cluster the middle sits on the crowd, not the search centre —
+  // hide the crosshair so a tap cannot set the search there.
+  if (inClusterZoom) {
+    crosshairOpacity.value = 0
+    return
+  }
   const here = map.latLngToContainerPoint([searchCenter.value.lat, searchCenter.value.lng])
   const middle = map.getSize().divideBy(2)
   const gap = here.distanceTo(middle)
@@ -822,6 +851,58 @@ function snapToCentre() {
     snapping = true
     map.panTo([searchCenter.value.lat, searchCenter.value.lng], { animate: true, duration: 0.25 })
   }
+}
+
+// A click on a coloured marker asks first: how many matches share this spot? One
+// opens straight to a profile; a crowd zooms in to spread them — or, when no zoom
+// can (identical coordinates), falls through to the cluster list.
+function handleMatchClick(match) {
+  if (!map) return
+  const here = map.latLngToContainerPoint([match.position.lat, match.position.lng])
+  const crowd = visibleMatches.value.filter(({ match: other }) => {
+    const point = map.latLngToContainerPoint([other.position.lat, other.position.lng])
+    return here.distanceTo(point) <= CLUSTER_PX
+  })
+  if (crowd.length <= 1) {
+    openProfile(match)
+    return
+  }
+  if (canSeparate(crowd)) zoomToCluster(crowd)
+  else openClusterList(crowd)
+}
+
+// A zoom separates them only if they sit on different coordinates and there is zoom
+// left to give; identical points (a shared address) never separate.
+function canSeparate(crowd) {
+  if (map.getZoom() >= map.getMaxZoom()) return false
+  const first = crowd[0].match.position
+  return crowd.some(
+    ({ match: other }) => other.position.lat !== first.lat || other.position.lng !== first.lng,
+  )
+}
+
+// Centre on the crowd and step in, no prompt — a harmless, reversible look; the
+// search stays put and the crosshair hides while we are in here.
+function zoomToCluster(crowd) {
+  const lat = crowd.reduce((sum, { match: other }) => sum + other.position.lat, 0) / crowd.length
+  const lng = crowd.reduce((sum, { match: other }) => sum + other.position.lng, 0) / crowd.length
+  inClusterZoom = true
+  clusterZoomBase = map.getZoom()
+  map.setView([lat, lng], Math.min(clusterZoomBase + 2, map.getMaxZoom()), { animate: true })
+}
+
+// The list of a spot no zoom can open: the crowd, sorted by fit (distance says
+// nothing when everyone is on one point).
+function openClusterList(crowd) {
+  activeCluster.value = [...crowd].sort(
+    (a, b) => topScore(b.match, visible) - topScore(a.match, visible),
+  )
+  clusterOpen.value = true
+}
+
+function closeCluster() {
+  clusterOpen.value = false
+  activeCluster.value = []
 }
 
 function saveView() {
@@ -892,12 +973,14 @@ function initMap() {
   map.on('move', updateCentreCover)
   map.on('moveend', () => {
     saveView()
+    // Zooming back out to where the cluster dive began ends the dive.
+    if (inClusterZoom && map.getZoom() <= clusterZoomBase) inClusterZoom = false
     updateCentreCover()
     if (snapping) {
       snapping = false
       return
     }
-    snapToCentre()
+    if (!inClusterZoom) snapToCentre()
   })
 
   drawOwn()

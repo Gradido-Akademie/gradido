@@ -341,6 +341,10 @@
       "placeholder": "Tell others who you are, what moves you, what you share — it builds trust before someone writes to you.",
       "saved": "Your profile has been saved"
     },
+    "cluster": {
+      "close": "Close list",
+      "title": "{n} people at this spot"
+    },
     "entries": {
       "activate": "Activate",
       "count": "{total} entries · {live} live · {paused} paused",
