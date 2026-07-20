@@ -47,6 +47,11 @@ const routes = [
     component: () => import('@/pages/CreaSettings.vue'),
   },
   {
+    path: '/group-tags',
+    name: 'group-tags',
+    component: () => import('@/pages/GroupTags.vue'),
+  },
+  {
     path: '/:catchAll(.*)',
     name: 'NotFound',
     component: () => import('@/components/NotFoundPage.vue'),

@@ -239,6 +239,25 @@
     "all": "(alle Gruppen)",
     "label": "Gruppe:"
   },
+  "groupTagsAdmin": {
+    "add": "Anlegen",
+    "addTitle": "Neue Gruppe anlegen",
+    "adminOnly": "Nur für Administratoren.",
+    "cancel": "Abbrechen",
+    "created": "Gruppe angelegt.",
+    "edit": "Bearbeiten",
+    "empty": "Noch keine Gruppen angelegt.",
+    "existingTitle": "Bestehende Gruppen",
+    "intro": "Lege neue Gruppen an oder benenne bestehende um. Wer zu einer Gruppe gehört oder sie moderiert, wird im Tab „Nutzer-Rolle“ zugeordnet.",
+    "name": "Name",
+    "namePlaceholder": "z. B. Freiwillige Feuerwehr Musterstadt",
+    "save": "Speichern",
+    "tag": "Kürzel",
+    "tagHint": "Kurzes Kürzel, klein und ohne Leerzeichen. Es dient der Verknüpfung; angezeigt wird überall der Name.",
+    "tagPlaceholder": "z. B. feuerwehr",
+    "title": "Gruppen verwalten",
+    "updated": "Gruppe aktualisiert."
+  },
   "help": {
     "help": "Hilfe",
     "transactionlist": {
@@ -281,6 +300,7 @@
   "name": "Name",
   "navbar": {
     "automaticContributions": "Automatische Beiträge",
+    "groupTags": "Gruppen",
     "instances": "Instanzen",
     "logout": "Abmelden",
     "my-account": "Mein Konto",

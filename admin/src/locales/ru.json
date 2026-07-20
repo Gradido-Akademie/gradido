@@ -239,6 +239,25 @@
     "all": "(all groups)",
     "label": "Group:"
   },
+  "groupTagsAdmin": {
+    "add": "Create",
+    "addTitle": "Create a new group",
+    "adminOnly": "Administrators only.",
+    "cancel": "Cancel",
+    "created": "Group created.",
+    "edit": "Edit",
+    "empty": "No groups created yet.",
+    "existingTitle": "Existing groups",
+    "intro": "Create new groups or rename existing ones. Who belongs to a group or moderates it is assigned on the \"User role\" tab.",
+    "name": "Name",
+    "namePlaceholder": "e.g. Volunteer Fire Brigade Springfield",
+    "save": "Save",
+    "tag": "Tag",
+    "tagHint": "A short tag, lower-case and without spaces. It is used for linking; the name is shown everywhere.",
+    "tagPlaceholder": "e.g. firefighter",
+    "title": "Manage groups",
+    "updated": "Group updated."
+  },
   "help": {
     "help": "Помощь",
     "transactionlist": {
@@ -281,6 +300,7 @@
   "name": "Имя",
   "navbar": {
     "automaticContributions": "Автоматические вклады",
+    "groupTags": "Groups",
     "instances": "Экземпляры",
     "logout": "Выйти",
     "my-account": "Мой аккаунт",
