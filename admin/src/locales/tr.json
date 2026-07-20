@@ -235,6 +235,10 @@
     "humhubProfile": "Humhub profiline git",
     "userSearch": "Kullanıcı aramasına git"
   },
+  "groupTagFilter": {
+    "all": "(all groups)",
+    "label": "Group:"
+  },
   "help": {
     "help": "Yardım",
     "transactionlist": {

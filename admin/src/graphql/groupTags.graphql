@@ -1,0 +1,7 @@
+query groupTags {
+  groupTags {
+    id
+    tag
+    name
+  }
+}

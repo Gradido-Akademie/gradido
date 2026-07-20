@@ -6,6 +6,16 @@
       <input v-model="noHashtag" type="checkbox" class="noHashtag" />
       <span v-b-tooltip="$t('no_hashtag_tooltip')" class="ms-2">{{ $t('no_hashtag') }}</span>
     </p>
+    <p class="mb-2 d-flex align-items-center">
+      <span class="me-2">{{ $t('groupTagFilter.label') }}</span>
+      <BFormSelect
+        v-model="groupTag"
+        :options="groupTagFilterOptions"
+        class="group-tag-filter"
+        style="max-width: 24rem"
+        data-test="group-tag-filter"
+      />
+    </p>
     <p v-if="showResubmissionCheckbox" class="mb-4">
       <input v-model="hideResubmissionModel" type="checkbox" class="hideResubmission" />
       <span v-b-tooltip="$t('hide_resubmission_tooltip')" class="ms-2">
@@ -118,6 +128,7 @@ import UserQuery from '../components/UserQuery'
 import AiChat from '../components/AiChat'
 import CreaEvaluationModal from '../components/CreaEvaluationModal'
 import { adminListContributions } from '../graphql/adminListContributions.graphql'
+import { groupTags } from '../graphql/groupTags.graphql'
 import { adminDeleteContribution } from '../graphql/adminDeleteContribution'
 import { confirmContribution } from '../graphql/confirmContribution'
 import { denyContribution } from '../graphql/denyContribution'
@@ -150,6 +161,8 @@ const pageSize = ref(25)
 const query = ref('')
 const noHashtag = ref(null)
 const hideResubmissionModel = ref(true)
+// Group functions ("Weg A"): filter the contribution list by a single group tag.
+const groupTag = ref('')
 
 const { formatDateOrDash } = useDateFormatter()
 
@@ -305,6 +318,18 @@ watch(tabIndex, () => {
   items.value = []
 })
 
+// Group functions ("Weg A"): canonical tag options for the filter dropdown.
+const { result: groupTagsResult } = useQuery(groupTags)
+const groupTagFilterOptions = computed(() => [
+  { value: '', text: t('groupTagFilter.all') },
+  ...(groupTagsResult.value?.groupTags ?? []).map((groupTagItem) => ({
+    value: groupTagItem.tag,
+    text: groupTagItem.name
+      ? `${groupTagItem.name} (#${groupTagItem.tag})`
+      : `#${groupTagItem.tag}`,
+  })),
+])
+
 const { onResult, onError, result, refetch } = useQuery(
   adminListContributions,
   {
@@ -313,6 +338,7 @@ const { onResult, onError, result, refetch } = useQuery(
       query: query.value,
       noHashtag: noHashtag.value,
       hideResubmission: hideResubmission.value,
+      groupTag: groupTag.value,
     },
     paginated: {
       currentPage: currentPage.value,
@@ -325,13 +351,14 @@ const { onResult, onError, result, refetch } = useQuery(
   },
 )
 
-watch([statusFilter, query, noHashtag, hideResubmission, currentPage], () => {
+watch([statusFilter, query, noHashtag, hideResubmission, groupTag, currentPage], () => {
   refetch({
     filter: {
       statusFilter: statusFilter.value,
       query: query.value,
       noHashtag: noHashtag.value,
       hideResubmission: hideResubmission.value,
+      groupTag: groupTag.value,
     },
     paginated: {
       currentPage: currentPage.value,

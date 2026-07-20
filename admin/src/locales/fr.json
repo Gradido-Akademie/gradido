@@ -235,6 +235,10 @@
     "humhubProfile": "Aller au profil Humhub",
     "userSearch": "Aller à la recherche d'utilisateurs"
   },
+  "groupTagFilter": {
+    "all": "(all groups)",
+    "label": "Group:"
+  },
   "help": {
     "help": "Aide",
     "transactionlist": {
