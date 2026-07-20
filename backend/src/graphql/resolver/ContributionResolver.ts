@@ -6,6 +6,7 @@ import { SearchContributionsFilterArgs } from '@arg/SearchContributionsFilterArg
 import { ContributionMessageType } from '@enum/ContributionMessageType'
 import { ContributionStatus } from '@enum/ContributionStatus'
 import { ContributionType } from '@enum/ContributionType'
+import { RoleNames } from '@enum/RoleNames'
 import { AdminUpdateContribution } from '@model/AdminUpdateContribution'
 import { Contribution, ContributionListResult } from '@model/Contribution'
 import { OpenCreation } from '@model/OpenCreation'
@@ -56,7 +57,7 @@ import {
 } from './util/contributions'
 import { getOpenCreations, getUserCreation, validateContribution } from './util/creations'
 import { extractGraphQLFields } from './util/extractGraphQLFields'
-import { findContributions } from './util/findContributions'
+import { findContributions, parseModeratorScope } from './util/findContributions'
 
 const db = AppDatabase.getInstance()
 const createLogger = () =>
@@ -345,6 +346,7 @@ export class ContributionResolver {
     filter: SearchContributionsFilterArgs,
     @Arg('paginated', () => Paginated, { defaultValue: new Paginated() }) paginated: Paginated,
     @Info() info: GraphQLResolveInfo,
+    @Ctx() context: Context,
   ): Promise<ContributionListResult> {
     // Check if only count was requested (without contributionList)
     const fields = Object.keys(extractGraphQLFields(info))
@@ -357,6 +359,13 @@ export class ContributionResolver {
     const emailContactRequested = fields.includes('user.emailContact') || filter.query !== undefined
     // check if related messages were requested
     const messagesRequested = ['messagesCount', 'messages'].some((field) => fields.includes(field))
+    // Group functions: a group moderator only sees the contributions of their tags.
+    // Admins (and other roles) are unrestricted -> scope null.
+    const activeRole = context.user?.userRoles?.[0]
+    const moderatorScope =
+      activeRole?.role === RoleNames.MODERATOR
+        ? parseModeratorScope(activeRole.visibleGroupTags)
+        : null
     const [dbContributions, count] = await findContributions(
       paginated,
       filter,
@@ -370,6 +379,7 @@ export class ContributionResolver {
         messages: messagesRequested,
       },
       countOnly,
+      moderatorScope,
     )
     const result = new ContributionListResult(count, dbContributions)
 
