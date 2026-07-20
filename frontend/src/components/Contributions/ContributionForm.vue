@@ -26,6 +26,19 @@
         {{ noOpenCreation }}
       </div>
       <div v-else>
+        <BFormGroup
+          v-if="!form.id"
+          id="contribution-group-tag-group"
+          class="mb-4"
+          :label="$t('contribution.groupTag.label')"
+          :description="$t('contribution.groupTag.help')"
+        >
+          <BFormSelect
+            v-model="selectedGroupTag"
+            :options="groupTagSelectOptions"
+            data-test="contribution-group-tag"
+          />
+        </BFormGroup>
         <ValidatedInput
           id="contribution-memo"
           :model-value="form.memo"
@@ -88,14 +101,19 @@
   </div>
 </template>
 <script setup>
-import { reactive, computed, ref, onMounted, onUnmounted, toRaw } from 'vue'
+import { reactive, computed, ref, watch, onMounted, onUnmounted, toRaw } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useQuery } from '@vue/apollo-composable'
 import ValidatedInput from '@/components/Inputs/ValidatedInput'
 import LabeledInput from '@/components/Inputs/LabeledInput'
 import OpenCreationsAmount from './OpenCreationsAmount.vue'
 import { object, date as dateSchema, number, string } from 'yup'
 import { GDD_PER_HOUR } from '../../constants'
 import { useMinimalContributionDate } from '@/composables/useMinimalContributionDate'
+import {
+  groupTags as groupTagsQuery,
+  myGroupTags as myGroupTagsQuery,
+} from '@/graphql/contributions.graphql'
 
 const amountToHours = (amount) => parseFloat(amount / GDD_PER_HOUR).toFixed(2)
 const hoursToAmount = (hours) => parseFloat(hours * GDD_PER_HOUR).toFixed(2)
@@ -123,6 +141,32 @@ const entityDataToForm = computed(() => ({
 }))
 
 const form = reactive({ ...entityDataToForm.value })
+
+// Group functions ("Weg A"): the group-tag field (create only). Options come from the
+// canonical list; the user's main tag (first entry of their personal list) is pre-filled
+// once it loads, unless something is already chosen. Optional / non-blocking.
+const { result: groupTagsResult } = useQuery(groupTagsQuery)
+const { result: myGroupTagsResult } = useQuery(myGroupTagsQuery)
+
+const selectedGroupTag = ref(form.groupTags?.[0] ?? '')
+
+const groupTagSelectOptions = computed(() => [
+  { value: '', text: t('contribution.groupTag.none') },
+  ...(groupTagsResult.value?.groupTags ?? []).map((groupTag) => ({
+    value: groupTag.tag,
+    text: groupTag.name ? `${groupTag.name} (#${groupTag.tag})` : `#${groupTag.tag}`,
+  })),
+])
+
+watch(
+  () => myGroupTagsResult.value?.myGroupTags?.[0]?.tag ?? '',
+  (mainTag) => {
+    if (!form.id && mainTag && !selectedGroupTag.value) {
+      selectedGroupTag.value = mainTag
+    }
+  },
+  { immediate: true },
+)
 
 const now = ref(new Date()) // checked every minute, updated if day, month or year changed
 const disableSmartValidState = ref(false)
@@ -246,6 +290,7 @@ const updateField = (newValue, name) => {
 
 function submit() {
   submitted.value = true
+  form.groupTags = selectedGroupTag.value ? [selectedGroupTag.value] : []
   emit('upsert-contribution', toRaw(form))
 }
 </script>

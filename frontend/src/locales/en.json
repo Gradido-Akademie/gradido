@@ -91,6 +91,11 @@
       "openAmountForMonth": "For  <b>{monthAndYear}</b>, you can still submit <b>{creation}</b> GDD.",
       "yourContribution": "Your Contributions to the Common Good"
     },
+    "groupTag": {
+      "help": "Optional. It works without a group, too.",
+      "label": "Group",
+      "none": "(no group)"
+    },
     "isEdited": "edited the contribution",
     "lastContribution": "Last Contributions",
     "noContributions": {
