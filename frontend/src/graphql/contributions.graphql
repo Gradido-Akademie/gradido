@@ -84,9 +84,26 @@ query openCreationsAmounts {
   }
 }
 
+# Group functions ("Weg A"): canonical tag list (autocomplete) + the user's own list (main tag)
+query groupTags {
+  groupTags {
+    id
+    tag
+    name
+  }
+}
+
+query myGroupTags {
+  myGroupTags {
+    id
+    tag
+    name
+  }
+}
+
 # return unconfirmedContributionFields
-mutation createContribution ($amount: GradidoUnit!, $memo: String!, $contributionDate: String!) {
-  createContribution(amount: $amount, memo: $memo, contributionDate: $contributionDate)  {
+mutation createContribution ($amount: GradidoUnit!, $memo: String!, $contributionDate: String!, $groupTags: [String!]) {
+  createContribution(amount: $amount, memo: $memo, contributionDate: $contributionDate, groupTags: $groupTags)  {
     id
   }
 }

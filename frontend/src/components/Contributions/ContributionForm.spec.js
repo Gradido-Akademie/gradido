@@ -22,8 +22,12 @@ vi.mock('vee-validate', () => ({
   })),
 }))
 
+vi.mock('@vue/apollo-composable', () => ({
+  useQuery: vi.fn(() => ({ result: { value: undefined } })),
+}))
+
 const global = {
-  stubs: ['BForm', 'BFormInput', 'BRow', 'BCol', 'BButton'],
+  stubs: ['BForm', 'BFormInput', 'BFormGroup', 'BFormSelect', 'BRow', 'BCol', 'BButton'],
 }
 
 describe('ContributionForm', () => {
