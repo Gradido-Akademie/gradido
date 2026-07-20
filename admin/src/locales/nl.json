@@ -239,6 +239,25 @@
     "all": "(all groups)",
     "label": "Group:"
   },
+  "groupTagsAdmin": {
+    "title": "Manage groups",
+    "intro": "Create new groups or rename existing ones. Who belongs to a group or moderates it is assigned on the \"User role\" tab.",
+    "addTitle": "Create a new group",
+    "name": "Name",
+    "namePlaceholder": "e.g. Volunteer Fire Brigade Springfield",
+    "tag": "Tag",
+    "tagPlaceholder": "e.g. firefighter",
+    "tagHint": "A short tag, lower-case and without spaces. It is used for linking; the name is shown everywhere.",
+    "add": "Create",
+    "existingTitle": "Existing groups",
+    "empty": "No groups created yet.",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "created": "Group created.",
+    "updated": "Group updated.",
+    "adminOnly": "Administrators only."
+  },
   "help": {
     "help": "Help",
     "transactionlist": {
@@ -281,6 +300,7 @@
   "name": "Naam",
   "navbar": {
     "automaticContributions": "Automatische bijdragen",
+    "groupTags": "Groups",
     "instances": "Instanties",
     "logout": "Afmelden",
     "my-account": "Mijn account",

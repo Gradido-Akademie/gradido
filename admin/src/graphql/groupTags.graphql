@@ -29,3 +29,19 @@ mutation setUserGroupTags($userId: Int!, $tags: [String!]!) {
 mutation setModeratorGroupScope($userId: Int!, $scope: [String!]!) {
   setModeratorGroupScope(userId: $userId, scope: $scope)
 }
+
+mutation createGroupTag($tag: String!, $name: String) {
+  createGroupTag(tag: $tag, name: $name) {
+    id
+    tag
+    name
+  }
+}
+
+mutation updateGroupTag($id: Int!, $tag: String, $name: String) {
+  updateGroupTag(id: $id, tag: $tag, name: $name) {
+    id
+    tag
+    name
+  }
+}
