@@ -1,9 +1,14 @@
 <template>
   <div class="match-list">
+    <!-- The roof heading, screen-reader-only: it gives the section headings below a
+         parent, so heading navigation reads h2 → h3 → h3 without a visible title. -->
+    <h2 class="sr-only">{{ $t('matching.list.heading') }}</h2>
+
     <!-- Controls first in reading order: the tally, how it is sorted, and where it
          is centred. On the map these sit around a canvas the eye scans at will; a
          screen reader has no such freedom, so what you reach for comes first. -->
     <div class="list-controls">
+      <h3 class="sr-only">{{ $t('matching.list.controlsHeading') }}</h3>
       <!-- Address search first: it is the way in (and a blind member's only way to
            set the centre — a map click is not open to them). Same order on desktop
            for consistency. -->
@@ -353,6 +358,20 @@ function closeResults() {
      flips (.dark-mode on #app/body), the same ones the detail window rides. */
   background: var(--surface);
   color: var(--text);
+}
+
+/* Present for a screen reader, absent from the page — the roof and search headings
+   ride here so heading navigation has structure without a visible change. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* On a phone the round back button (top-left) and the Karte switch (top-right) are

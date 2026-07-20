@@ -389,6 +389,7 @@
     },
     "list": {
       "centeredOn": "Centred on {place}",
+      "controlsHeading": "Search and sort",
       "dir": {
         "e": "east",
         "n": "north",
@@ -400,6 +401,7 @@
         "w": "west"
       },
       "empty": "No one here right now. Widen the radius or search another place.",
+      "heading": "People near you",
       "kmEtwa": "about {n} km",
       "kmExact": "{n} km",
       "lensBy": "Distance from",

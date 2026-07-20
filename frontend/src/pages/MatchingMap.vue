@@ -21,7 +21,11 @@
         class="map-shell gradido-border-radius app-box-shadow"
         :class="[`look-${look}`, { 'is-list': mode === 'liste', 'is-cluster': clusterOpen }]"
       >
-        <div ref="mapContainer" class="map-canvas" />
+        <!-- In list mode the map is only decoration behind the list, but it stays in
+             the DOM (so Leaflet keeps its size). inert drops the whole map — its
+             focusable container, its controls, its markers — out of the screen reader
+             and the keyboard, so a blind member meets the list, not the map's leftovers. -->
+        <div ref="mapContainer" class="map-canvas" :inert="mode === 'liste'" />
 
         <!-- The same search, read as a line instead of lit as a field. It covers
              the map rather than unmounting it, so Leaflet keeps its size and the

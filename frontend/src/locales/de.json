@@ -389,6 +389,7 @@
     },
     "list": {
       "centeredOn": "Umkreis um {place}",
+      "controlsHeading": "Suche und Sortierung",
       "dir": {
         "e": "östlich",
         "n": "nördlich",
@@ -400,6 +401,7 @@
         "w": "westlich"
       },
       "empty": "Hier ist gerade niemand. Vergrößere den Radius oder such einen anderen Ort.",
+      "heading": "Menschen in Deiner Nähe",
       "kmEtwa": "etwa {n} km",
       "kmExact": "{n} km",
       "lensBy": "Entfernung von",
