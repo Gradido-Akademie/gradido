@@ -827,9 +827,16 @@ function zoomToCircle({ fly = false } = {}) {
   if (!map || !searchCenter.value) return
   const centre = L.latLng(searchCenter.value.lat, searchCenter.value.lng)
   const bounds = centre.toBounds(radius.value * 2000)
-  // The way home flies in a smooth arc; every other reframe is an instant fit.
-  if (fly) map.flyToBounds(bounds)
-  else map.fitBounds(bounds)
+  if (!fly) {
+    map.fitBounds(bounds)
+    return
+  }
+  // The way home flies in a smooth arc; every other reframe is an instant fit. Over a
+  // long distance Leaflet's own timing turns theatrical, so cap it there — coming home
+  // stays brisk however far you had wandered, while a short hop keeps its easy pace.
+  const from = map.getCenter()
+  const km = distanceKm({ lat: from.lat, lng: from.lng }, { lat: centre.lat, lng: centre.lng })
+  map.flyToBounds(bounds, km > 300 ? { duration: 1.5 } : {})
 }
 
 // Home again: put the search itself back on your own place — the same as clicking
