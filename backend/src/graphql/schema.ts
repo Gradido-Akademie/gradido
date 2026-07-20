@@ -19,6 +19,7 @@ import { ProjectBrandingResolver } from './resolver/ProjectBrandingResolver'
 import { StatisticsResolver } from './resolver/StatisticsResolver'
 import { TransactionLinkResolver } from './resolver/TransactionLinkResolver'
 import { TransactionResolver } from './resolver/TransactionResolver'
+import { UserGroupTagResolver } from './resolver/UserGroupTagResolver'
 import { UserResolver } from './resolver/UserResolver'
 import { VersionResolver } from './resolver/VersionResolver'
 import { DurationScalar } from './scalar/Duration'
@@ -42,6 +43,7 @@ export const schema = async (): Promise<GraphQLSchema> => {
       StatisticsResolver,
       TransactionLinkResolver,
       TransactionResolver,
+      UserGroupTagResolver,
       UserResolver,
       VersionResolver,
     ],
