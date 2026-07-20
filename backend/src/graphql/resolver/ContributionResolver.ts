@@ -50,6 +50,7 @@ import {
 import { UpdateUnconfirmedContributionContext } from '@/interactions/updateUnconfirmedContribution/UpdateUnconfirmedContribution.context'
 import { Context, getClientTimezoneOffset, getUser } from '@/server/context'
 import { LogError } from '@/server/LogError'
+import { setContributionGroupTags } from './util/contributionGroupTags'
 import {
   contributionFrontendLink,
   loadAllContributions,
@@ -78,7 +79,7 @@ export class ContributionResolver {
   @Authorized([RIGHTS.CREATE_CONTRIBUTION])
   @Mutation(() => UnconfirmedContribution)
   async createContribution(
-    @Args() { amount, memo, contributionDate }: ContributionArgs,
+    @Args() { amount, memo, contributionDate, groupTags }: ContributionArgs,
     @Ctx() context: Context,
   ): Promise<UnconfirmedContribution> {
     const clientTimezoneOffset = getClientTimezoneOffset(context)
@@ -102,9 +103,26 @@ export class ContributionResolver {
 
     logger.trace('contribution to save', contribution)
     await DbContribution.save(contribution)
+    await setContributionGroupTags(contribution.id, groupTags ?? [])
     await EVENT_CONTRIBUTION_CREATE(user, contribution, amount)
 
     return new UnconfirmedContribution(contribution)
+  }
+
+  // Group functions ("Weg A"): a moderator (re)assigns the structured group tags of an
+  // existing contribution (contribution-level healing; user-list healing lives elsewhere).
+  @Authorized([RIGHTS.ADMIN_UPDATE_CONTRIBUTION])
+  @Mutation(() => Boolean)
+  async assignContributionGroupTags(
+    @Arg('contributionId', () => Int) contributionId: number,
+    @Arg('tags', () => [String]) tags: string[],
+  ): Promise<boolean> {
+    const contribution = await DbContribution.findOne({ where: { id: contributionId } })
+    if (!contribution) {
+      throw new LogError('Contribution not found', contributionId)
+    }
+    await setContributionGroupTags(contribution.id, tags)
+    return true
   }
 
   @Authorized([RIGHTS.DELETE_CONTRIBUTION])
