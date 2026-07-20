@@ -366,20 +366,6 @@ function closeResults() {
   .list-controls {
     padding-right: 0;
   }
-
-  /* On a phone search and sort wrap to their own rows; order the confirmation
-     between them so it reads directly under the search, not under the sort. */
-  .list-search {
-    order: 1;
-  }
-
-  .center-label {
-    order: 2;
-  }
-
-  .list-sort {
-    order: 3;
-  }
 }
 
 .list-controls {
@@ -391,8 +377,20 @@ function closeResults() {
   margin-bottom: 16px;
 }
 
+/* One order on every width — search, the confirmation, then the sort and the lens —
+   so a wide screen reads the same as a phone: the confirmation sits under the search,
+   never under the sort. */
+.list-search {
+  order: 1;
+}
+
+.list-sort {
+  order: 3;
+}
+
 .center-label {
   flex: 0 0 100%;
+  order: 2;
   margin: 0;
   font-size: 13px;
   color: var(--text-secondary);
