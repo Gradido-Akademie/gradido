@@ -392,7 +392,20 @@
   },
   "unregistered_emails": "Apenas utilizadores não registados",
   "userRole": {
+    "groupTags": {
+      "help": "Pre-filled on submission.",
+      "label": "User's main tag",
+      "none": "(no tag)"
+    },
     "notChangeYourSelf": "Como administrador/moderador, não podes alterar a tua própria função.",
+    "savedGroupTags": "Group tags saved.",
+    "savedScope": "Visibility saved.",
+    "scope": {
+      "all": "all groups",
+      "help": "Empty = all contributions.",
+      "label": "Visible groups (moderator)",
+      "untagged": "untagged"
+    },
     "selectLabel": "Função:",
     "selectRoles": {
       "admin": "administrador",

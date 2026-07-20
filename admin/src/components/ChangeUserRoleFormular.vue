@@ -16,17 +16,51 @@
             {{ $t('change_user_role') }}
           </BButton>
         </div>
+
+        <hr />
+        <div class="mb-3">
+          <label class="d-block mb-1">{{ $t('userRole.groupTags.label') }}</label>
+          <BFormSelect
+            v-model="userMainTag"
+            class="role-select"
+            :options="mainTagSelectOptions"
+            data-test="user-main-tag"
+            @change="saveUserMainTag"
+          />
+          <small class="d-block text-muted mt-1">{{ $t('userRole.groupTags.help') }}</small>
+        </div>
+
+        <div v-if="roleSelected === 'MODERATOR'" class="mb-3">
+          <label class="d-block mb-1">{{ $t('userRole.scope.label') }}</label>
+          <BFormSelect
+            v-model="moderatorScope"
+            class="role-select"
+            :options="scopeSelectOptions"
+            multiple
+            :select-size="5"
+            data-test="moderator-scope"
+            @change="saveScope"
+          />
+          <small class="d-block text-muted mt-1">{{ $t('userRole.scope.help') }}</small>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BButton, BFormSelect } from 'bootstrap-vue-next'
-import { useMutation } from '@vue/apollo-composable'
+import { useMutation, useQuery } from '@vue/apollo-composable'
 import { setUserRole as setUserRoleMutation } from '../graphql/setUserRole'
+import {
+  groupTags,
+  userGroupTags,
+  moderatorGroupScope,
+  setUserGroupTags as setUserGroupTagsMutation,
+  setModeratorGroupScope as setModeratorGroupScopeMutation,
+} from '../graphql/groupTags.graphql'
 import { useStore } from 'vuex'
 import { useAppToast } from '@/composables/useToast'
 
@@ -94,6 +128,77 @@ const updateUserRole = (newRole, oldRole) => {
       roleSelected.value = oldRole
       toastError(error.message)
     })
+}
+
+// --- Group functions ("Weg A"): user main tag + moderator visibility scope ---
+const { result: groupTagsResult } = useQuery(groupTags)
+const groupTagOptions = computed(() => groupTagsResult.value?.groupTags ?? [])
+
+// The user's personal main tag (pre-filled on submission). Setting it here heals a
+// forgotten/misspelled tag at the source, not just on a single contribution.
+const { result: userTagsResult } = useQuery(userGroupTags, () => ({
+  userId: props.item.userId,
+}))
+const userMainTag = ref('')
+watch(
+  userTagsResult,
+  (value) => {
+    userMainTag.value = value?.userGroupTags?.[0]?.tag ?? ''
+  },
+  { immediate: true },
+)
+const mainTagSelectOptions = computed(() => [
+  { value: '', text: t('userRole.groupTags.none') },
+  ...groupTagOptions.value.map((tag) => ({
+    value: tag.tag,
+    text: tag.name ? `${tag.name} (#${tag.tag})` : `#${tag.tag}`,
+  })),
+])
+const { mutate: setUserGroupTags } = useMutation(setUserGroupTagsMutation)
+const saveUserMainTag = async () => {
+  try {
+    await setUserGroupTags({
+      userId: props.item.userId,
+      tags: userMainTag.value ? [userMainTag.value] : [],
+    })
+    toastSuccess(t('userRole.savedGroupTags'))
+  } catch (error) {
+    toastError(error.message)
+  }
+}
+
+// The moderator's visibility scope: which group tags they may see/edit. Sentinels
+// '*all' (everything) and '*untagged' (contributions without a tag). Empty = all.
+const { result: scopeResult } = useQuery(moderatorGroupScope, () => ({
+  userId: props.item.userId,
+}))
+const moderatorScope = ref([])
+watch(
+  scopeResult,
+  (value) => {
+    moderatorScope.value = value?.moderatorGroupScope ?? []
+  },
+  { immediate: true },
+)
+const scopeSelectOptions = computed(() => [
+  { value: '*all', text: t('userRole.scope.all') },
+  { value: '*untagged', text: t('userRole.scope.untagged') },
+  ...groupTagOptions.value.map((tag) => ({
+    value: tag.tag,
+    text: tag.name ? `${tag.name} (#${tag.tag})` : `#${tag.tag}`,
+  })),
+])
+const { mutate: setModeratorGroupScope } = useMutation(setModeratorGroupScopeMutation)
+const saveScope = async () => {
+  try {
+    await setModeratorGroupScope({
+      userId: props.item.userId,
+      scope: moderatorScope.value,
+    })
+    toastSuccess(t('userRole.savedScope'))
+  } catch (error) {
+    toastError(error.message)
+  }
 }
 
 defineExpose({ currentRole, roleSelected, updateUserRole })

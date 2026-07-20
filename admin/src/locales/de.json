@@ -392,7 +392,20 @@
   },
   "unregistered_emails": "Nur unregistrierte Nutzer",
   "userRole": {
+    "groupTags": {
+      "help": "Wird beim Einreichen vorbelegt.",
+      "label": "Haupt-Tag des Nutzers",
+      "none": "(kein Tag)"
+    },
     "notChangeYourSelf": "Als Admin/Moderator kannst du nicht selber deine Rolle ändern.",
+    "savedGroupTags": "Gruppen-Tags gespeichert.",
+    "savedScope": "Sichtbarkeit gespeichert.",
+    "scope": {
+      "all": "alle Gruppen",
+      "help": "Leer = alle Beiträge.",
+      "label": "Sichtbare Gruppen (Moderator)",
+      "untagged": "ohne Tag"
+    },
     "selectLabel": "Rolle:",
     "selectRoles": {
       "admin": "Administrator",

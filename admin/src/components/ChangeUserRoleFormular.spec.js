@@ -14,6 +14,12 @@ vi.mock('@vue/apollo-composable', () => ({
   useMutation: vi.fn(() => ({
     mutate: vi.fn(),
   })),
+  useQuery: vi.fn(() => ({
+    result: { value: undefined },
+    onResult: vi.fn(),
+    onError: vi.fn(),
+    refetch: vi.fn(),
+  })),
 }))
 
 vi.mock('vuex', () => ({
