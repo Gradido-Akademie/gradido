@@ -26,4 +26,10 @@ export class SearchContributionsFilterArgs {
   @Field(() => Boolean, { nullable: true })
   @IsBoolean()
   hideResubmission?: boolean | null
+
+  // Group functions ("Weg A"): filter by a single group tag (stored WITHOUT the leading
+  // '#'). Separate from `query`, so full-text search and group filter work at the same time.
+  @Field(() => String, { nullable: true, defaultValue: null })
+  @IsString()
+  groupTag?: string | null
 }
