@@ -534,7 +534,7 @@ function runSearch() {
   load({ center: searchCenter.value, radius: radius.value })
 }
 
-function moveSearchTo(next) {
+function moveSearchTo(next, { fly = false } = {}) {
   inClusterZoom = false
   closeCluster()
   searchCenter.value = { lat: next.lat, lng: next.lng }
@@ -543,8 +543,9 @@ function moveSearchTo(next) {
   drawCentre()
   // Move the view to the new centre too. On the map the geosearch control pans
   // itself, but a search from the list has no map to move — without this the map
-  // would still sit on the old place when you switch back to it.
-  zoomToCircle()
+  // would still sit on the old place when you switch back to it. The home button
+  // asks to fly there.
+  zoomToCircle({ fly })
   runSearch()
   resolveCenterLabel(next)
 }
@@ -822,10 +823,13 @@ function drawCircle() {
   }).addTo(circleLayer)
 }
 
-function zoomToCircle() {
+function zoomToCircle({ fly = false } = {}) {
   if (!map || !searchCenter.value) return
   const centre = L.latLng(searchCenter.value.lat, searchCenter.value.lng)
-  map.fitBounds(centre.toBounds(radius.value * 2000))
+  const bounds = centre.toBounds(radius.value * 2000)
+  // The way home flies in a smooth arc; every other reframe is an instant fit.
+  if (fly) map.flyToBounds(bounds)
+  else map.fitBounds(bounds)
 }
 
 // Home again: put the search itself back on your own place — the same as clicking
@@ -834,7 +838,7 @@ function zoomToCircle() {
 // round home, exactly as on first open.
 function recenterHome() {
   if (!map || !ownPosition.value) return
-  moveSearchTo({ lat: ownPosition.value.lat, lng: ownPosition.value.lng })
+  moveSearchTo({ lat: ownPosition.value.lat, lng: ownPosition.value.lng }, { fly: true })
 }
 
 function drawOwn() {
