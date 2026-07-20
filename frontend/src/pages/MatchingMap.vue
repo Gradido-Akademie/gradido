@@ -31,12 +31,15 @@
           class="list-cover"
           :matches="sortedMatches"
           :silent="sortedPresence"
-          :center="searchCenter"
+          :center="lensOrigin"
           :center-label="centerLabel"
           :my-precision="MY_PRECISION"
           :sort-mode="sortMode"
+          :lens-mode="lensMode"
+          :show-lens="showLens"
           @open="openProfile"
           @sort="setSort"
+          @lens="setLens"
           @recenter="moveSearchTo"
         />
 
@@ -278,6 +281,7 @@ const mapContainer = ref(null)
 const look = ref(readLook())
 const mode = ref(readMode())
 const sortMode = ref(readSort())
+const lensMode = ref(readLens())
 const breite = ref(readBreite())
 const visible = reactive(readVisible())
 
@@ -352,8 +356,24 @@ const foundCount = computed(() => visibleMatches.value.length + visiblePresence.
 // means something. Fit and breadth sort by the same peak the map glows by — breadth
 // counted only here, so a list sort never quietly flips the map's amplifier — with
 // the continuous score breaking ties and distance behind that.
+// Distances — and the proximity sort — measure from the lens origin: the search
+// point, or home when the travel lens is switched there. So what the list shows is
+// what it sorts by; the two never drift apart.
+const lensOrigin = computed(() =>
+  lensMode.value === 'wohnort' && ownPosition.value ? ownPosition.value : searchCenter.value,
+)
+
+// The lens only says something once the search has left home; until then both
+// origins give the same reading, so the switch stays out of the way (and off a
+// phone). A small distance threshold, not an exact match, so float and snap noise
+// at home never conjures it.
+const showLens = computed(() => {
+  if (!ownPosition.value || !searchCenter.value) return false
+  return distanceKm(ownPosition.value, searchCenter.value) > 0.1
+})
+
 function centreDistance(person) {
-  return searchCenter.value ? distanceKm(searchCenter.value, person.position) : 0
+  return lensOrigin.value ? distanceKm(lensOrigin.value, person.position) : 0
 }
 
 const sortedMatches = computed(() => {
@@ -457,6 +477,12 @@ function readSort() {
   return ['naehe', 'passung', 'breite'].includes(stored) ? stored : 'naehe'
 }
 
+// The travel lens: measure distances from the search point (default) or from home.
+function readLens() {
+  const stored = readPref('lens', null)
+  return ['suchpunkt', 'wohnort'].includes(stored) ? stored : 'suchpunkt'
+}
+
 function readBreite() {
   return readPref('breite', false) === true
 }
@@ -483,6 +509,12 @@ function setSort(next) {
   if (!['naehe', 'passung', 'breite'].includes(next)) return
   sortMode.value = next
   writePref('sort', next)
+}
+
+function setLens(next) {
+  if (!['suchpunkt', 'wohnort'].includes(next)) return
+  lensMode.value = next
+  writePref('lens', next)
 }
 
 // A look click leaves list mode: the three colours are the map's, and choosing one
@@ -597,7 +629,13 @@ function rgb(channels) {
 }
 
 function swatchStyle(channel) {
-  if (channel === 'andereMit' || channel === 'andereOhne') {
+  // The grey rings on the map are filled when a person has entries and hollow when
+  // not, so the legend echoes that: a filled disc for "others with entries", a bare
+  // ring for "without".
+  if (channel === 'andereMit') {
+    return { background: 'rgb(150, 154, 162)', border: '2px solid rgb(116, 121, 131)' }
+  }
+  if (channel === 'andereOhne') {
     return { border: '2px solid rgb(116, 121, 131)' }
   }
   // The legend swatch wears the entry colour (the input's danger/success/info),

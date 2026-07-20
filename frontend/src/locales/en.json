@@ -402,6 +402,9 @@
       "empty": "No one here right now. Widen the radius or search another place.",
       "kmEtwa": "about {n} km",
       "kmExact": "{n} km",
+      "lensBy": "Distance from",
+      "lensHome": "Home",
+      "lensSearch": "Search point",
       "line": {
         "angebot": "offers {thing} — you're looking for that",
         "gesuch": "seeks {thing} — you offer that",
@@ -477,7 +480,7 @@
     "tabs": {
       "about": "About me",
       "entries": "Entries",
-      "position": "Position"
+      "position": "Home"
     },
     "type": {
       "angebot": {

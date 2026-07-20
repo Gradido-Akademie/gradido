@@ -44,7 +44,7 @@
         :class="{ 'is-active': tab === 'position' }"
         @click="goTab('position')"
       >
-        <i-bi-geo-alt class="me-1" />
+        <i-bi-house-heart class="me-1" />
         <span class="matching-nav-label">{{ $t('matching.tabs.position') }}</span>
       </BButton>
     </div>

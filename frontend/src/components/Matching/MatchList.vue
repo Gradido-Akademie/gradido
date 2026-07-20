@@ -58,6 +58,16 @@
         </select>
       </div>
 
+      <!-- The travel lens: appears only once the search has left home, and switches
+           whether the shown distances measure from the search point or from home. -->
+      <div v-if="showLens" class="list-sort">
+        <label class="control-label" for="match-list-lens">{{ $t('matching.list.lensBy') }}</label>
+        <select id="match-list-lens" class="sort-select" :value="lensMode" @change="onLens">
+          <option value="suchpunkt">{{ $t('matching.list.lensSearch') }}</option>
+          <option value="wohnort">{{ $t('matching.list.lensHome') }}</option>
+        </select>
+      </div>
+
       <!-- Confirmation that the search took hold: the place stays named (and is
            announced). Its own full-width row inside the controls; on a phone it is
            ordered directly under the search field, not under the sort. -->
@@ -157,14 +167,22 @@ const props = defineProps({
   centerLabel: { type: String, default: '' },
   myPrecision: { type: String, default: 'genau' },
   sortMode: { type: String, default: 'naehe' },
+  // The travel lens: 'suchpunkt' (distances from the search point) or 'wohnort'
+  // (from home). showLens is true only once the two are different places.
+  lensMode: { type: String, default: 'suchpunkt' },
+  showLens: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['open', 'sort', 'recenter'])
+const emit = defineEmits(['open', 'sort', 'lens', 'recenter'])
 
 const { t, locale } = useI18n()
 
 function onSort(event) {
   emit('sort', event.target.value)
+}
+
+function onLens(event) {
+  emit('lens', event.target.value)
 }
 
 // --- which channels, the strongest line, the breadth ----------------------
