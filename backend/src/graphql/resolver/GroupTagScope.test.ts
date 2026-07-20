@@ -1,0 +1,131 @@
+import { RoleNames } from '@enum/RoleNames'
+import { cleanDB, resetToken, testEnvironment } from '@test/helpers'
+import { ApolloServerTestClient } from 'apollo-server-testing'
+import { AppDatabase, User, UserRole } from 'database'
+import { getLogger as originalGetLogger } from 'log4js'
+import { userFactory } from '@/seeds/factory/user'
+import { createContribution, login } from '@/seeds/graphql/mutations'
+import { adminListContributions } from '@/seeds/graphql/queries'
+import { bibiBloxberg } from '@/seeds/users/bibi-bloxberg'
+import { peterLustig } from '@/seeds/users/peter-lustig'
+import { parseModeratorScope } from './util/findContributions'
+
+// Group functions ("Weg A"): the core security check — a scoped moderator must only see
+// the contributions of the group tags they are authorised for. Tested through the
+// backward-compatible inline-"#tag" path, so it needs no structured-tag seeding.
+
+jest.mock('core', () => {
+  const originalModule = jest.requireActual('core')
+  return {
+    __esModule: true,
+    ...originalModule,
+    sendContributionConfirmedEmail: jest.fn(),
+    sendContributionDeniedEmail: jest.fn(),
+    sendContributionDeletedEmail: jest.fn(),
+    sendEmailTranslated: jest.fn(),
+  }
+})
+jest.mock('@/password/EncryptorUtils')
+
+let mutate: ApolloServerTestClient['mutate']
+let query: ApolloServerTestClient['query']
+let db: AppDatabase
+let testEnv: {
+  mutate: ApolloServerTestClient['mutate']
+  query: ApolloServerTestClient['query']
+  db: AppDatabase
+}
+
+const FIREFIGHTER = '#firefighter group-scope test fire brigade'
+const MUSIC = '#music group-scope test choir'
+const UNTAGGED = 'group-scope test contribution without any tag'
+
+beforeAll(async () => {
+  testEnv = await testEnvironment(originalGetLogger('apollo'))
+  mutate = testEnv.mutate
+  query = testEnv.query
+  db = testEnv.db
+  await cleanDB()
+})
+
+afterAll(async () => {
+  await cleanDB()
+  await db.destroy()
+})
+
+const loginAs = async (email: string): Promise<void> => {
+  resetToken()
+  await mutate({ mutation: login, variables: { email, password: 'Aa12345_' } })
+}
+
+const listMemos = async (): Promise<string[]> => {
+  const {
+    data: {
+      adminListContributions: { contributionList },
+    },
+  } = await query({
+    query: adminListContributions,
+    variables: { paginated: { pageSize: 100 } },
+  })
+  return contributionList.map((contribution: { memo: string }) => contribution.memo)
+}
+
+describe('adminListContributions — moderator visibility scope', () => {
+  let moderator: User
+
+  beforeAll(async () => {
+    await userFactory(testEnv, peterLustig) // administrator
+    moderator = await userFactory(testEnv, bibiBloxberg) // becomes the scoped moderator
+
+    // The (soon-to-be moderator) submits one contribution per group plus one untagged.
+    await loginAs('bibi@bloxberg.de')
+    for (const memo of [FIREFIGHTER, MUSIC, UNTAGGED]) {
+      await mutate({
+        mutation: createContribution,
+        variables: { amount: '100', memo, contributionDate: new Date().toString() },
+      })
+    }
+    resetToken()
+
+    // Promote the user to MODERATOR, scoped to the "firefighter" group only.
+    const role = UserRole.create()
+    role.createdAt = new Date()
+    role.userId = moderator.id
+    role.role = RoleNames.MODERATOR
+    role.visibleGroupTags = JSON.stringify(['firefighter'])
+    await role.save()
+  })
+
+  afterAll(() => {
+    resetToken()
+  })
+
+  it('shows a scoped moderator only the contributions of their group', async () => {
+    await loginAs('bibi@bloxberg.de')
+    const memos = await listMemos()
+    expect(memos).toContain(FIREFIGHTER)
+    expect(memos).not.toContain(MUSIC)
+    expect(memos).not.toContain(UNTAGGED)
+  })
+
+  it('shows an administrator every contribution regardless of tags', async () => {
+    await loginAs('peter@lustig.de')
+    const memos = await listMemos()
+    expect(memos).toEqual(expect.arrayContaining([FIREFIGHTER, MUSIC, UNTAGGED]))
+  })
+})
+
+describe('parseModeratorScope', () => {
+  it('returns null for empty or invalid input', () => {
+    expect(parseModeratorScope(null)).toBeNull()
+    expect(parseModeratorScope('')).toBeNull()
+    expect(parseModeratorScope('not json')).toBeNull()
+    expect(parseModeratorScope('{"not":"an array"}')).toBeNull()
+  })
+
+  it('parses a JSON array of tag strings and drops non-strings', () => {
+    expect(parseModeratorScope('["firefighter","*all"]')).toEqual(['firefighter', '*all'])
+    expect(parseModeratorScope('["firefighter",5,null,"music"]')).toEqual(['firefighter', 'music'])
+    expect(parseModeratorScope('[]')).toEqual([])
+  })
+})
