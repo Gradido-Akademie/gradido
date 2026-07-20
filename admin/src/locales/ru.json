@@ -235,6 +235,10 @@
     "humhubProfile": "Перейти в профиль Humhub",
     "userSearch": "Перейти к поиску пользователей"
   },
+  "groupTagFilter": {
+    "all": "(all groups)",
+    "label": "Group:"
+  },
   "help": {
     "help": "Помощь",
     "transactionlist": {
@@ -388,7 +392,20 @@
   },
   "unregistered_emails": "Только незарегистрированные пользователи",
   "userRole": {
+    "groupTags": {
+      "help": "Pre-filled on submission.",
+      "label": "User's main tag",
+      "none": "(no tag)"
+    },
     "notChangeYourSelf": "Будучи администратором/модератором, вы не можете изменить свою собственную роль.",
+    "savedGroupTags": "Group tags saved.",
+    "savedScope": "Visibility saved.",
+    "scope": {
+      "all": "all groups",
+      "help": "Empty = all contributions.",
+      "label": "Visible groups (moderator)",
+      "untagged": "untagged"
+    },
     "selectLabel": "Роль:",
     "selectRoles": {
       "admin": "администратор",

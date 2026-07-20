@@ -1,0 +1,31 @@
+query groupTags {
+  groupTags {
+    id
+    tag
+    name
+  }
+}
+
+query userGroupTags($userId: Int!) {
+  userGroupTags(userId: $userId) {
+    id
+    tag
+    name
+  }
+}
+
+query moderatorGroupScope($userId: Int!) {
+  moderatorGroupScope(userId: $userId)
+}
+
+mutation setUserGroupTags($userId: Int!, $tags: [String!]!) {
+  setUserGroupTags(userId: $userId, tags: $tags) {
+    id
+    tag
+    name
+  }
+}
+
+mutation setModeratorGroupScope($userId: Int!, $scope: [String!]!) {
+  setModeratorGroupScope(userId: $userId, scope: $scope)
+}

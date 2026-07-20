@@ -235,6 +235,10 @@
     "humhubProfile": "Go to Humhub profile",
     "userSearch": "Go to user search"
   },
+  "groupTagFilter": {
+    "all": "(all groups)",
+    "label": "Group:"
+  },
   "help": {
     "help": "Help",
     "transactionlist": {
@@ -388,7 +392,20 @@
   },
   "unregistered_emails": "Only unregistered users",
   "userRole": {
+    "groupTags": {
+      "help": "Pre-filled on submission.",
+      "label": "User's main tag",
+      "none": "(no tag)"
+    },
     "notChangeYourSelf": "As an admin/moderator, you cannot change your own role.",
+    "savedGroupTags": "Group tags saved.",
+    "savedScope": "Visibility saved.",
+    "scope": {
+      "all": "all groups",
+      "help": "Empty = all contributions.",
+      "label": "Visible groups (moderator)",
+      "untagged": "untagged"
+    },
     "selectLabel": "Role:",
     "selectRoles": {
       "admin": "administrator",
