@@ -2,6 +2,7 @@ import { Arg, Authorized, Ctx, Int, Mutation, Query, Resolver } from 'type-graph
 import { RIGHTS } from '@/auth/RIGHTS'
 import { GroupTag } from '@/graphql/model/GroupTag'
 import { Context, getUser } from '@/server/context'
+import { loadModeratorScope, saveModeratorScope } from './util/moderatorGroupScope'
 import { loadUserGroupTags, saveUserGroupTags } from './util/userGroupTags'
 
 // Group functions ("Weg A"): a user's personal group-tag list. Users manage their own
@@ -39,5 +40,21 @@ export class UserGroupTagResolver {
     @Arg('tags', () => [String]) tags: string[],
   ): Promise<GroupTag[]> {
     return (await saveUserGroupTags(userId, tags)).map((tag) => new GroupTag(tag))
+  }
+
+  // --- Moderator visibility scope (stored on user_roles; enforced in findContributions) ---
+  @Authorized([RIGHTS.SET_MODERATOR_GROUP_SCOPE])
+  @Query(() => [String])
+  async moderatorGroupScope(@Arg('userId', () => Int) userId: number): Promise<string[]> {
+    return loadModeratorScope(userId)
+  }
+
+  @Authorized([RIGHTS.SET_MODERATOR_GROUP_SCOPE])
+  @Mutation(() => [String])
+  async setModeratorGroupScope(
+    @Arg('userId', () => Int) userId: number,
+    @Arg('scope', () => [String]) scope: string[],
+  ): Promise<string[]> {
+    return saveModeratorScope(userId, scope)
   }
 }
