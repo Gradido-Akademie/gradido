@@ -100,11 +100,16 @@ const creating = ref(false)
 const canCreate = computed(() => newTag.value.trim().length > 0)
 
 function slugify(value) {
+  // Keep every letter — including umlauts and other accented characters (ä ö ü ß å æ ø …) —
+  // and digits; turn runs of whitespace into a hyphen and drop the rest. The backend only
+  // rejects whitespace, so whatever survives here is a valid tag.
   return value
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
+    .replace(/[^\p{L}\p{N}-]/gu, '')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 function onNewName() {
