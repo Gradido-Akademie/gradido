@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import InfoStatistic from './InfoStatistic.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createI18n } from 'vue-i18n'
-import { listContributionLinks, searchAdminUsers } from '@/graphql/queries'
+import { searchAdminUsers } from '@/graphql/queries'
 import { groupTags } from '@/graphql/contributions.graphql'
 import { BContainer, BLink } from 'bootstrap-vue-next'
 
@@ -101,19 +101,7 @@ describe('InfoStatistic', () => {
     mockQueryImplementation.mockImplementation((query) => ({
       result: query === groupTags ? ref({ groupTags: GROUP_TAGS }) : ref(null),
       onResult: (callback) => {
-        if (query === listContributionLinks) {
-          callback({
-            data: {
-              listContributionLinks: {
-                count: 2,
-                links: [
-                  { id: 1, amount: 200, name: 'Dokumenta 2017', memo: 'Memo 1', cycle: 'ONCE' },
-                  { id: 2, amount: 200, name: 'Dokumenta 2022', memo: 'Memo 2', cycle: 'ONCE' },
-                ],
-              },
-            },
-          })
-        } else if (query === searchAdminUsers) {
+        if (query === searchAdminUsers) {
           callback({
             data: {
               searchAdminUsers: {
@@ -238,9 +226,6 @@ describe('InfoStatistic', () => {
 
     it('toasts error messages', async () => {
       await wrapper.vm.$nextTick()
-      expect(mockToastError).toHaveBeenCalledWith(
-        'listContributionLinks has no result, use default data',
-      )
       expect(mockToastError).toHaveBeenCalledWith(
         'searchAdminUsers has no result, use default data',
       )

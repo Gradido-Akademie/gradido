@@ -129,7 +129,16 @@ describe('NavBar', () => {
       })
 
       it('leaves out the administrator-only entries', () => {
-        expect(hrefs()).toEqual(['/user', '/creation-confirm', '/statistic', '#', '#'])
+        // Starting balance stays: a moderator may look the links up and pass them on. What
+        // they cannot do — create, change, delete — is hidden on the page itself.
+        expect(hrefs()).toEqual([
+          '/user',
+          '/creation-confirm',
+          '/contribution-links',
+          '/statistic',
+          '#',
+          '#',
+        ])
       })
     })
 
@@ -140,7 +149,14 @@ describe('NavBar', () => {
       })
 
       it('leaves them out just the same', () => {
-        expect(hrefs()).toEqual(['/user', '/creation-confirm', '/statistic', '#', '#'])
+        expect(hrefs()).toEqual([
+          '/user',
+          '/creation-confirm',
+          '/contribution-links',
+          '/statistic',
+          '#',
+          '#',
+        ])
       })
     })
   })

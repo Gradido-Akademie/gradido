@@ -26,11 +26,7 @@
               {{ openCreations }}
             </BBadge>
           </BNavItem>
-          <BNavItem
-            v-if="isAdmin"
-            to="/contribution-links"
-            :active="isActive('contribution-links')"
-          >
+          <BNavItem to="/contribution-links" :active="isActive('contribution-links')">
             {{ $t('navbar.automaticContributions') }}
           </BNavItem>
           <BNavItem v-if="isAdmin" to="/federation" :active="isActive('federation')">
