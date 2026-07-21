@@ -31,7 +31,8 @@
     "confirmedBy": "Bevestigd door {name}.",
     "createdBy": "Aangemaakt door {name}.",
     "deletedBy": "Verwijderd door {name}.",
-    "deniedBy": "Afgewezen door {name}."
+    "deniedBy": "Afgewezen door {name}.",
+    "noGroup": "(no group)"
   },
   "contributionLink": {
     "amount": "Bedrag",

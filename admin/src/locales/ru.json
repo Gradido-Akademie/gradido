@@ -31,7 +31,8 @@
     "confirmedBy": "Подтверждено пользователем {name}.",
     "createdBy": "Создано пользователем {name}.",
     "deletedBy": "Удалено пользователем {name}.",
-    "deniedBy": "Отклонено пользователем {name}."
+    "deniedBy": "Отклонено пользователем {name}.",
+    "noGroup": "(no group)"
   },
   "contributionLink": {
     "amount": "Сумма",

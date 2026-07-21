@@ -31,7 +31,8 @@
     "confirmedBy": "Επιβεβαιώθηκε από {name}.",
     "createdBy": "Δημιουργήθηκε από {name}.",
     "deletedBy": "Διαγράφηκε από {name}.",
-    "deniedBy": "Απορρίφθηκε από {name}."
+    "deniedBy": "Απορρίφθηκε από {name}.",
+    "noGroup": "(no group)"
   },
   "contributionLink": {
     "amount": "Ποσό",

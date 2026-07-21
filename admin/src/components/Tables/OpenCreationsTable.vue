@@ -54,6 +54,12 @@
         </span>
       </template>
       <template #cell(memo)="row">
+        <div class="fw-bold mb-1">
+          <span v-if="groupLabel(row.item)">{{ groupLabel(row.item) }}</span>
+          <span v-else class="fw-normal fst-italic text-muted">
+            {{ $t('contribution.noGroup') }}
+          </span>
+        </div>
         {{ row.value }}
         <small v-if="isAddCommentToMemo(row.item)" class="no-select">
           <hr />
@@ -285,6 +291,13 @@ export default {
         this.openRow = row
         this.creationUserData = row.item
       }
+    },
+    // Group functions: "Name (#tag)" for the groups a contribution belongs to, shown above
+    // the text. Several groups are listed one after another.
+    groupLabel(item) {
+      return (item.groupTags ?? [])
+        .map((group) => (group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`))
+        .join(', ')
     },
     isAddCommentToMemo(item) {
       return item.closedBy > 0 || item.moderatorId > 0 || item.updatedBy > 0
