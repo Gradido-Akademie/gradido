@@ -39,6 +39,7 @@ let testEnv: {
 const FIREFIGHTER = '#firefighter group-scope test fire brigade'
 const MUSIC = '#music group-scope test choir'
 const UNTAGGED = 'group-scope test contribution without any tag'
+const UMLAUT = '#Grünwald-Süd group-scope test Straßenfest'
 
 beforeAll(async () => {
   testEnv = await testEnvironment(originalGetLogger('apollo'))
@@ -162,6 +163,27 @@ describe('adminListContributions — moderator visibility scope', () => {
     await loginAs('bibi@bloxberg.de')
     const { errors } = await mutate({ mutation: denyContribution, variables: { id: musicId } })
     expect(errors?.[0]?.message).toContain('outside the moderator group scope')
+  })
+
+  it('matches umlaut tags end to end and ignores upper/lower case', async () => {
+    // The contribution carries an inline "#Grünwald-Süd" — capitals and umlauts …
+    await loginAs('bibi@bloxberg.de')
+    await mutate({
+      mutation: createContribution,
+      variables: { amount: '100', memo: UMLAUT, contributionDate: new Date().toString() },
+    })
+    resetToken()
+
+    // … while the moderator is scoped to the very same tag written all in lower case.
+    // The tables are utf8mb4_unicode_ci, so the comparison ignores case and the two match.
+    const role = await UserRole.findOneOrFail({ where: { userId: moderator.id } })
+    role.visibleGroupTags = JSON.stringify(['grünwald-süd'])
+    await role.save()
+
+    await loginAs('bibi@bloxberg.de')
+    const memos = await listMemos()
+    expect(memos).toContain(UMLAUT)
+    expect(memos).not.toContain(FIREFIGHTER)
   })
 })
 

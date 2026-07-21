@@ -253,7 +253,7 @@
     "namePlaceholder": "e.g. Volunteer Fire Brigade Springfield",
     "save": "Save",
     "tag": "Tag",
-    "tagHint": "A short tag, lower-case and without spaces. It is used for linking; the name is shown everywhere.",
+    "tagHint": "A short tag without spaces — capitals and accented letters are allowed. Matching ignores upper and lower case. The name is what is shown everywhere.",
     "tagPlaceholder": "e.g. firefighter",
     "title": "Manage groups",
     "updated": "Group updated."

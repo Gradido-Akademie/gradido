@@ -89,4 +89,25 @@ describe('GroupTags', () => {
   it('offers a create button', () => {
     expect(wrapper.find('[data-testid="mock-bbutton"]').exists()).toBe(true)
   })
+
+  describe('suggested tag', () => {
+    // Umlauts are valid in a tag, so the suggestion must keep them instead of dropping
+    // them — German as well as Scandinavian ones.
+    it('keeps German umlauts', () => {
+      expect(wrapper.vm.slugify('Freiwillige Feuerwehr Grünwald')).toBe(
+        'freiwillige-feuerwehr-grünwald',
+      )
+      expect(wrapper.vm.slugify('Straßenfest Köln')).toBe('straßenfest-köln')
+    })
+
+    it('keeps Scandinavian letters', () => {
+      expect(wrapper.vm.slugify('Ålesund Kystlag')).toBe('ålesund-kystlag')
+      expect(wrapper.vm.slugify('Nørrebro Fællesskab')).toBe('nørrebro-fællesskab')
+    })
+
+    it('drops punctuation and collapses hyphens', () => {
+      expect(wrapper.vm.slugify('Gruppe 42 – Süd!')).toBe('gruppe-42-süd')
+      expect(wrapper.vm.slugify('  Rand  ')).toBe('rand')
+    })
+  })
 })

@@ -87,3 +87,27 @@ describe('updateGroupTag', () => {
     await expect(resolver.updateGroupTag(987654, null, 'x')).rejects.toThrow()
   })
 })
+
+describe('group tags with capitals and accented letters', () => {
+  // The tables are utf8mb4, so German and Scandinavian umlauts must survive a round trip
+  // through the database byte for byte, capitals included.
+  const CASES = ['Grünwald-Süd', 'Straßenfest', 'Ålesund', 'Nørrebro', 'Æblegård', 'THW']
+
+  it('stores and returns them unchanged', async () => {
+    for (const tag of CASES) {
+      const created = await resolver.createGroupTag(tag, `Gruppe ${tag}`)
+      expect(created.tag).toBe(tag)
+
+      const reloaded = await GroupTag.findOneOrFail({ where: { id: created.id } })
+      expect(reloaded.tag).toBe(tag)
+      expect(reloaded.name).toBe(`Gruppe ${tag}`)
+    }
+  })
+
+  it('renames to an accented slug without losing characters', async () => {
+    const tag = await makeTag('plain-slug', 'Plain')
+    await resolver.updateGroupTag(tag.id, 'Öffentlichkeitsarbeit', null)
+    const reloaded = await GroupTag.findOneOrFail({ where: { id: tag.id } })
+    expect(reloaded.tag).toBe('Öffentlichkeitsarbeit')
+  })
+})
