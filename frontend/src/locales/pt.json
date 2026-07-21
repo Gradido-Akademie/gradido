@@ -84,6 +84,12 @@
     },
     "delete": "Eliminar contribuição! Tens a certeza?",
     "deleted": "A contribuição foi eliminada! Mas continuará visível.",
+    "filter": {
+      "allGroups": "(all groups)",
+      "noResults": "No contributions found.",
+      "searchAll": "Search by text or name …",
+      "searchOwn": "Search contributions …"
+    },
     "formText": {
       "bringYourTalentsTo": "Traz os teus talentos para a comunidade! Recompensamos o teu compromisso voluntário com 20 GDD por hora, até um máximo de 1.000 GDD por mês.",
       "describeYourCommunity": "Descreve a tua atividade de bem comum e indica o número de horas! O montante de 20 GDD por hora é calculado automaticamente. Após a confirmação por um moderador, o montante é creditado na tua conta.",

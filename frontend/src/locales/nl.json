@@ -84,6 +84,12 @@
     },
     "delete": "Bijdrage verwijderen! Weet je het zeker?",
     "deleted": "De bijdrage werd verwijderd! Blijft echter zichtbaar.",
+    "filter": {
+      "allGroups": "(all groups)",
+      "noResults": "No contributions found.",
+      "searchAll": "Search by text or name …",
+      "searchOwn": "Search contributions …"
+    },
     "formText": {
       "bringYourTalentsTo": "Bied je met jouw talenten in de gemeenschap aan! Jouw vrijwillige inzet belonen we met 20 GGD per uur, tot maximaal 1.000 GGD per maand.",
       "describeYourCommunity": "Beschrijf jouw activiteit voor het algemeen belang met vermelding van het aantal uren en registreer een bedrag van 20 GDD per uur! Na bevestiging door een moderator wordt het bedrag op jouw rekening bijgeschreven.",

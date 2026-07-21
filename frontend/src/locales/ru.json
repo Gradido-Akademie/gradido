@@ -84,6 +84,12 @@
     },
     "delete": "Удалить пост! Вы уверены?",
     "deleted": "Пост удалён! Но будет оставаться доступным для просмотра.",
+    "filter": {
+      "allGroups": "(all groups)",
+      "noResults": "No contributions found.",
+      "searchAll": "Search by text or name …",
+      "searchOwn": "Search contributions …"
+    },
     "formText": {
       "bringYourTalentsTo": "Принесите свои таланты в общество! Мы вознаграждаем вас за добровольную работу 20 GDD в час, но не более 1 000 GDD в месяц.",
       "describeYourCommunity": "Опишите свою общественно-полезную деятельность с подробным указанием часов и введите сумму в размере 20 GDD за час! После подтверждения модератором сумма будет зачислена на ваш счет.",

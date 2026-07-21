@@ -84,6 +84,12 @@
     },
     "delete": "Delete Contribution! Are you sure?",
     "deleted": "The contribution has been deleted! But it will remain visible.",
+    "filter": {
+      "allGroups": "(all groups)",
+      "noResults": "No contributions found.",
+      "searchAll": "Search by text or name …",
+      "searchOwn": "Search contributions …"
+    },
     "formText": {
       "bringYourTalentsTo": "Bring your talents to the community! We reward your voluntary commitment with 20 GDD per hour up to a maximum of 1,000 GDD per month.",
       "describeYourCommunity": "Describe your community service activity and specify the number of hours! The amount of 20 GDD per hour will be calculated automatically. After confirmation by a moderator, the amount will be credited to your account.",

@@ -84,6 +84,12 @@
     },
     "delete": "Hizmeti sil! Emin misin?",
     "deleted": "Hizmet silindi! Fakat hala görünüyor olacak.",
+    "filter": {
+      "allGroups": "(all groups)",
+      "noResults": "No contributions found.",
+      "searchAll": "Search by text or name …",
+      "searchOwn": "Search contributions …"
+    },
     "formText": {
       "bringYourTalentsTo": "Yeteneklerini topluluğa sun! Gönüllü olarak sunduğun hizmetler ayda max 1,000 GDD olacak şekilde saati 20 GDD olarak ödüllendirilecektir! Bir moderatör tarafından onaylandıktan sonra bu tutar hesabına yatırılacaktır.",
       "describeYourCommunity": "Kamu yararına faaliyetini açıkla ve saat sayısını belirt! Saat başına 20 GDD tutarı otomatik olarak hesaplanır. Bir moderatör onayladıktan sonra tutar hesabına işlenir.",

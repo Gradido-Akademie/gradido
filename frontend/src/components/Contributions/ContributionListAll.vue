@@ -1,6 +1,21 @@
 <template>
+  <div class="contribution-filter d-flex flex-wrap gap-2 mb-3">
+    <BFormInput
+      v-model="searchInput"
+      class="contribution-filter-search"
+      :placeholder="$t('contribution.filter.searchAll')"
+    />
+    <BFormSelect
+      v-model="selectedGroup"
+      class="contribution-filter-group"
+      :options="groupOptions"
+    />
+  </div>
   <div v-if="items.length === 0 && !loading">
-    <div v-if="currentPage === 1">
+    <div v-if="isFiltered">
+      {{ $t('contribution.filter.noResults') }}
+    </div>
+    <div v-else-if="currentPage === 1">
       {{ $t('contribution.noContributions.allContributions') }}
     </div>
     <div v-else>
@@ -22,16 +37,18 @@
   />
 </template>
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ContributionListAllItem from '@/components/Contributions/ContributionListAllItem.vue'
-import { listAllContributions } from '@/graphql/contributions.graphql'
+import { listAllContributions, groupTags as groupTagsQuery } from '@/graphql/contributions.graphql'
 import { useQuery } from '@vue/apollo-composable'
 import CONFIG from '@/config'
 import PaginatorRouteParamsPage from '@/components/PaginatorRouteParamsPage.vue'
 import { PAGE_SIZE } from '@/constants'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const { t } = useI18n()
 
 // constants
 const pollInterval = CONFIG.AUTO_POLL_INTERVAL || undefined
@@ -40,6 +57,36 @@ const pageSize = PAGE_SIZE
 // computed
 const currentPage = ref(Number(route.params.page) || 1)
 
+// Group functions: search by text or by the submitter's name, plus a group filter. The
+// typed text is debounced so a query does not go out on every keystroke; any change returns
+// to the first page, otherwise one could end up on an empty page of a smaller result.
+const searchInput = ref('')
+const searchText = ref('')
+const selectedGroup = ref(null)
+let searchTimer = null
+
+watch(searchInput, (value) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    searchText.value = value
+    currentPage.value = 1
+  }, 400)
+})
+watch(selectedGroup, () => {
+  currentPage.value = 1
+})
+
+const isFiltered = computed(() => Boolean(searchText.value || selectedGroup.value))
+
+const { result: groupTagsResult } = useQuery(groupTagsQuery)
+const groupOptions = computed(() => [
+  { value: null, text: t('contribution.filter.allGroups') },
+  ...(groupTagsResult.value?.groupTags ?? []).map((group) => ({
+    value: group.tag,
+    text: group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`,
+  })),
+])
+
 const { result, loading } = useQuery(
   listAllContributions,
   () => ({
@@ -47,6 +94,10 @@ const { result, loading } = useQuery(
       currentPage: currentPage.value,
       pageSize,
       order: 'DESC',
+    },
+    filter: {
+      query: searchText.value || null,
+      groupTag: selectedGroup.value,
     },
   }),
   {
