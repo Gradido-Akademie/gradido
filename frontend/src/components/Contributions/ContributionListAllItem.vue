@@ -19,7 +19,12 @@
           <div class="small">
             {{ $d(new Date(contributionDate), 'short') }}
           </div>
-          <div class="mt-3 fw-bold">{{ $t('contributionText') }}</div>
+          <div class="mt-3 fw-bold">
+            <span v-if="groupLabel">{{ groupLabel }}</span>
+            <span v-else class="fw-normal fst-italic text-muted">
+              {{ $t('contribution.groupTag.none') }}
+            </span>
+          </div>
           <div class="mb-3 text-break word-break">{{ memo }}</div>
           <div v-if="updatedBy > 0" class="mt-2 mb-2 small">
             {{ $t('moderatorChangedMemo') }}
@@ -74,7 +79,20 @@ const props = defineProps({
     required: false,
     default: '',
   },
+  groupTags: {
+    type: Array,
+    required: false,
+    default: () => [],
+  },
 })
+
+// Group functions: the contribution's group takes the place of the old, unhelpful
+// "contribution text" heading. Several groups are listed one after another.
+const groupLabel = computed(() =>
+  (props.groupTags ?? [])
+    .map((group) => (group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`))
+    .join(', '),
+)
 
 const { getVariant, getIcon } = useContributionStatus()
 const variant = computed(() => getVariant(props.contributionStatus))

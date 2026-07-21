@@ -91,6 +91,11 @@
       "openAmountForMonth": "Per <b>{monthAndYear}</b> puoi ancora presentare <b>{creation}</b> GDD.",
       "yourContribution": "Il tuo contributo al bene comune"
     },
+    "groupTag": {
+      "help": "Optional. It works without a group, too.",
+      "label": "Group",
+      "none": "(no group)"
+    },
     "isEdited": "ha modificato il contributo",
     "lastContribution": "Ultimi contributi",
     "noContributions": {
@@ -113,7 +118,6 @@
   "contribution-link": {
     "thanksYouWith": "ti ringrazia con"
   },
-  "contributionText": "Testo del contributo",
   "copy-to-clipboard": "Copia negli appunti",
   "creation": "Creazione",
   "decay": {

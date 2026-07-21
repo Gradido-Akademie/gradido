@@ -91,6 +91,11 @@
       "openAmountForMonth": "Voor <b>{monthAndYear}</b> kun je nog <b>{creation}</b> GDD indienen.",
       "yourContribution": "Jouw bijdrage voor het algemeen belang"
     },
+    "groupTag": {
+      "help": "Optional. It works without a group, too.",
+      "label": "Group",
+      "none": "(no group)"
+    },
     "isEdited": "heeft de bijdrage bewerkt",
     "lastContribution": "Laatste bijdragen",
     "noContributions": {
@@ -113,7 +118,6 @@
   "contribution-link": {
     "thanksYouWith": "bedankt jou met"
   },
-  "contributionText": "Bijdragetekst",
   "copy-to-clipboard": "Kopieer naar klembord",
   "creation": "Creatie",
   "decay": {

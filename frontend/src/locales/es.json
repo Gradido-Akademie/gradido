@@ -91,6 +91,11 @@
       "openAmountForMonth": "Para <b>{monthAndYear}</b> aún puedes presentar <b>{creation}</b> GDD.",
       "yourContribution": "Tu contribución a la comunidad."
     },
+    "groupTag": {
+      "help": "Optional. It works without a group, too.",
+      "label": "Group",
+      "none": "(no group)"
+    },
     "isEdited": "ha editado la contribución",
     "lastContribution": "Últimas contribuciones",
     "noContributions": {
@@ -113,7 +118,6 @@
   "contribution-link": {
     "thanksYouWith": "te agradece con"
   },
-  "contributionText": "Texto de la contribución",
   "copy-to-clipboard": "Copiar al portapapeles",
   "creation": "Creación",
   "decay": {
