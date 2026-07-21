@@ -423,7 +423,7 @@
     "scope": {
       "all": "alle Gruppen",
       "help": "Leer = alle Beiträge.",
-      "label": "Sichtbare Gruppen (Moderator)",
+      "label": "Sichtbare Gruppen",
       "untagged": "ohne Tag"
     },
     "selectLabel": "Rolle:",

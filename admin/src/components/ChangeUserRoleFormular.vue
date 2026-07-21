@@ -30,7 +30,7 @@
           <small class="d-block text-muted mt-1">{{ $t('userRole.groupTags.help') }}</small>
         </div>
 
-        <div v-if="roleSelected === 'MODERATOR'" class="mb-3">
+        <div v-if="showModeratorScope" class="mb-3">
           <label class="d-block mb-1">{{ $t('userRole.scope.label') }}</label>
           <BFormSelect
             v-model="moderatorScope"
@@ -97,6 +97,13 @@ const roles = computed(() => [
   { value: rolesValues.MODERATOR_AI, text: t('userRole.selectRoles.moderatorAi') },
   { value: rolesValues.ADMIN, text: t('userRole.selectRoles.admin') },
 ])
+
+// Both moderator kinds carry the same visibility scope — a KI-Moderator is a moderator who
+// may additionally use Crea, not a wider role.
+const showModeratorScope = computed(
+  () =>
+    roleSelected.value === rolesValues.MODERATOR || roleSelected.value === rolesValues.MODERATOR_AI,
+)
 
 const showModal = async () => {
   emit('show-modal')
