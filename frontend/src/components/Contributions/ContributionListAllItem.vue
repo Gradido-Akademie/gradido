@@ -55,6 +55,7 @@ import { computed } from 'vue'
 import AppAvatar from '@/components/AppAvatar.vue'
 import { GDD_PER_HOUR } from '../../constants'
 import { useContributionStatus } from '@/composables/useContributionStatus'
+import { groupTagLabels } from '@/utils/groupTagLabel'
 
 const props = defineProps({
   amount: {
@@ -88,11 +89,7 @@ const props = defineProps({
 
 // Group functions: the contribution's group takes the place of the old, unhelpful
 // "contribution text" heading. Several groups are listed one after another.
-const groupLabel = computed(() =>
-  (props.groupTags ?? [])
-    .map((group) => (group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`))
-    .join(', '),
-)
+const groupLabel = computed(() => groupTagLabels(props.groupTags))
 
 const { getVariant, getIcon } = useContributionStatus()
 const variant = computed(() => getVariant(props.contributionStatus))

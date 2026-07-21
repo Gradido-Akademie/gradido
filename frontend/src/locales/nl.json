@@ -62,9 +62,12 @@
     "community": "Gemeenschap",
     "communityMember": "Je bent een actief lid",
     "continue-to-registration": "Verder ter registratie",
+    "groupsAndModerators": "Groepen en moderators",
     "moderator": "Moderator",
-    "moderators": "Moderators",
+    "moderatorsAllGroups": "Voor alle groepen",
+    "moderatorsUntagged": "Bijdragen zonder groep",
     "myContributions": "Mijn bijdragen voor het algemeen belang",
+    "noModerators": "Nog geen moderator",
     "submitContribution": "schrijf"
   },
   "communityInfo": "Informatie over de gemeenschap",

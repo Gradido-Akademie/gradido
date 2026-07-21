@@ -62,9 +62,12 @@
     "community": "Comunità",
     "communityMember": "Sei un membro attivo",
     "continue-to-registration": "Continua con la registrazione",
+    "groupsAndModerators": "Gruppi e moderatori",
     "moderator": "Moderatore",
-    "moderators": "Moderatori",
+    "moderatorsAllGroups": "Per tutti i gruppi",
+    "moderatorsUntagged": "Contributi senza gruppo",
     "myContributions": "I miei contributi",
+    "noModerators": "Ancora nessun moderatore",
     "submitContribution": "Scrivi"
   },
   "communityInfo": "Informazioni sulla comunità",

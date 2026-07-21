@@ -248,6 +248,8 @@ export const searchAdminUsers = gql`
         firstName
         lastName
         role
+        visibleGroupTags
+        seesAllGroups
       }
     }
   }

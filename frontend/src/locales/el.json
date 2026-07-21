@@ -62,9 +62,12 @@
     "community": "Κοινότητα",
     "communityMember": "Είσαι ενεργό μέλος",
     "continue-to-registration": "Συνέχεια στην εγγραφή",
+    "groupsAndModerators": "Ομάδες και συντονιστές",
     "moderator": "Συντονιστής",
-    "moderators": "Συντονιστές",
+    "moderatorsAllGroups": "Για όλες τις ομάδες",
+    "moderatorsUntagged": "Συνεισφορές χωρίς ομάδα",
     "myContributions": "Οι συνεισφορές μου",
+    "noModerators": "Δεν υπάρχει ακόμη συντονιστής",
     "submitContribution": "Συνεισφορά"
   },
   "communityInfo": "Πληροφορίες κοινότητας",

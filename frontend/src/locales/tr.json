@@ -62,9 +62,12 @@
     "community": "Topluluk",
     "communityMember": "Aktif bir üyesin",
     "continue-to-registration": "Kayıt işlemine devam et",
+    "groupsAndModerators": "Gruplar ve moderatörler",
     "moderator": "Moderatör",
-    "moderators": "Moderatörler",
+    "moderatorsAllGroups": "Tüm gruplar için",
+    "moderatorsUntagged": "Grubu olmayan katkılar",
     "myContributions": "Toplum yararına yaptığım hizmetler",
+    "noModerators": "Henüz moderatör yok",
     "submitContribution": "yaz"
   },
   "communityInfo": "Topluluk Bilgisi",
