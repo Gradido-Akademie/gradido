@@ -44,6 +44,21 @@ const addNavigationGuards = (router, store, apollo, i18n) => {
       next()
     }
   })
+
+  // Routes marked `requiresAdmin` are for administrators only. The guard above lets anyone
+  // with any role through, so hiding the menu entry would not keep a moderator out — they
+  // could still type the URL. This closes that way in; the backend rights are the final word.
+  router.beforeEach((to, from, next) => {
+    if (
+      !CONFIG.DEBUG_DISABLE_AUTH &&
+      to.meta?.requiresAdmin &&
+      !store.state.moderator?.roles?.includes('ADMIN')
+    ) {
+      next({ path: '/not-found' })
+    } else {
+      next()
+    }
+  })
 }
 
 export default addNavigationGuards

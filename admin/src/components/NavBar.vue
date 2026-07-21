@@ -26,31 +26,28 @@
               {{ openCreations }}
             </BBadge>
           </BNavItem>
-          <BNavItem to="/contribution-links" :active="isActive('contribution-links')">
+          <BNavItem
+            v-if="isAdmin"
+            to="/contribution-links"
+            :active="isActive('contribution-links')"
+          >
             {{ $t('navbar.automaticContributions') }}
           </BNavItem>
-          <BNavItem to="/federation" :active="isActive('federation')">
+          <BNavItem v-if="isAdmin" to="/federation" :active="isActive('federation')">
             {{ $t('navbar.instances') }}
           </BNavItem>
           <BNavItem
+            v-if="isAdmin"
             to="/projectBranding"
             :active="isActive('projectBranding')"
             :title="$t('navbar.projectBrandingTooltip')"
           >
             {{ $t('navbar.projectBranding') }}
           </BNavItem>
-          <BNavItem
-            v-if="store.state.moderator?.roles?.includes('ADMIN')"
-            to="/creaSettings"
-            :active="isActive('creaSettings')"
-          >
+          <BNavItem v-if="isAdmin" to="/creaSettings" :active="isActive('creaSettings')">
             {{ $t('navbar.crea') }}
           </BNavItem>
-          <BNavItem
-            v-if="store.state.moderator?.roles?.includes('ADMIN')"
-            to="/group-tags"
-            :active="isActive('group-tags')"
-          >
+          <BNavItem v-if="isAdmin" to="/group-tags" :active="isActive('group-tags')">
             {{ $t('navbar.groupTags') }}
           </BNavItem>
           <BNavItem to="/statistic" :active="isActive('statistic')">
@@ -94,6 +91,11 @@ const store = useStore()
 const route = useRoute()
 
 const openCreations = computed(() => store.state.openCreations)
+
+// Entries whose pages create or change things only an administrator may touch. The router
+// guard enforces the very same list — hiding a menu entry alone would leave the page
+// reachable by typing its URL.
+const isAdmin = computed(() => store.state.moderator?.roles?.includes('ADMIN') ?? false)
 
 const currentRouteName = computed(() => {
   return route.name

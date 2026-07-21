@@ -29,26 +29,31 @@ const routes = [
   {
     path: '/contribution-links',
     name: 'contribution-links',
+    meta: { requiresAdmin: true },
     component: () => import('@/pages/ContributionLinks.vue'),
   },
   {
     path: '/federation',
     name: 'federation',
+    meta: { requiresAdmin: true },
     component: () => import('@/pages/FederationVisualize.vue'),
   },
   {
     path: '/projectBranding',
     name: 'projectBranding',
+    meta: { requiresAdmin: true },
     component: () => import('@/pages/ProjectBranding.vue'),
   },
   {
     path: '/creaSettings',
     name: 'creaSettings',
+    meta: { requiresAdmin: true },
     component: () => import('@/pages/CreaSettings.vue'),
   },
   {
     path: '/group-tags',
     name: 'group-tags',
+    meta: { requiresAdmin: true },
     component: () => import('@/pages/GroupTags.vue'),
   },
   {
