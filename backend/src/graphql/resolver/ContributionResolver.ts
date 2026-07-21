@@ -58,7 +58,10 @@ import {
 import { getOpenCreations, getUserCreation, validateContribution } from './util/creations'
 import { extractGraphQLFields } from './util/extractGraphQLFields'
 import { findContributions, parseModeratorScope } from './util/findContributions'
-import { isScopedModeratorRole } from './util/moderatorGroupScope'
+import {
+  assertContributionInModeratorScope,
+  isScopedModeratorRole,
+} from './util/moderatorGroupScope'
 
 const db = AppDatabase.getInstance()
 const createLogger = () =>
@@ -116,7 +119,9 @@ export class ContributionResolver {
   async assignContributionGroupTags(
     @Arg('contributionId', () => Int) contributionId: number,
     @Arg('tags', () => [String]) tags: string[],
+    @Ctx() context: Context,
   ): Promise<boolean> {
+    await assertContributionInModeratorScope(contributionId, context.user?.userRoles?.[0])
     const contribution = await DbContribution.findOne({ where: { id: contributionId } })
     if (!contribution) {
       throw new LogError('Contribution not found', contributionId)
@@ -288,6 +293,10 @@ export class ContributionResolver {
     @Args() adminUpdateContributionArgs: AdminUpdateContributionArgs,
     @Ctx() context: Context,
   ): Promise<AdminUpdateContribution> {
+    await assertContributionInModeratorScope(
+      adminUpdateContributionArgs.id,
+      context.user?.userRoles?.[0],
+    )
     const logger = createLogger()
     logger.addContext('contribution', adminUpdateContributionArgs.id)
     const updateUnconfirmedContributionContext = new UpdateUnconfirmedContributionContext(
@@ -428,6 +437,7 @@ export class ContributionResolver {
     @Arg('id', () => Int) id: number,
     @Ctx() context: Context,
   ): Promise<boolean> {
+    await assertContributionInModeratorScope(id, context.user?.userRoles?.[0])
     const contribution = await DbContribution.findOne({ where: { id } })
     if (!contribution) {
       throw new LogError('Contribution not found', id)
@@ -479,6 +489,7 @@ export class ContributionResolver {
     @Arg('id', () => Int) id: number,
     @Ctx() context: Context,
   ): Promise<boolean> {
+    await assertContributionInModeratorScope(id, context.user?.userRoles?.[0])
     const logger = createLogger()
     logger.addContext('contribution', id)
     // acquire lock
@@ -633,6 +644,7 @@ export class ContributionResolver {
     @Arg('id', () => Int) id: number,
     @Ctx() context: Context,
   ): Promise<boolean> {
+    await assertContributionInModeratorScope(id, context.user?.userRoles?.[0])
     const contributionToUpdate = await DbContribution.findOne({
       where: {
         id,
