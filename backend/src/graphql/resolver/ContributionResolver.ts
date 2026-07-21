@@ -49,6 +49,7 @@ import {
 import { UpdateUnconfirmedContributionContext } from '@/interactions/updateUnconfirmedContribution/UpdateUnconfirmedContribution.context'
 import { Context, getClientTimezoneOffset, getUser } from '@/server/context'
 import { LogError } from '@/server/LogError'
+import { attachContributionGroupTags } from './util/attachContributionGroupTags'
 import { setContributionGroupTags } from './util/contributionGroupTags'
 import {
   contributionFrontendLink,
@@ -185,6 +186,7 @@ export class ContributionResolver {
         return contribution
       }),
     )
+    await attachContributionGroupTags(result.contributionList)
     return result
   }
 
@@ -205,7 +207,9 @@ export class ContributionResolver {
     @Arg('pagination') pagination: Paginated,
   ): Promise<ContributionListResult> {
     const [dbContributions, count] = await loadAllContributions(pagination)
-    return new ContributionListResult(count, dbContributions)
+    const result = new ContributionListResult(count, dbContributions)
+    await attachContributionGroupTags(result.contributionList)
+    return result
   }
 
   @Authorized([RIGHTS.UPDATE_CONTRIBUTION])
@@ -411,6 +415,7 @@ export class ContributionResolver {
       moderatorScope,
     )
     const result = new ContributionListResult(count, dbContributions)
+    await attachContributionGroupTags(result.contributionList)
 
     const uniqueUserIds = new Set<number>()
     const addIfExist = (userId?: number | null) => (userId ? uniqueUserIds.add(userId) : null)
