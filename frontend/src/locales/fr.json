@@ -84,6 +84,12 @@
     },
     "delete": "Supprimer la contribution ! Es-tu sûr ?",
     "deleted": "La contribution a été supprimée! Mais elle restera visible.",
+    "filter": {
+      "allGroups": "(all groups)",
+      "noResults": "No contributions found.",
+      "searchAll": "Search by text or name …",
+      "searchOwn": "Search contributions …"
+    },
     "formText": {
       "bringYourTalentsTo": "Apporte tes talents à la communauté ! Ta participation bénévole sera récompensée de 20 GDD/heure jusqu'à un plafond de 1000 GDD/mois.",
       "describeYourCommunity": "Décris ton activité/service à la communauté en mentionnant le nombre d'heures, et calcule le montant à raison de 20 GDD/heure ! Après confirmation par l'un de nos collaborateurs, le montant sera crédité sur ton compte.",

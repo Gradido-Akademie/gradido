@@ -84,6 +84,12 @@
     },
     "delete": "Beitrag löschen! Bist du sicher?",
     "deleted": "Der Beitrag wurde gelöscht! Wird aber sichtbar bleiben.",
+    "filter": {
+      "allGroups": "(alle Gruppen)",
+      "noResults": "Keine Beiträge gefunden.",
+      "searchAll": "Nach Text oder Namen suchen …",
+      "searchOwn": "Beiträge durchsuchen …"
+    },
     "formText": {
       "bringYourTalentsTo": "Bring dich mit deinen Talenten in die Gemeinschaft ein! Dein freiwilliges Engagement honorieren wir mit 20 GDD pro Stunde bis maximal 1.000 GDD im Monat.",
       "describeYourCommunity": "Beschreibe deine Gemeinwohl-Tätigkeit und gib die Anzahl der Stunden an! Der Betrag von 20 GDD pro Stunde wird automatisch berechnet. Nach Bestätigung durch einen Moderator wird der Betrag deinem Konto gutgeschrieben.",

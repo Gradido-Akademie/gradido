@@ -1,16 +1,45 @@
+import { ContributionFilterArgs } from '@arg/ContributionFilterArgs'
 import { Paginated } from '@arg/Paginated'
 import { Contribution as DbContribution } from 'database'
 import { FRONTEND_CONTRIBUTIONS_ITEM_ANCHOR_PREFIX } from 'shared'
-import { FindManyOptions, In } from 'typeorm'
+import { Brackets, In, SelectQueryBuilder } from 'typeorm'
 import { CONFIG } from '@/config'
 import { Order } from '@/graphql/enum/Order'
+import { buildGroupTagPredicate } from './findContributions'
 
-// TODO: combine with Pagination class for all queries to use
-function buildPaginationOptions(paginated: Paginated): FindManyOptions<DbContribution> {
-  const { currentPage, pageSize } = paginated
-  return {
-    skip: (currentPage - 1) * pageSize,
-    take: pageSize,
+// Group functions ("Weg A"): the wallet's own search. The text matches the memo and — in
+// the community list — the name of the person who submitted. The e-mail address is
+// deliberately NOT searchable here (admin only), so nobody can look people up by e-mail
+// from the wallet.
+const applyWalletFilter = (
+  queryBuilder: SelectQueryBuilder<DbContribution>,
+  filter: ContributionFilterArgs | null | undefined,
+  searchUserNames: boolean,
+): void => {
+  if (!filter) {
+    return
+  }
+  const query = filter.query?.trim()
+  if (query) {
+    const like = `%${query}%`
+    queryBuilder.andWhere(
+      new Brackets((qb) => {
+        qb.where('Contribution.memo LIKE :walletQuery', { walletQuery: like })
+        if (searchUserNames) {
+          qb.orWhere('user.first_name LIKE :walletQuery', { walletQuery: like })
+            .orWhere('user.last_name LIKE :walletQuery', { walletQuery: like })
+            .orWhere('user.alias LIKE :walletQuery', { walletQuery: like })
+            .orWhere(
+              "LOWER(CONCAT(user.first_name, ' ', user.last_name)) LIKE LOWER(:walletQuery)",
+              { walletQuery: like },
+            )
+        }
+      }),
+    )
+  }
+  if (filter.groupTag) {
+    const groupPredicate = buildGroupTagPredicate(filter.groupTag)
+    queryBuilder.andWhere(groupPredicate.sql, groupPredicate.params)
   }
 }
 
@@ -18,45 +47,40 @@ function buildPaginationOptions(paginated: Paginated): FindManyOptions<DbContrib
  * Load user contributions with messages
  * @param userId if userId is set, load all contributions of the user, with messages
  * @param paginated pagination, see {@link Paginated}
+ * @param filter optional wallet search (text, group)
  */
 export const loadUserContributions = async (
   userId: number,
   paginated: Paginated,
+  filter?: ContributionFilterArgs | null,
 ): Promise<[DbContribution[], number]> => {
-  const { order } = paginated
-  // manual, faster and simpler queries as auto generated from typeorm
-  const countPromise = DbContribution.count({
-    select: { id: true },
-    where: { userId },
-    withDeleted: true,
-  })
-  // we collect all contributions, ignoring if user exist or not
-  const contributionIds = await DbContribution.find({
-    select: { id: true },
-    where: { userId },
-    withDeleted: true,
-    order: { createdAt: order, id: order },
-    ...buildPaginationOptions(paginated),
-  })
-  const contributionsPromise = DbContribution.find({
-    relations: { messages: { user: true } },
-    withDeleted: true,
-    order: { createdAt: order, id: order, messages: { createdAt: Order.ASC } },
-    where: { id: In(contributionIds.map((c) => c.id)) },
-  })
-  return [await contributionsPromise, await countPromise]
+  const { order, currentPage, pageSize } = paginated
+  // Ids first (cheap and filterable), then the full rows with their relations. The two-step
+  // shape is kept on purpose — typeorm would otherwise generate one much slower join query.
+  // createdAt has to be selected as well: with skip/take typeorm wraps this in a
+  // "distinctAlias" subquery that must carry every column we order by.
+  const idQuery = DbContribution.createQueryBuilder('Contribution')
+    .select(['Contribution.id', 'Contribution.createdAt'])
+    .where('Contribution.userId = :userId', { userId })
+    .withDeleted()
+  // Own contributions: searching by name is pointless, they all belong to this member.
+  applyWalletFilter(idQuery, filter, false)
 
-  // original code
-  // note: typeorm will create similar queries as above, but more complex and slower
-  /*
-  return DbContribution.findAndCount({
-    where: { userId },
-    withDeleted: true,
+  const count = await idQuery.getCount()
+  const contributionIds = await idQuery
+    .orderBy('Contribution.createdAt', order)
+    .addOrderBy('Contribution.id', order)
+    .skip((currentPage - 1) * pageSize)
+    .take(pageSize)
+    .getMany()
+
+  const contributions = await DbContribution.find({
     relations: { messages: { user: true } },
+    withDeleted: true,
     order: { createdAt: order, id: order, messages: { createdAt: Order.ASC } },
-    ...buildPaginationOptions(paginated),
+    where: { id: In(contributionIds.map((contribution) => contribution.id)) },
   })
-  */
+  return [contributions, count]
 }
 
 /*
@@ -65,33 +89,36 @@ export const loadUserContributions = async (
  */
 export const loadAllContributions = async (
   paginated: Paginated,
+  filter?: ContributionFilterArgs | null,
 ): Promise<[DbContribution[], number]> => {
-  const { order } = paginated
-  // manual, faster queries as auto generated from typeorm
-  const countPromise = DbContribution.count({ select: { id: true } })
-  // console.log('loadAllContributions', { count })
+  const { order, currentPage, pageSize } = paginated
+  // Same two-step shape as above: filterable id selection first, then the full rows.
+  // See above: createdAt must be in the select, otherwise the "distinctAlias" subquery
+  // typeorm builds for skip/take cannot order by it (fails as soon as the user is joined).
+  const idQuery = DbContribution.createQueryBuilder('Contribution').select([
+    'Contribution.id',
+    'Contribution.createdAt',
+  ])
+  // The community list may be searched by the submitter's name — never by e-mail.
+  if (filter?.query) {
+    idQuery.leftJoin('Contribution.user', 'user')
+  }
+  applyWalletFilter(idQuery, filter, true)
 
-  const contributionIds = await DbContribution.find({
-    select: { id: true },
-    order: { createdAt: order, id: order },
-    ...buildPaginationOptions(paginated),
-  })
-  const contributionsPromise = DbContribution.find({
+  const count = await idQuery.getCount()
+  const contributionIds = await idQuery
+    .orderBy('Contribution.createdAt', order)
+    .addOrderBy('Contribution.id', order)
+    .skip((currentPage - 1) * pageSize)
+    .take(pageSize)
+    .getMany()
+
+  const contributions = await DbContribution.find({
     relations: { user: { emailContact: true } },
     order: { createdAt: order, id: order },
-    where: { id: In(contributionIds.map((c) => c.id)) },
+    where: { id: In(contributionIds.map((contribution) => contribution.id)) },
   })
-  return [await contributionsPromise, await countPromise]
-
-  // original code
-  // note: typeorm will create similar queries as above, but more complex and slower
-  /*
-  return DbContribution.findAndCount({
-    relations: { user: { emailContact: true } },
-    order: { createdAt: order, id: order },
-    ...buildPaginationOptions(paginated),
-  })
-  */
+  return [contributions, count]
 }
 
 export const contributionFrontendLink = async (
