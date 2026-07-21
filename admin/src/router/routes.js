@@ -29,7 +29,6 @@ const routes = [
   {
     path: '/contribution-links',
     name: 'contribution-links',
-    meta: { requiresAdmin: true },
     component: () => import('@/pages/ContributionLinks.vue'),
   },
   {
