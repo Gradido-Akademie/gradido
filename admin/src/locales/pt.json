@@ -28,6 +28,11 @@
   "change_user_role": "Alterar a função do utilizador",
   "close": "Fechar",
   "contribution": {
+    "changeGroup": "Alterar grupo",
+    "changeGroupConfirm": "Sim, mover",
+    "changeGroupDone": "Grupo alterado.",
+    "changeGroupHint": "Dependendo dos seus grupos visíveis, a contribuição pode deixar de aparecer na sua lista.",
+    "changeGroupQuestion": "Mover esta contribuição de {from} para {to}?",
     "confirmedBy": "Confirmado por {name}.",
     "createdBy": "Criado por {name}.",
     "deletedBy": "Eliminado por {name}.",

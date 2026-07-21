@@ -28,6 +28,11 @@
   "change_user_role": "Gebruikersrol wijzigen",
   "close": "Sluiten",
   "contribution": {
+    "changeGroup": "Groep wijzigen",
+    "changeGroupConfirm": "Ja, verplaatsen",
+    "changeGroupDone": "Groep gewijzigd.",
+    "changeGroupHint": "Afhankelijk van je zichtbare groepen verschijnt de bijdrage daarna mogelijk niet meer in je lijst.",
+    "changeGroupQuestion": "Deze bijdrage verplaatsen van {from} naar {to}?",
     "confirmedBy": "Bevestigd door {name}.",
     "createdBy": "Aangemaakt door {name}.",
     "deletedBy": "Verwijderd door {name}.",

@@ -25,19 +25,35 @@ function joinRelationsRecursive(
 
 // --- Group functions ("Weg A"): group-tag filter + moderator visibility scope ---
 
-// A contribution "carries" tag T if it has a structured contribution_group_tags entry
-// for T OR a legacy inline "#T" in its memo (backward compatible). Correlated subquery
-// against the outer `Contribution` alias.
+// True when a contribution's group was never set through the group field: no structured
+// link and no group_tags_set_at stamp. Only then does a legacy inline "#tag" in the memo
+// still count — see below.
+const NO_ASSIGNMENT_SQL =
+  `(Contribution.group_tags_set_at IS NULL ` +
+  `AND NOT EXISTS (SELECT 1 FROM contribution_group_tags cgt ` +
+  `WHERE cgt.contribution_id = Contribution.id))`
+
+// A contribution "carries" tag T if it has a structured contribution_group_tags entry for
+// T — or, only where no assignment was ever made, a legacy inline "#T" in its memo.
+//
+// The inline fallback is deliberately subordinate rather than an equal alternative: a
+// hashtag written for other reasons ("#feuerwehr was great!") must not pull an assigned
+// contribution into a foreign group — neither into that group's search results nor into
+// its moderator's visibility scope, which is a real access boundary. Once the group field
+// has spoken, hashtags in the memo are ordinary text.
 const tagMatchSql = (key: string): string =>
   `(EXISTS (SELECT 1 FROM contribution_group_tags cgt ` +
   `INNER JOIN group_tags gt ON gt.id = cgt.group_tag_id ` +
   `WHERE cgt.contribution_id = Contribution.id AND gt.tag = :${key}) ` +
-  `OR Contribution.memo LIKE :${key}Like)`
+  `OR (${NO_ASSIGNMENT_SQL} AND Contribution.memo LIKE :${key}Like))`
 
-// "Untagged": neither a structured tag nor any inline hashtag in the memo.
+// "Untagged": no structured tag, and — only where nothing was ever assigned — no inline
+// hashtag either. A contribution deliberately set to "no group" is untagged whatever its
+// memo contains.
 const UNTAGGED_SQL =
   `(NOT EXISTS (SELECT 1 FROM contribution_group_tags cgt ` +
-  `WHERE cgt.contribution_id = Contribution.id) AND Contribution.memo NOT LIKE '%#%')`
+  `WHERE cgt.contribution_id = Contribution.id) ` +
+  `AND (Contribution.group_tags_set_at IS NOT NULL OR Contribution.memo NOT LIKE '%#%'))`
 
 // Parse a moderator's stored scope (JSON text on user_roles.visible_group_tags) into a
 // string array. null (= no restriction) for empty/invalid input.

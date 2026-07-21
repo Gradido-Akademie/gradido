@@ -69,6 +69,14 @@ const db = AppDatabase.getInstance()
 const createLogger = () =>
   getLogger(`${LOG4JS_BASE_CATEGORY_NAME}.graphql.resolver.ContributionResolver`)
 
+// Group functions ("Weg A"): the group stays editable while a contribution is still being
+// worked on. Confirmed, denied and deleted ones are closed — their group is part of the
+// record. The admin uses the same list to decide whether to offer the dropdown.
+export const GROUP_TAGS_EDITABLE_STATUS: string[] = [
+  ContributionStatus.PENDING,
+  ContributionStatus.IN_PROGRESS,
+]
+
 @Resolver(() => Contribution)
 export class ContributionResolver {
   @Authorized([RIGHTS.ADMIN_LIST_CONTRIBUTIONS])
@@ -127,6 +135,15 @@ export class ContributionResolver {
     const contribution = await DbContribution.findOne({ where: { id: contributionId } })
     if (!contribution) {
       throw new LogError('Contribution not found', contributionId)
+    }
+    // Only while the contribution is still being worked on. Once it is confirmed, denied or
+    // deleted it is closed, and its group is part of the record — moving it afterwards would
+    // reshuffle what has already been decided and reported on.
+    if (!GROUP_TAGS_EDITABLE_STATUS.includes(contribution.contributionStatus)) {
+      throw new LogError(
+        'Cannot change the group of a closed contribution',
+        contribution.contributionStatus,
+      )
     }
     await setContributionGroupTags(contribution.id, tags)
     return true

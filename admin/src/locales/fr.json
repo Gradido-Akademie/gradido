@@ -28,6 +28,11 @@
   "change_user_role": "Changer le rôle de l'utilisateur",
   "close": "Fermer",
   "contribution": {
+    "changeGroup": "Changer de groupe",
+    "changeGroupConfirm": "Oui, déplacer",
+    "changeGroupDone": "Groupe modifié.",
+    "changeGroupHint": "Selon vos groupes visibles, la contribution pourrait ne plus apparaître dans votre liste.",
+    "changeGroupQuestion": "Déplacer cette contribution de {from} vers {to} ?",
     "confirmedBy": "Confirmé par {name}.",
     "createdBy": "Créé par {name}.",
     "deletedBy": "Supprimé par {name}.",

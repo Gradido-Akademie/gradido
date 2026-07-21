@@ -42,6 +42,10 @@ describe('OpenCreationsTable', () => {
         items: mockItems,
         fields: mockFields,
         hideResubmission: false,
+        groupTags: [
+          { id: 1, tag: 'music', name: 'Musik' },
+          { id: 2, tag: 'sports', name: null },
+        ],
       },
       global: {
         plugins: [store],
@@ -120,6 +124,60 @@ describe('OpenCreationsTable', () => {
     await wrapper.vm.reloadContribution(id)
     expect(wrapper.emitted('reload-contribution')).toBeTruthy()
     expect(wrapper.emitted('reload-contribution')[0]).toEqual([id])
+  })
+
+  // Group functions: the group is editable while a contribution is open, and a change goes
+  // through a confirmation because it can hand the contribution to another moderator.
+  describe('changing the group', () => {
+    it('offers the dropdown only while the contribution is open', () => {
+      expect(wrapper.vm.canEditGroup({ contributionStatus: 'PENDING' })).toBe(true)
+      expect(wrapper.vm.canEditGroup({ contributionStatus: 'IN_PROGRESS' })).toBe(true)
+      expect(wrapper.vm.canEditGroup({ contributionStatus: 'CONFIRMED' })).toBe(false)
+      expect(wrapper.vm.canEditGroup({ contributionStatus: 'DENIED' })).toBe(false)
+      expect(wrapper.vm.canEditGroup({ contributionStatus: 'DELETED' })).toBe(false)
+    })
+
+    it('lists "no group" plus every canonical group', () => {
+      expect(wrapper.vm.groupSelectOptions).toEqual([
+        { value: '', text: 'contribution.noGroup' },
+        { value: 'music', text: 'Musik (#music)' },
+        { value: 'sports', text: '#sports' },
+      ])
+    })
+
+    it('asks before moving, and does not emit yet', async () => {
+      wrapper.vm.onGroupPicked({ id: 7, groupTags: [{ tag: 'music' }] }, 'sports')
+      expect(wrapper.vm.groupChangeModal).toBe(true)
+      expect(wrapper.vm.pendingGroupChange.fromLabel).toBe('Musik (#music)')
+      expect(wrapper.vm.pendingGroupChange.toLabel).toBe('#sports')
+      expect(wrapper.emitted('assign-group')).toBeFalsy()
+    })
+
+    it('emits the change once confirmed', async () => {
+      wrapper.vm.onGroupPicked({ id: 7, groupTags: [{ tag: 'music' }] }, 'sports')
+      wrapper.vm.confirmGroupChange()
+      expect(wrapper.emitted('assign-group')[0]).toEqual([{ contributionId: 7, tags: ['sports'] }])
+      expect(wrapper.vm.groupChangeModal).toBe(false)
+    })
+
+    it('sends an empty list when moving to "no group"', async () => {
+      wrapper.vm.onGroupPicked({ id: 7, groupTags: [{ tag: 'music' }] }, '')
+      wrapper.vm.confirmGroupChange()
+      expect(wrapper.emitted('assign-group')[0]).toEqual([{ contributionId: 7, tags: [] }])
+    })
+
+    it('emits nothing when the change is cancelled', async () => {
+      wrapper.vm.onGroupPicked({ id: 7, groupTags: [{ tag: 'music' }] }, 'sports')
+      wrapper.vm.cancelGroupChange()
+      expect(wrapper.emitted('assign-group')).toBeFalsy()
+      expect(wrapper.vm.groupChangeModal).toBe(false)
+    })
+
+    it('ignores picking the group the contribution already has', async () => {
+      wrapper.vm.onGroupPicked({ id: 7, groupTags: [{ tag: 'music' }] }, 'music')
+      expect(wrapper.vm.groupChangeModal).toBe(false)
+      expect(wrapper.emitted('assign-group')).toBeFalsy()
+    })
   })
 
   it('gets correct status icon', () => {

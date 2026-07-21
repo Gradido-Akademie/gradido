@@ -65,6 +65,8 @@
       :fields="fields"
       :hide-resubmission="hideResubmission"
       :crea-open-only="creaOpenOnly"
+      :group-tags="groupTagsResult?.groupTags ?? []"
+      @assign-group="assignGroup"
       @show-overlay="showOverlay"
       @update-status="updateStatus"
       @reload-contribution="reloadContribution"
@@ -128,7 +130,7 @@ import UserQuery from '../components/UserQuery'
 import AiChat from '../components/AiChat'
 import CreaEvaluationModal from '../components/CreaEvaluationModal'
 import { adminListContributions } from '../graphql/adminListContributions.graphql'
-import { groupTags } from '../graphql/groupTags.graphql'
+import { groupTags, assignContributionGroupTags } from '../graphql/groupTags.graphql'
 import { adminDeleteContribution } from '../graphql/adminDeleteContribution'
 import { confirmContribution } from '../graphql/confirmContribution'
 import { denyContribution } from '../graphql/denyContribution'
@@ -377,6 +379,27 @@ onResult(() => {
   if (statusFilter.value.toString() === FILTER_TAB_MAP[0].toString()) {
     store.commit('setOpenCreations', result.value.adminListContributions.contributionCount)
   }
+})
+
+// Group functions: move a contribution to another group (or to none). The table asks for
+// confirmation first; the backend refuses once the contribution is closed.
+const {
+  mutate: assignGroupMutation,
+  onDone: onAssignGroupDone,
+  onError: onAssignGroupError,
+} = useMutation(assignContributionGroupTags)
+
+const assignGroup = ({ contributionId, tags }) => {
+  assignGroupMutation({ contributionId, tags })
+}
+
+onAssignGroupDone(() => {
+  refetch()
+  toastSuccess(t('contribution.changeGroupDone'))
+})
+
+onAssignGroupError((error) => {
+  toastError(error.message)
 })
 
 const {
