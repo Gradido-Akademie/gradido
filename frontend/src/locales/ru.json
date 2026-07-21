@@ -91,6 +91,11 @@
       "openAmountForMonth": "За <b>{monthAndYear}</b> вы можете ещё только <b>{creation}</b> GDD указать.",
       "yourContribution": "Ваш вклад в общее благо"
     },
+    "groupTag": {
+      "help": "Optional. It works without a group, too.",
+      "label": "Group",
+      "none": "(no group)"
+    },
     "isEdited": "отредактировал вклад",
     "lastContribution": "Последние вклады",
     "noContributions": {
@@ -113,7 +118,6 @@
   "contribution-link": {
     "thanksYouWith": "благодарит вас за"
   },
-  "contributionText": "Текст вклада",
   "copy-to-clipboard": "Копировать в буфер обмена",
   "creation": "Создать",
   "decay": {

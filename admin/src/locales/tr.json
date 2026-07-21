@@ -31,7 +31,8 @@
     "confirmedBy": "{name} tarafından onaylandı.",
     "createdBy": "{name} tarafından oluşturuldu.",
     "deletedBy": "{name} tarafından silindi.",
-    "deniedBy": "{name} tarafından reddedildi."
+    "deniedBy": "{name} tarafından reddedildi.",
+    "noGroup": "(no group)"
   },
   "contributionLink": {
     "amount": "Tutar",

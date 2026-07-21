@@ -38,6 +38,10 @@ query listContributions ($pagination: Paginated!) {
       id
       amount
       memo
+      groupTags {
+        tag
+        name
+      }
       contributionDate
       contributionStatus
       messagesCount
@@ -56,6 +60,10 @@ query listAllContributions ($pagination: Paginated!) {
     contributionList {
       amount
       memo
+      groupTags {
+        tag
+        name
+      }
       user {
         ...userFields
       }      

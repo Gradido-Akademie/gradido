@@ -91,6 +91,11 @@
       "openAmountForMonth": "<b>{monthAndYear}</b> tarihi için <b>{creation}</b> hala GDD gönderebilirsin.",
       "yourContribution": "Yaptığın hizmetin topluma katkısı"
     },
+    "groupTag": {
+      "help": "Optional. It works without a group, too.",
+      "label": "Group",
+      "none": "(no group)"
+    },
     "isEdited": "katkıyı düzenledi",
     "lastContribution": "Son Katkılar",
     "noContributions": {
@@ -113,7 +118,6 @@
   "contribution-link": {
     "thanksYouWith": "Sana gönderiyor"
   },
-  "contributionText": "Katkı Metni",
   "copy-to-clipboard": "Panoya kopyala",
   "creation": "Yarat",
   "decay": {

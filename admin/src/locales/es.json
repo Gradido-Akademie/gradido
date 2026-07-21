@@ -31,7 +31,8 @@
     "confirmedBy": "Confirmado por {name}.",
     "createdBy": "Creado por {name}.",
     "deletedBy": "Eliminado por {name}.",
-    "deniedBy": "Rechazado por {name}."
+    "deniedBy": "Rechazado por {name}.",
+    "noGroup": "(no group)"
   },
   "contributionLink": {
     "amount": "Importe",

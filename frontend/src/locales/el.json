@@ -91,6 +91,11 @@
       "openAmountForMonth": "Για τον <b>{monthAndYear}</b>, μπορείς ακόμη να υποβάλεις <b>{creation}</b> GDD.",
       "yourContribution": "Η συνεισφορά σου στο κοινό καλό"
     },
+    "groupTag": {
+      "help": "Optional. It works without a group, too.",
+      "label": "Group",
+      "none": "(no group)"
+    },
     "isEdited": "επεξεργάστηκε τη συνεισφορά",
     "lastContribution": "Τελευταίες συνεισφορές",
     "noContributions": {
@@ -113,7 +118,6 @@
   "contribution-link": {
     "thanksYouWith": "σε ευχαριστεί με"
   },
-  "contributionText": "Κείμενο συνεισφοράς",
   "copy-to-clipboard": "Αντιγραφή στο πρόχειρο",
   "creation": "Δημιουργία",
   "decay": {
