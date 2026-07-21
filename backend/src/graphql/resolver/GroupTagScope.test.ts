@@ -3,6 +3,7 @@ import { cleanDB, resetToken, testEnvironment } from '@test/helpers'
 import { ApolloServerTestClient } from 'apollo-server-testing'
 import { AppDatabase, Contribution as DbContribution, User, UserRole } from 'database'
 import { getLogger as originalGetLogger } from 'log4js'
+import { In } from 'typeorm'
 import { userFactory } from '@/seeds/factory/user'
 import { createContribution, denyContribution, login } from '@/seeds/graphql/mutations'
 import { adminListContributionMessages, adminListContributions } from '@/seeds/graphql/queries'
@@ -97,7 +98,10 @@ describe('adminListContributions — moderator visibility scope', () => {
     // contributions have to look like the stock that predates the group field: submitting
     // through the group field stamps group_tags_set_at, and a stamped contribution ignores
     // hashtags in its memo. Clearing the stamp reproduces the older rows.
-    await DbContribution.update({}, { groupTagsSetAt: null })
+    await DbContribution.update(
+      { memo: In([FIREFIGHTER, MUSIC, UNTAGGED]) },
+      { groupTagsSetAt: null },
+    )
 
     // Promote the user to MODERATOR, scoped to the "firefighter" group only.
     const role = UserRole.create()
@@ -180,7 +184,10 @@ describe('adminListContributions — moderator visibility scope', () => {
     })
     resetToken()
     // Legacy stock again — see the note in beforeAll.
-    await DbContribution.update({}, { groupTagsSetAt: null })
+    await DbContribution.update(
+      { memo: In([FIREFIGHTER, MUSIC, UNTAGGED]) },
+      { groupTagsSetAt: null },
+    )
 
     // … while the moderator is scoped to the very same tag written all in lower case.
     // The tables are utf8mb4_unicode_ci, so the comparison ignores case and the two match.

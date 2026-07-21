@@ -68,11 +68,16 @@ const loginAs = async (email: string): Promise<void> => {
   await mutate({ mutation: login, variables: { email, password: 'Aa12345_' } })
 }
 
+// Fail loudly when a fixture does not get created — a silently missing contribution turns
+// every assertion below into a puzzle about the wrong thing.
 const submit = async (memo: string, groupTags: string[]): Promise<void> => {
-  await mutate({
+  const { errors } = await mutate({
     mutation: createContribution,
     variables: { amount: '100', memo, contributionDate: new Date().toString(), groupTags },
   })
+  if (errors) {
+    throw new Error(`could not create fixture "${memo}": ${JSON.stringify(errors)}`)
+  }
 }
 
 // Undo the stamp, reproducing a contribution written before the group field existed.
