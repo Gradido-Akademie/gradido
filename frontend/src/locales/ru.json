@@ -62,9 +62,12 @@
     "community": "Сообщество",
     "communityMember": "Вы — активный участник",
     "continue-to-registration": "Перейти к регистрации",
+    "groupsAndModerators": "Группы и модераторы",
     "moderator": "Модератор",
-    "moderators": "Модераторы",
+    "moderatorsAllGroups": "Для всех групп",
+    "moderatorsUntagged": "Вклады без группы",
     "myContributions": "Мой вклад на всеобщее благо",
+    "noModerators": "Модератора пока нет",
     "submitContribution": "Внести взнос"
   },
   "communityInfo": "Информация о сообществе",

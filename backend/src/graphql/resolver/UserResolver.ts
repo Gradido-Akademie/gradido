@@ -9,8 +9,9 @@ import { OptInType } from '@enum/OptInType'
 import { Order } from '@enum/Order'
 import { PasswordEncryptionType } from '@enum/PasswordEncryptionType'
 import { PublishNameType } from '@enum/PublishNameType'
+import { RoleNames } from '@enum/RoleNames'
 import { UserContactType } from '@enum/UserContactType'
-import { SearchAdminUsersResult } from '@model/AdminUser'
+import { AdminUser, SearchAdminUsersResult } from '@model/AdminUser'
 import { GmsUserAuthenticationResult } from '@model/GmsUserAuthenticationResult'
 import { User } from '@model/User'
 import { SearchUsersResult, UserAdmin } from '@model/UserAdmin'
@@ -953,10 +954,13 @@ export class UserResolver {
     @Args()
     { currentPage = 1, pageSize = 25, order = Order.DESC }: Paginated,
   ): Promise<SearchAdminUsersResult> {
+    // MODERATOR_AI belongs here too: a KI-Moderator is a moderator who may additionally use
+    // Crea, so leaving the role out would drop real moderators from the community info page
+    // and leave their groups without a contact.
     const [users, count] = await DbUser.findAndCount({
       relations: ['userRoles'],
       where: {
-        userRoles: { role: In(['admin', 'moderator']) },
+        userRoles: { role: In([RoleNames.ADMIN, RoleNames.MODERATOR, RoleNames.MODERATOR_AI]) },
       },
       order: {
         createdAt: order,
@@ -966,13 +970,7 @@ export class UserResolver {
     })
     return {
       userCount: count,
-      userList: users.map((user) => {
-        return {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.userRoles ? user.userRoles[0].role : '',
-        }
-      }),
+      userList: users.map((user) => new AdminUser(user)),
     }
   }
 

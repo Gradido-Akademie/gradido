@@ -48,6 +48,30 @@ export const assertContributionInModeratorScope = async (
 // sentinels '*all' (see everything) and '*untagged' (contributions without a tag).
 const SCOPE_SENTINELS = ['*all', '*untagged']
 
+// How a user's groups read on the community info page: which groups they moderate, and
+// whether they are unrestricted. An empty scope, a missing scope and the '*all' sentinel
+// all mean "no restriction" — the very reading the contribution list uses — so a moderator
+// nobody has assigned yet is shown as covering everything instead of covering nothing.
+// Roles that are not scoped at all (admins) are unrestricted by definition.
+export interface ModeratorGroups {
+  tags: string[]
+  seesAllGroups: boolean
+}
+
+export const describeModeratorGroups = (role?: DbUserRole | null): ModeratorGroups => {
+  if (!role || !isScopedModeratorRole(role.role)) {
+    return { tags: [], seesAllGroups: true }
+  }
+  const scope = parseModeratorScope(role.visibleGroupTags)
+  if (!scope || scope.includes('*all')) {
+    return { tags: [], seesAllGroups: true }
+  }
+  const tags = scope.filter((tag) => tag.length > 0 && !tag.startsWith('*'))
+  // Only sentinels left (in practice just '*untagged'): a real, narrow assignment, not a
+  // free pass — the page lists these moderators under their own heading.
+  return { tags, seesAllGroups: false }
+}
+
 export const loadModeratorScope = async (userId: number): Promise<string[]> => {
   const role = await DbUserRole.findOne({ where: { userId } })
   return parseModeratorScope(role?.visibleGroupTags ?? null) ?? []

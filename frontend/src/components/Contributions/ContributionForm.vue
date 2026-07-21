@@ -114,6 +114,7 @@ import {
   groupTags as groupTagsQuery,
   myGroupTags as myGroupTagsQuery,
 } from '@/graphql/contributions.graphql'
+import { groupTagLabel } from '@/utils/groupTagLabel'
 
 const amountToHours = (amount) => parseFloat(amount / GDD_PER_HOUR).toFixed(2)
 const hoursToAmount = (hours) => parseFloat(hours * GDD_PER_HOUR).toFixed(2)
@@ -154,7 +155,7 @@ const groupTagSelectOptions = computed(() => [
   { value: '', text: t('contribution.groupTag.none') },
   ...(groupTagsResult.value?.groupTags ?? []).map((groupTag) => ({
     value: groupTag.tag,
-    text: groupTag.name ? `${groupTag.name} (#${groupTag.tag})` : `#${groupTag.tag}`,
+    text: groupTagLabel(groupTag),
   })),
 ])
 
