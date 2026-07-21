@@ -56,6 +56,34 @@ export const parseModeratorScope = (raw: string | null | undefined): string[] | 
   }
 }
 
+// Build the SQL predicate for a moderator scope, or null when the scope imposes no
+// restriction ('*all', or nothing selectable at all). Shared by the contribution list and
+// the per-contribution action guard, so the two can never drift apart.
+export const buildModeratorScopePredicate = (
+  moderatorScope: string[],
+): { sql: string; params: Record<string, string> } | null => {
+  if (moderatorScope.includes('*all')) {
+    return null
+  }
+  const realTags = moderatorScope.filter((tag) => tag.length > 0 && !tag.startsWith('*'))
+  const includeUntagged = moderatorScope.includes('*untagged')
+  if (realTags.length === 0 && !includeUntagged) {
+    return null
+  }
+  const parts: string[] = []
+  const params: Record<string, string> = {}
+  realTags.forEach((tag, index) => {
+    const key = `scopeTag${index}`
+    parts.push(tagMatchSql(key))
+    params[key] = tag
+    params[`${key}Like`] = `%#${tag}%`
+  })
+  if (includeUntagged) {
+    parts.push(UNTAGGED_SQL)
+  }
+  return { sql: `(${parts.join(' OR ')})`, params }
+}
+
 export const findContributions = async (
   { pageSize, currentPage, order }: Paginated,
   filter: SearchContributionsFilterArgs,
@@ -121,22 +149,10 @@ export const findContributions = async (
   // Hard moderator visibility scope: a group moderator only sees the contributions of the
   // tags they are authorised for. null / '*all' = no restriction (existing moderators keep
   // full visibility); '*untagged' = contributions without any tag.
-  if (moderatorScope && !moderatorScope.includes('*all')) {
-    const realTags = moderatorScope.filter((tag) => tag.length > 0 && !tag.startsWith('*'))
-    const includeUntagged = moderatorScope.includes('*untagged')
-    if (realTags.length > 0 || includeUntagged) {
-      const parts: string[] = []
-      const params: Record<string, string> = {}
-      realTags.forEach((tag, index) => {
-        const key = `scopeTag${index}`
-        parts.push(tagMatchSql(key))
-        params[key] = tag
-        params[`${key}Like`] = `%#${tag}%`
-      })
-      if (includeUntagged) {
-        parts.push(UNTAGGED_SQL)
-      }
-      queryBuilder.andWhere(`(${parts.join(' OR ')})`, params)
+  if (moderatorScope) {
+    const scopePredicate = buildModeratorScopePredicate(moderatorScope)
+    if (scopePredicate) {
+      queryBuilder.andWhere(scopePredicate.sql, scopePredicate.params)
     }
   }
   if (countOnly) {

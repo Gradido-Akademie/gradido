@@ -1,11 +1,11 @@
 import { RoleNames } from '@enum/RoleNames'
 import { cleanDB, resetToken, testEnvironment } from '@test/helpers'
 import { ApolloServerTestClient } from 'apollo-server-testing'
-import { AppDatabase, User, UserRole } from 'database'
+import { AppDatabase, Contribution as DbContribution, User, UserRole } from 'database'
 import { getLogger as originalGetLogger } from 'log4js'
 import { userFactory } from '@/seeds/factory/user'
-import { createContribution, login } from '@/seeds/graphql/mutations'
-import { adminListContributions } from '@/seeds/graphql/queries'
+import { createContribution, denyContribution, login } from '@/seeds/graphql/mutations'
+import { adminListContributionMessages, adminListContributions } from '@/seeds/graphql/queries'
 import { bibiBloxberg } from '@/seeds/users/bibi-bloxberg'
 import { peterLustig } from '@/seeds/users/peter-lustig'
 import { parseModeratorScope } from './util/findContributions'
@@ -70,6 +70,11 @@ const listMemos = async (): Promise<string[]> => {
   return contributionList.map((contribution: { memo: string }) => contribution.memo)
 }
 
+const contributionIdByMemo = async (memo: string): Promise<number> => {
+  const contribution = await DbContribution.findOneOrFail({ where: { memo } })
+  return contribution.id
+}
+
 describe('adminListContributions — moderator visibility scope', () => {
   let moderator: User
 
@@ -127,6 +132,36 @@ describe('adminListContributions — moderator visibility scope', () => {
     expect(memos).toContain(FIREFIGHTER)
     expect(memos).not.toContain(MUSIC)
     expect(memos).not.toContain(UNTAGGED)
+  })
+
+  // The scope is a real access boundary, not only a list filter: acting on a single
+  // contribution by id must be refused just the same. Past work stays in the record —
+  // this only gates what is attempted now.
+  it('refuses to read the messages of a contribution outside the scope', async () => {
+    const musicId = await contributionIdByMemo(MUSIC)
+    await loginAs('bibi@bloxberg.de')
+    const { errors } = await query({
+      query: adminListContributionMessages,
+      variables: { contributionId: musicId },
+    })
+    expect(errors?.[0]?.message).toContain('outside the moderator group scope')
+  })
+
+  it('allows reading the messages of a contribution inside the scope', async () => {
+    const firefighterId = await contributionIdByMemo(FIREFIGHTER)
+    await loginAs('bibi@bloxberg.de')
+    const { errors } = await query({
+      query: adminListContributionMessages,
+      variables: { contributionId: firefighterId },
+    })
+    expect(errors).toBeUndefined()
+  })
+
+  it('refuses a moderation action on a contribution outside the scope', async () => {
+    const musicId = await contributionIdByMemo(MUSIC)
+    await loginAs('bibi@bloxberg.de')
+    const { errors } = await mutate({ mutation: denyContribution, variables: { id: musicId } })
+    expect(errors?.[0]?.message).toContain('outside the moderator group scope')
   })
 })
 

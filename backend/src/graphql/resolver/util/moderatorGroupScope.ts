@@ -1,14 +1,47 @@
 import { RoleNames } from '@enum/RoleNames'
-import { GroupTag as DbGroupTag, UserRole as DbUserRole } from 'database'
+import {
+  Contribution as DbContribution,
+  GroupTag as DbGroupTag,
+  UserRole as DbUserRole,
+} from 'database'
 import { In } from 'typeorm'
 import { LogError } from '@/server/LogError'
-import { parseModeratorScope } from './findContributions'
+import { buildModeratorScopePredicate, parseModeratorScope } from './findContributions'
 
 // Both moderator kinds are scoped alike: a MODERATOR_AI is a moderator who may additionally
 // use Crea — not a wider role. Every visibility-scope check goes through this helper, so a
 // moderator-like role cannot silently slip past the scope. Admins stay unrestricted.
 export const isScopedModeratorRole = (role?: string | null): boolean =>
   role === RoleNames.MODERATOR || role === RoleNames.MODERATOR_AI
+
+// The visibility scope is a real access boundary, not merely a list filter: a scoped
+// moderator may only act on contributions their scope covers. This gates the action being
+// attempted NOW — anything they did earlier stays untouched in the record, it just cannot
+// be continued once the group is taken away. Matching runs through the very same predicate
+// as the contribution list, so view and action can never disagree.
+export const assertContributionInModeratorScope = async (
+  contributionId: number,
+  role?: DbUserRole | null,
+): Promise<void> => {
+  if (!role || !isScopedModeratorRole(role.role)) {
+    return
+  }
+  const scope = parseModeratorScope(role.visibleGroupTags)
+  if (!scope) {
+    return
+  }
+  const predicate = buildModeratorScopePredicate(scope)
+  if (!predicate) {
+    return
+  }
+  const inScope = await DbContribution.createQueryBuilder('Contribution')
+    .where('Contribution.id = :contributionId', { contributionId })
+    .andWhere(predicate.sql, predicate.params)
+    .getCount()
+  if (inScope === 0) {
+    throw new LogError('Contribution is outside the moderator group scope', contributionId)
+  }
+}
 
 // Group functions ("Weg A"): a moderator's visibility scope, stored as a JSON array on
 // user_roles.visible_group_tags. Values are canonical group tags plus the reserved
