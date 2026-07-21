@@ -28,6 +28,11 @@
   "change_user_role": "Nutzerrolle ändern",
   "close": "Schließen",
   "contribution": {
+    "changeGroup": "Gruppe ändern",
+    "changeGroupConfirm": "Ja, verschieben",
+    "changeGroupDone": "Gruppe geändert.",
+    "changeGroupHint": "Je nach Deinem Sichtbereich erscheint der Beitrag danach nicht mehr in Deiner Liste.",
+    "changeGroupQuestion": "Diesen Beitrag von {from} nach {to} verschieben?",
     "confirmedBy": "Bestätigt von {name}.",
     "createdBy": "Erstellt von {name}.",
     "deletedBy": "Gelöscht von {name}.",

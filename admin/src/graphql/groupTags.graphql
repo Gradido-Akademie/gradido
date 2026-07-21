@@ -45,3 +45,9 @@ mutation updateGroupTag($id: Int!, $tag: String, $name: String) {
     name
   }
 }
+
+# Move a contribution to another group (or to none). Only while it is still open;
+# the backend refuses once it is confirmed, denied or deleted.
+mutation assignContributionGroupTags($contributionId: Int!, $tags: [String!]!) {
+  assignContributionGroupTags(contributionId: $contributionId, tags: $tags)
+}

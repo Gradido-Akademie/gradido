@@ -28,6 +28,11 @@
   "change_user_role": "Αλλαγή ρόλου χρήστη",
   "close": "Κλείσιμο",
   "contribution": {
+    "changeGroup": "Αλλαγή ομάδας",
+    "changeGroupConfirm": "Ναι, μετακίνηση",
+    "changeGroupDone": "Η ομάδα άλλαξε.",
+    "changeGroupHint": "Ανάλογα με τις ορατές ομάδες σας, η συνεισφορά μπορεί να μην εμφανίζεται πλέον στη λίστα σας.",
+    "changeGroupQuestion": "Μετακίνηση αυτής της συνεισφοράς από {from} σε {to};",
     "confirmedBy": "Επιβεβαιώθηκε από {name}.",
     "createdBy": "Δημιουργήθηκε από {name}.",
     "deletedBy": "Διαγράφηκε από {name}.",

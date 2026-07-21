@@ -28,6 +28,11 @@
   "change_user_role": "Изменить роль пользователя",
   "close": "Закрыть",
   "contribution": {
+    "changeGroup": "Изменить группу",
+    "changeGroupConfirm": "Да, переместить",
+    "changeGroupDone": "Группа изменена.",
+    "changeGroupHint": "В зависимости от ваших видимых групп вклад может больше не отображаться в вашем списке.",
+    "changeGroupQuestion": "Переместить этот вклад из {from} в {to}?",
     "confirmedBy": "Подтверждено пользователем {name}.",
     "createdBy": "Создано пользователем {name}.",
     "deletedBy": "Удалено пользователем {name}.",

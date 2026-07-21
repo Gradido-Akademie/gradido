@@ -54,11 +54,22 @@
         </span>
       </template>
       <template #cell(memo)="row">
-        <div class="fw-bold mb-1">
-          <span v-if="groupLabel(row.item)">{{ groupLabel(row.item) }}</span>
-          <span v-else class="fw-normal fst-italic text-muted">
-            {{ $t('contribution.noGroup') }}
-          </span>
+        <div class="mb-1">
+          <BFormSelect
+            v-if="canEditGroup(row.item)"
+            :model-value="currentGroupTag(row.item)"
+            :options="groupSelectOptions"
+            size="sm"
+            class="group-select"
+            :aria-label="$t('contribution.changeGroup')"
+            @update:model-value="onGroupPicked(row.item, $event)"
+          />
+          <div v-else class="fw-bold">
+            <span v-if="groupLabel(row.item)">{{ groupLabel(row.item) }}</span>
+            <span v-else class="fw-normal fst-italic text-muted">
+              {{ $t('contribution.noGroup') }}
+            </span>
+          </div>
         </div>
         {{ row.value }}
         <small v-if="isAddCommentToMemo(row.item)" class="no-select">
@@ -174,6 +185,27 @@
         </row-details>
       </template>
     </BTableLite>
+
+    <BModal
+      id="change-group-modal"
+      v-model="groupChangeModal"
+      :title="$t('contribution.changeGroup')"
+      :ok-title="$t('contribution.changeGroupConfirm')"
+      :cancel-title="$t('overlay.cancel')"
+      @ok="confirmGroupChange"
+      @cancel="cancelGroupChange"
+      @close="cancelGroupChange"
+    >
+      <p>
+        {{
+          $t('contribution.changeGroupQuestion', {
+            from: pendingGroupChange.fromLabel,
+            to: pendingGroupChange.toLabel,
+          })
+        }}
+      </p>
+      <p class="fst-italic text-muted mb-0">{{ $t('contribution.changeGroupHint') }}</p>
+    </BModal>
   </div>
 </template>
 
@@ -219,8 +251,14 @@ export default {
       type: Boolean,
       default: false,
     },
+    groupTags: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   emits: [
+    'assign-group',
     'update-contributions',
     'reload-contribution',
     'update-status',
@@ -234,7 +272,22 @@ export default {
       slotIndex: 0,
       openRow: null,
       creationUserData: {},
+      groupChangeModal: false,
+      pendingGroupChange: { contributionId: null, tag: '', fromLabel: '', toLabel: '' },
     }
+  },
+  computed: {
+    // "no group" plus one entry per canonical group, written the way groups are written
+    // everywhere else.
+    groupSelectOptions() {
+      return [
+        { value: '', text: this.$t('contribution.noGroup') },
+        ...this.groupTags.map((group) => ({
+          value: group.tag,
+          text: group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`,
+        })),
+      ]
+    },
   },
   mounted() {
     this.addClipboardListener()
@@ -291,6 +344,47 @@ export default {
         this.openRow = row
         this.creationUserData = row.item
       }
+    },
+    // Group functions: the group is editable while the contribution is still being worked
+    // on. Once it is confirmed, denied or deleted it is closed and the group is part of the
+    // record — the backend enforces the same list, this only decides what to offer.
+    canEditGroup(item) {
+      return ['PENDING', 'IN_PROGRESS'].includes(item.contributionStatus)
+    },
+    currentGroupTag(item) {
+      return item.groupTags?.[0]?.tag ?? ''
+    },
+    groupOptionLabel(tag) {
+      return this.groupSelectOptions.find((option) => option.value === tag)?.text ?? tag
+    },
+    // Moving a contribution to another group is easy to do by accident and can hand it to a
+    // different moderator, so it goes through a confirmation rather than firing on pick.
+    onGroupPicked(item, tag) {
+      const current = this.currentGroupTag(item)
+      if (tag === current) {
+        return
+      }
+      this.pendingGroupChange = {
+        contributionId: item.id,
+        tag,
+        fromLabel: this.groupOptionLabel(current),
+        toLabel: this.groupOptionLabel(tag),
+      }
+      this.groupChangeModal = true
+    },
+    confirmGroupChange() {
+      const { contributionId, tag } = this.pendingGroupChange
+      this.$emit('assign-group', { contributionId, tags: tag ? [tag] : [] })
+      this.resetGroupChange()
+    },
+    // The select is bound to the item, so dropping the pending change is enough to snap it
+    // back to what the contribution actually says.
+    cancelGroupChange() {
+      this.resetGroupChange()
+    },
+    resetGroupChange() {
+      this.pendingGroupChange = { contributionId: null, tag: '', fromLabel: '', toLabel: '' }
+      this.groupChangeModal = false
     },
     // Group functions: "Name (#tag)" for the groups a contribution belongs to, shown above
     // the text. Several groups are listed one after another.
