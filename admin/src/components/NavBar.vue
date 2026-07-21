@@ -44,7 +44,7 @@
             to="/creaSettings"
             :active="isActive('creaSettings')"
           >
-            {{ $t('crea.settings.title') }}
+            {{ $t('navbar.crea') }}
           </BNavItem>
           <BNavItem
             v-if="store.state.moderator?.roles?.includes('ADMIN')"
