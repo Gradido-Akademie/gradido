@@ -57,8 +57,10 @@ export const loadUserContributions = async (
   const { order, currentPage, pageSize } = paginated
   // Ids first (cheap and filterable), then the full rows with their relations. The two-step
   // shape is kept on purpose — typeorm would otherwise generate one much slower join query.
+  // createdAt has to be selected as well: with skip/take typeorm wraps this in a
+  // "distinctAlias" subquery that must carry every column we order by.
   const idQuery = DbContribution.createQueryBuilder('Contribution')
-    .select(['Contribution.id'])
+    .select(['Contribution.id', 'Contribution.createdAt'])
     .where('Contribution.userId = :userId', { userId })
     .withDeleted()
   // Own contributions: searching by name is pointless, they all belong to this member.
@@ -91,7 +93,12 @@ export const loadAllContributions = async (
 ): Promise<[DbContribution[], number]> => {
   const { order, currentPage, pageSize } = paginated
   // Same two-step shape as above: filterable id selection first, then the full rows.
-  const idQuery = DbContribution.createQueryBuilder('Contribution').select(['Contribution.id'])
+  // See above: createdAt must be in the select, otherwise the "distinctAlias" subquery
+  // typeorm builds for skip/take cannot order by it (fails as soon as the user is joined).
+  const idQuery = DbContribution.createQueryBuilder('Contribution').select([
+    'Contribution.id',
+    'Contribution.createdAt',
+  ])
   // The community list may be searched by the submitter's name — never by e-mail.
   if (filter?.query) {
     idQuery.leftJoin('Contribution.user', 'user')
