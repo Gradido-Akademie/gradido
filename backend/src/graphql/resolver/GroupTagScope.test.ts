@@ -113,6 +113,21 @@ describe('adminListContributions — moderator visibility scope', () => {
     const memos = await listMemos()
     expect(memos).toEqual(expect.arrayContaining([FIREFIGHTER, MUSIC, UNTAGGED]))
   })
+
+  it('binds a KI-Moderator (MODERATOR_AI) to the very same scope', async () => {
+    // ROLE_MODERATOR_AI = MODERATOR_RIGHTS + Crea, i.e. a moderator who may additionally use
+    // the AI assistant — not a wider role. The visibility scope must bind them exactly like a
+    // plain MODERATOR, otherwise a KI-Moderator would silently see every group.
+    const role = await UserRole.findOneOrFail({ where: { userId: moderator.id } })
+    role.role = RoleNames.MODERATOR_AI
+    await role.save()
+
+    await loginAs('bibi@bloxberg.de')
+    const memos = await listMemos()
+    expect(memos).toContain(FIREFIGHTER)
+    expect(memos).not.toContain(MUSIC)
+    expect(memos).not.toContain(UNTAGGED)
+  })
 })
 
 describe('parseModeratorScope', () => {

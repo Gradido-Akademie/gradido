@@ -423,7 +423,7 @@
     "scope": {
       "all": "all groups",
       "help": "Empty = all contributions.",
-      "label": "Visible groups (moderator)",
+      "label": "Visible groups",
       "untagged": "untagged"
     },
     "selectLabel": "Rôle :",
