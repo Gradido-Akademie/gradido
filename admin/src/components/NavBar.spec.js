@@ -17,11 +17,12 @@ vi.mock('vue-router', async () => {
   }
 })
 
-const createVuexStore = () =>
+const createVuexStore = (roles = ['ADMIN']) =>
   createStore({
     state: {
       openCreations: 1,
       token: 'valid-token',
+      moderator: { roles },
     },
     actions: {
       logout: vi.fn(),
@@ -75,6 +76,9 @@ describe('NavBar', () => {
         { path: '/creation-confirm', name: 'creation-confirm' },
         { path: '/contribution-links', name: 'contribution-links' },
         { path: '/federation', name: 'federation' },
+        { path: '/projectBranding', name: 'projectBranding' },
+        { path: '/creaSettings', name: 'creaSettings' },
+        { path: '/group-tags', name: 'group-tags' },
         { path: '/statistic', name: 'statistic' },
       ],
     })
@@ -99,15 +103,45 @@ describe('NavBar', () => {
   })
 
   describe('Navbar Menu', () => {
+    const hrefs = () => wrapper.findAll('.nav-item a').map((item) => item.attributes('href'))
+
     it('has correct menu items', () => {
-      const navItems = wrapper.findAll('.nav-item a')
-      expect(navItems).toHaveLength(8)
-      expect(navItems[0].attributes('href')).toBe('/user')
-      expect(navItems[1].attributes('href')).toBe('/creation-confirm')
-      expect(navItems[2].attributes('href')).toBe('/contribution-links')
-      expect(navItems[3].attributes('href')).toBe('/federation')
-      expect(navItems[4].attributes('href')).toBe('/projectBranding')
-      expect(navItems[5].attributes('href')).toBe('/statistic')
+      expect(hrefs()).toEqual([
+        '/user',
+        '/creation-confirm',
+        '/contribution-links',
+        '/federation',
+        '/projectBranding',
+        '/creaSettings',
+        '/group-tags',
+        '/statistic',
+        '#',
+        '#',
+      ])
+    })
+
+    // Starting balance, instances, projects, Crea and the group list are administrators'
+    // business. Hiding them is only half of it — the router guard keeps the URLs out too.
+    describe('as a moderator', () => {
+      beforeEach(() => {
+        store = createVuexStore(['MODERATOR'])
+        wrapper = createWrapper()
+      })
+
+      it('leaves out the administrator-only entries', () => {
+        expect(hrefs()).toEqual(['/user', '/creation-confirm', '/statistic', '#', '#'])
+      })
+    })
+
+    describe('as a KI-Moderator', () => {
+      beforeEach(() => {
+        store = createVuexStore(['MODERATOR_AI'])
+        wrapper = createWrapper()
+      })
+
+      it('leaves them out just the same', () => {
+        expect(hrefs()).toEqual(['/user', '/creation-confirm', '/statistic', '#', '#'])
+      })
     })
   })
 
