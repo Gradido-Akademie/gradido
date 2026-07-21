@@ -1,6 +1,7 @@
 import { AdminCreateContributionArgs } from '@arg/AdminCreateContributionArgs'
 import { AdminUpdateContributionArgs } from '@arg/AdminUpdateContributionArgs'
 import { ContributionArgs } from '@arg/ContributionArgs'
+import { ContributionFilterArgs } from '@arg/ContributionFilterArgs'
 import { Paginated } from '@arg/Paginated'
 import { SearchContributionsFilterArgs } from '@arg/SearchContributionsFilterArgs'
 import { ContributionMessageType } from '@enum/ContributionMessageType'
@@ -163,9 +164,11 @@ export class ContributionResolver {
   async listContributions(
     @Ctx() context: Context,
     @Arg('pagination') pagination: Paginated,
+    @Arg('filter', () => ContributionFilterArgs, { nullable: true })
+    filter?: ContributionFilterArgs | null,
   ): Promise<ContributionListResult> {
     const user = getUser(context)
-    const [dbContributions, count] = await loadUserContributions(user.id, pagination)
+    const [dbContributions, count] = await loadUserContributions(user.id, pagination, filter)
 
     // show contributions in progress first
     const inProgressContributions = dbContributions.filter(
@@ -205,8 +208,10 @@ export class ContributionResolver {
   @Query(() => ContributionListResult)
   async listAllContributions(
     @Arg('pagination') pagination: Paginated,
+    @Arg('filter', () => ContributionFilterArgs, { nullable: true })
+    filter?: ContributionFilterArgs | null,
   ): Promise<ContributionListResult> {
-    const [dbContributions, count] = await loadAllContributions(pagination)
+    const [dbContributions, count] = await loadAllContributions(pagination, filter)
     const result = new ContributionListResult(count, dbContributions)
     await attachContributionGroupTags(result.contributionList)
     return result

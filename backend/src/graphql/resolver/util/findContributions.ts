@@ -84,6 +84,15 @@ export const buildModeratorScopePredicate = (
   return { sql: `(${parts.join(' OR ')})`, params }
 }
 
+// A single group filter, as picked from the dropdown in the admin or in the wallet. Matched
+// the same way the list does: a structured link OR a legacy inline "#tag".
+export const buildGroupTagPredicate = (
+  tag: string,
+): { sql: string; params: Record<string, string> } => ({
+  sql: tagMatchSql('groupTagFilter'),
+  params: { groupTagFilter: tag, groupTagFilterLike: `%#${tag}%` },
+})
+
 export const findContributions = async (
   { pageSize, currentPage, order }: Paginated,
   filter: SearchContributionsFilterArgs,
@@ -141,10 +150,8 @@ export const findContributions = async (
   // Group-tag filter from the admin UI (a single selected group). Separate from the
   // free-text `query` above, so both can be applied at the same time.
   if (filter.groupTag) {
-    queryBuilder.andWhere(tagMatchSql('uiGroupTag'), {
-      uiGroupTag: filter.groupTag,
-      uiGroupTagLike: `%#${filter.groupTag}%`,
-    })
+    const groupPredicate = buildGroupTagPredicate(filter.groupTag)
+    queryBuilder.andWhere(groupPredicate.sql, groupPredicate.params)
   }
   // Hard moderator visibility scope: a group moderator only sees the contributions of the
   // tags they are authorised for. null / '*all' = no restriction (existing moderators keep
