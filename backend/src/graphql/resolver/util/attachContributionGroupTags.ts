@@ -22,9 +22,12 @@ const inlineGroupTags = (memo: string, byTag: Map<string, DbGroupTag>): DbGroupT
 }
 
 // Group functions ("Weg A"): fill in the groups a contribution belongs to, for display.
-// Structured links win; where a contribution carries none, a legacy inline "#tag" in the
-// memo is resolved against the canonical list — the same backward compatibility the filter
-// already has, so older contributions show their group instead of reading "no group".
+// Structured links win. The legacy inline "#tag" is resolved against the canonical list
+// only where the group was never set through the group field — no link and no
+// group_tags_set_at stamp — so older contributions still show their group instead of
+// reading "no group", while an assigned one (including one deliberately set to "no group")
+// ignores whatever hashtags its memo happens to contain. Same rule as the search filter and
+// the moderator scope; the three must not drift apart.
 // Batched: two queries for the whole page, not one per contribution.
 export const attachContributionGroupTags = async (contributions: Contribution[]): Promise<void> => {
   if (contributions.length === 0) {
@@ -52,7 +55,8 @@ export const attachContributionGroupTags = async (contributions: Contribution[])
 
   for (const contribution of contributions) {
     const own = structured.get(contribution.id)
-    const tags = own && own.length > 0 ? own : inlineGroupTags(contribution.memo, byTag)
+    const neverAssigned = !own?.length && contribution.groupTagsSetAt === null
+    const tags = own?.length ? own : neverAssigned ? inlineGroupTags(contribution.memo, byTag) : []
     contribution.groupTags = tags.map((tag) => new GroupTag(tag))
   }
 }

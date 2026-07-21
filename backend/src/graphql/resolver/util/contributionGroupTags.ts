@@ -1,10 +1,18 @@
-import { ContributionGroupTag as DbContributionGroupTag, GroupTag as DbGroupTag } from 'database'
+import {
+  Contribution as DbContribution,
+  ContributionGroupTag as DbContributionGroupTag,
+  GroupTag as DbGroupTag,
+} from 'database'
 import { In } from 'typeorm'
 
 // Group functions ("Weg A"): set (replace) the structured group tags of a contribution.
 // Only tags that exist in the canonical list are stored; unknown or invalid tags are
-// ignored (non-blocking on submission — do not scare the user off). A legacy inline
-// "#tag" in the memo is left untouched and stays searchable via the filter fallback.
+// ignored (non-blocking on submission — do not scare the user off).
+//
+// This also stamps group_tags_set_at, including when the group is set to "none": from that
+// moment the contribution's group is what the group field says, and any "#word" in the memo
+// is ordinary text. Contributions that predate the field carry no stamp and keep resolving
+// their inline tag, so the existing stock is unaffected.
 export const setContributionGroupTags = async (
   contributionId: number,
   tags: string[],
@@ -22,6 +30,7 @@ export const setContributionGroupTags = async (
     }
   }
   await DbContributionGroupTag.delete({ contributionId })
+  await DbContribution.update({ id: contributionId }, { groupTagsSetAt: new Date() })
   if (normalised.length === 0) {
     return
   }

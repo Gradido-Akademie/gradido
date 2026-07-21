@@ -294,6 +294,11 @@ export const adminListContributions = gql`
         messagesCount
         deniedAt
         deniedBy
+        groupTags {
+          id
+          tag
+          name
+        }
       }
     }
   }
