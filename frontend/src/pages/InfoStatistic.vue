@@ -53,21 +53,16 @@
 import { ref, computed } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
 import CONFIG from '@/config'
-import { listContributionLinks, searchAdminUsers } from '@/graphql/queries'
+import { searchAdminUsers } from '@/graphql/queries'
 import { groupTags as groupTagsQuery } from '@/graphql/contributions.graphql'
 import { groupTagLabel } from '@/utils/groupTagLabel'
 import { useAppToast } from '../composables/useToast'
 
 const { toastError } = useAppToast()
 
-const count = ref(null)
-const countAdminUser = ref(null)
-const itemsContributionLinks = ref([])
 const itemsAdminUser = ref([])
 const supportMail = CONFIG.COMMUNITY_SUPPORT_MAIL
 
-const { onResult: onContributionLinksResult, onError: onContributionLinksError } =
-  useQuery(listContributionLinks)
 const { onResult: onAdminUsersResult, onError: onAdminUsersError } = useQuery(searchAdminUsers, {
   pageSize: 100,
   currentPage: 1,
@@ -112,22 +107,10 @@ const untaggedModerators = computed(() =>
   moderators.value.filter((item) => !item.seesAllGroups && !item.visibleGroupTags?.length),
 )
 
-onContributionLinksResult(({ data }) => {
-  if (data) {
-    count.value = data.listContributionLinks.count
-    itemsContributionLinks.value = data.listContributionLinks.links
-  }
-})
-
 onAdminUsersResult(({ data }) => {
   if (data) {
-    countAdminUser.value = data.searchAdminUsers.userCount
     itemsAdminUser.value = data.searchAdminUsers.userList
   }
-})
-
-onContributionLinksError(() => {
-  toastError('listContributionLinks has no result, use default data')
 })
 
 onAdminUsersError(() => {
