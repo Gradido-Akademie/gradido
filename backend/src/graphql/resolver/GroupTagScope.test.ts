@@ -184,10 +184,7 @@ describe('adminListContributions — moderator visibility scope', () => {
     })
     resetToken()
     // Legacy stock again — see the note in beforeAll.
-    await DbContribution.update(
-      { memo: In([FIREFIGHTER, MUSIC, UNTAGGED]) },
-      { groupTagsSetAt: null },
-    )
+    await DbContribution.update({ memo: UMLAUT }, { groupTagsSetAt: null })
 
     // … while the moderator is scoped to the very same tag written all in lower case.
     // The tables are utf8mb4_unicode_ci, so the comparison ignores case and the two match.

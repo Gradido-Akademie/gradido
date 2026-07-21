@@ -1,6 +1,6 @@
 import { cleanDB, resetToken, testEnvironment } from '@test/helpers'
 import { ApolloServerTestClient } from 'apollo-server-testing'
-import { AppDatabase, User } from 'database'
+import { AppDatabase, Contribution as DbContribution, User } from 'database'
 import { getLogger as originalGetLogger } from 'log4js'
 import { Order } from '@/graphql/enum/Order'
 import { userFactory } from '@/seeds/factory/user'
@@ -57,6 +57,10 @@ beforeAll(async () => {
       variables: { amount: '100', memo, contributionDate: new Date().toString() },
     })
   }
+  // The tagged fixture relies on the backward-compatible inline-"#tag" route, which only
+  // applies where the group was never set through the group field. Submitting stamps
+  // group_tags_set_at, so clear it to reproduce a contribution from before the field.
+  await DbContribution.update({ memo: TAGGED }, { groupTagsSetAt: null })
   resetToken()
 })
 
