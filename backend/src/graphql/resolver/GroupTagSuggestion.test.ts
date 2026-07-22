@@ -5,6 +5,7 @@ import { getLogger as originalGetLogger } from 'log4js'
 import { userFactory } from '@/seeds/factory/user'
 import { createContribution, login } from '@/seeds/graphql/mutations'
 import { bibiBloxberg } from '@/seeds/users/bibi-bloxberg'
+import { bobBaumeister } from '@/seeds/users/bob-baumeister'
 import { peterLustig } from '@/seeds/users/peter-lustig'
 import { raeuberHotzenplotz } from '@/seeds/users/raeuber-hotzenplotz'
 import { suggestGroupTagForUser } from './util/suggestGroupTag'
@@ -163,5 +164,39 @@ describe('the member has never said anything', () => {
     // contribution lands in the right place.
     await saveUserGroupTags(member.id, ['feuerwehr', 'chor'])
     expect((await suggestGroupTagForUser(member.id))?.tag).toBe('feuerwehr')
+  })
+})
+
+describe('a long-standing member whose whole history is silent', () => {
+  // The case that cannot be tried out by hand: an account from before the group field
+  // that never wrote a hashtag either. Every one of its contributions is legacy stock
+  // saying nothing, so the walk has to run all the way through without ever mistaking
+  // silence for a statement — and then behave exactly as it did before the field
+  // existed: an empty group field.
+  let member: User
+
+  beforeAll(async () => {
+    member = await userFactory(testEnv, bobBaumeister)
+    await loginAs('bob@baumeister.de')
+    for (const memo of [
+      'suggestion: silent legacy, first',
+      'suggestion: silent legacy, second',
+      'suggestion: silent legacy, third',
+    ]) {
+      await submit(memo)
+      await asLegacy(memo)
+    }
+  })
+
+  it('leaves the field empty, as it was before the group field existed', async () => {
+    expect(await suggestGroupTagForUser(member.id)).toBeNull()
+  })
+
+  it('still lets a main tag through, so seeding reaches such an account', async () => {
+    // The second half of the same case, and the one that makes the first bite: silence
+    // must not COUNT as a statement, it must be walked past. If the walk stopped at the
+    // newest silent contribution instead, this would come out null too.
+    await saveUserGroupTags(member.id, ['chor'])
+    expect((await suggestGroupTagForUser(member.id))?.tag).toBe('chor')
   })
 })
