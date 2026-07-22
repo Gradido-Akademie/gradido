@@ -154,7 +154,17 @@ const form = reactive({ ...entityDataToForm.value })
 // dormant group could never be woken up. Pre-filled with the member's own last statement,
 // derived in the backend, unless something is already chosen. Optional / non-blocking.
 const { result: groupTagsResult } = useQuery(groupTagsQuery)
-const { result: suggestedGroupTagResult } = useQuery(suggestedGroupTagQuery)
+// Asked of the server every time, never taken from the cache. Submitting swaps this form
+// out for the success screen (a v-if in ContributionCreate), so coming back mounts a fresh
+// one — and a cached answer would be the one from BEFORE the submission. That is what put
+// the old group back after someone had just switched to "no group". Note that
+// cache-and-network would not do: it hands over the stale value first, and by the time the
+// real answer lands the field is filled, so the guard below refuses to correct it.
+const { result: suggestedGroupTagResult } = useQuery(
+  suggestedGroupTagQuery,
+  {},
+  { fetchPolicy: 'no-cache' },
+)
 
 const selectedGroupTag = ref(form.groupTags?.[0] ?? '')
 

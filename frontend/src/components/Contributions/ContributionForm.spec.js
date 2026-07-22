@@ -219,6 +219,21 @@ describe('ContributionForm', () => {
       expect(mountWith().vm.selectedGroupTag).toBe('feuerwehr')
     })
 
+    it('asks the server for the suggestion instead of trusting the cache', () => {
+      // Submitting swaps this form out for the success screen, so coming back mounts a
+      // fresh one. With the default cache-first policy that fresh form is handed the
+      // answer from BEFORE the submission — which is what put the old group back after
+      // someone had just switched to "no group". Only the policy can be asserted here;
+      // a component test has no Apollo cache to go stale.
+      withSuggestion('feuerwehr')
+      mountWith()
+      expect(useQuery).toHaveBeenCalledWith(
+        suggestedGroupTag,
+        expect.anything(),
+        expect.objectContaining({ fetchPolicy: 'no-cache' }),
+      )
+    })
+
     it('leaves the field empty when there is nothing to suggest', () => {
       // Also the deliberate "no group" case: the backend answers with nothing, and the
       // field must not fall back to some earlier group.
