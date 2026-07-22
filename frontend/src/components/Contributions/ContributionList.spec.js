@@ -130,6 +130,27 @@ describe('ContributionList', () => {
       expect(wrapper.find('div.contribution-list').exists()).toBe(true)
     })
 
+    // Both contribution tabs carry the same group filter, so both have to offer the same
+    // three answers -- this tab was missed once, and the label it used had already been
+    // renamed. BFormSelect is registered app-wide rather than imported, so the test puts
+    // its own stand-in there to read the options off.
+    it('offers all, all groups and no group before the real groups', () => {
+      const SelectStub = {
+        name: 'BFormSelect',
+        props: ['options', 'modelValue'],
+        template: '<select></select>',
+      }
+      const localWrapper = mount(ContributionList, {
+        global: { ...global, stubs: { ...global.stubs, BFormSelect: SelectStub } },
+      })
+      const options = localWrapper.findComponent(SelectStub).props('options')
+      expect(options.slice(0, 3).map((option) => option.value)).toEqual([
+        null,
+        '*grouped',
+        '*untagged',
+      ])
+    })
+
     describe('pagination', () => {
       describe('list count smaller than page size', () => {
         it('has no pagination buttons', () => {
