@@ -178,6 +178,62 @@ describe('OpenCreationsTable', () => {
       expect(wrapper.vm.groupChangeModal).toBe(false)
       expect(wrapper.emitted('assign-group')).toBeFalsy()
     })
+
+    // The dropdown must never show a group the contribution does not have. A pick is only
+    // shown while it is waiting for its answer -- every ending that is not a saved change
+    // has to put it back.
+    describe('what the dropdown shows', () => {
+      const item = { id: 7, groupTags: [{ tag: 'music' }] }
+
+      it('shows the group of the contribution when nothing is pending', () => {
+        expect(wrapper.vm.displayedGroupTag(item)).toBe('music')
+        expect(wrapper.vm.displayedGroupTag({ id: 8, groupTags: [] })).toBe('')
+      })
+
+      it('shows the picked group while the question is open', () => {
+        wrapper.vm.onGroupPicked(item, 'sports')
+        expect(wrapper.vm.displayedGroupTag(item)).toBe('sports')
+      })
+
+      it('puts the old group back when the change is cancelled', () => {
+        wrapper.vm.onGroupPicked(item, 'sports')
+        wrapper.vm.cancelGroupChange()
+        expect(wrapper.vm.displayedGroupTag(item)).toBe('music')
+      })
+
+      it.each(['cancel', 'close', 'esc', 'backdrop'])(
+        'puts the old group back when the dialog ends with "%s"',
+        (trigger) => {
+          wrapper.vm.onGroupPicked(item, 'sports')
+          wrapper.vm.onGroupModalHide({ trigger })
+          expect(wrapper.vm.displayedGroupTag(item)).toBe('music')
+          expect(wrapper.emitted('assign-group')).toBeFalsy()
+        },
+      )
+
+      it('carries the change out and keeps showing it when the dialog ends with "ok"', () => {
+        wrapper.vm.onGroupPicked(item, 'sports')
+        wrapper.vm.onGroupModalHide({ trigger: 'ok' })
+        expect(wrapper.emitted('assign-group')[0]).toEqual([
+          { contributionId: 7, tags: ['sports'] },
+        ])
+        expect(wrapper.vm.displayedGroupTag(item)).toBe('sports')
+      })
+
+      it('puts the old group back when the backend refuses the change', async () => {
+        wrapper.vm.onGroupPicked(item, 'sports')
+        wrapper.vm.onGroupModalHide({ trigger: 'ok' })
+        await wrapper.setProps({ groupChangeFailures: 1 })
+        expect(wrapper.vm.displayedGroupTag(item)).toBe('music')
+      })
+
+      it('stops showing the pick once fresh contributions arrive', async () => {
+        wrapper.vm.onGroupPicked(item, 'sports')
+        wrapper.vm.onGroupModalHide({ trigger: 'ok' })
+        await wrapper.setProps({ items: [...mockItems] })
+        expect(wrapper.vm.displayedGroupTag(item)).toBe('music')
+      })
+    })
   })
 
   it('gets correct status icon', () => {
