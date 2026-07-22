@@ -57,7 +57,7 @@
         <div class="mb-1">
           <BFormSelect
             v-if="canEditGroup(row.item)"
-            :model-value="currentGroupTag(row.item)"
+            :model-value="displayedGroupTag(row.item)"
             :options="groupSelectOptions"
             size="sm"
             class="group-select"
@@ -192,9 +192,7 @@
       :title="$t('contribution.changeGroup')"
       :ok-title="$t('contribution.changeGroupConfirm')"
       :cancel-title="$t('overlay.cancel')"
-      @ok="confirmGroupChange"
-      @cancel="cancelGroupChange"
-      @close="cancelGroupChange"
+      @hide="onGroupModalHide"
     >
       <p>
         {{
@@ -256,6 +254,13 @@ export default {
       required: false,
       default: () => [],
     },
+    // Counts the group changes the backend refused. A change that did not happen must not stay
+    // on screen, and only the page that runs the mutation knows it failed.
+    groupChangeFailures: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   emits: [
     'assign-group',
@@ -274,6 +279,10 @@ export default {
       creationUserData: {},
       groupChangeModal: false,
       pendingGroupChange: { contributionId: null, tag: '', fromLabel: '', toLabel: '' },
+      // What the group dropdowns show, by contribution id, while a change is waiting for its
+      // answer. A picked group only lands here -- the contribution itself is not touched until
+      // the backend confirms it. See displayedGroupTag() for why this is kept by hand.
+      groupSelection: {},
     }
   },
   computed: {
@@ -287,6 +296,16 @@ export default {
           text: group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`,
         })),
       ]
+    },
+  },
+  watch: {
+    // Fresh contributions are the truth again, so the shown picks have done their job.
+    items() {
+      this.groupSelection = {}
+    },
+    // A refused change never reached the database -- put the dropdowns back.
+    groupChangeFailures() {
+      this.groupSelection = {}
     },
   },
   mounted() {
@@ -354,6 +373,13 @@ export default {
     currentGroupTag(item) {
       return item.groupTags?.[0]?.tag ?? ''
     },
+    // A dropdown is a real DOM control: the browser applies the pick itself, so an unchanged
+    // bound value gives Vue nothing to patch and the pick stays on screen even when it was
+    // never saved. Keeping the shown value in our own state makes dropping a pick a real
+    // change again, which is what pulls the dropdown back to the group the contribution has.
+    displayedGroupTag(item) {
+      return this.groupSelection[item.id] ?? this.currentGroupTag(item)
+    },
     groupOptionLabel(tag) {
       return this.groupSelectOptions.find((option) => option.value === tag)?.text ?? tag
     },
@@ -364,6 +390,7 @@ export default {
       if (tag === current) {
         return
       }
+      this.groupSelection[item.id] = tag
       this.pendingGroupChange = {
         contributionId: item.id,
         tag,
@@ -372,19 +399,38 @@ export default {
       }
       this.groupChangeModal = true
     },
+    // Every way out of the dialog ends here -- the OK and cancel buttons, the X, Escape and a
+    // click on the backdrop. Only "ok" carries the change out; everything else drops it, so no
+    // exit can leave a group on screen that was never saved.
+    onGroupModalHide(event) {
+      if (event.trigger === 'ok') {
+        this.confirmGroupChange()
+      } else {
+        this.cancelGroupChange()
+      }
+    },
+    // Deliberately keeps the picked group on screen: it stays until the fresh contributions
+    // arrive, so the dropdown does not flick back to the old group and forward again. If the
+    // backend refuses, groupChangeFailures brings it back.
     confirmGroupChange() {
       const { contributionId, tag } = this.pendingGroupChange
       this.$emit('assign-group', { contributionId, tags: tag ? [tag] : [] })
       this.resetGroupChange()
     },
-    // The select is bound to the item, so dropping the pending change is enough to snap it
-    // back to what the contribution actually says.
     cancelGroupChange() {
+      this.dropGroupSelection()
       this.resetGroupChange()
     },
     resetGroupChange() {
       this.pendingGroupChange = { contributionId: null, tag: '', fromLabel: '', toLabel: '' }
       this.groupChangeModal = false
+    },
+    // Forget the shown pick and let the contribution speak for itself again.
+    dropGroupSelection() {
+      const { contributionId } = this.pendingGroupChange
+      if (contributionId !== null) {
+        delete this.groupSelection[contributionId]
+      }
     },
     // Group functions: "Name (#tag)" for the groups a contribution belongs to, shown above
     // the text. Several groups are listed one after another.

@@ -66,6 +66,7 @@
       :hide-resubmission="hideResubmission"
       :crea-open-only="creaOpenOnly"
       :group-tags="groupTagsResult?.groupTags ?? []"
+      :group-change-failures="groupChangeFailures"
       @assign-group="assignGroup"
       @show-overlay="showOverlay"
       @update-status="updateStatus"
@@ -389,6 +390,8 @@ const {
   onError: onAssignGroupError,
 } = useMutation(assignContributionGroupTags)
 
+const groupChangeFailures = ref(0)
+
 const assignGroup = ({ contributionId, tags }) => {
   assignGroupMutation({ contributionId, tags })
 }
@@ -400,6 +403,8 @@ onAssignGroupDone(() => {
 
 onAssignGroupError((error) => {
   toastError(error.message)
+  // The table still shows the group the moderator picked; tell it the change did not happen.
+  groupChangeFailures.value++
 })
 
 const {
