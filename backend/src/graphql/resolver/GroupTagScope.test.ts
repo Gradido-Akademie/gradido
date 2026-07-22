@@ -80,17 +80,20 @@ const listMemos = async (): Promise<string[]> => {
   return contributionList.map((contribution: { memo: string }) => contribution.memo)
 }
 
-// The same list, narrowed by one of the group-filter tokens.
+// The same list, narrowed by one of the group-filter tokens. Reports a rejected query
+// instead of tripping over a null `data` three lines later — a broken fixture has to say
+// what broke.
 const listFilteredMemos = async (groupTag: string): Promise<string[]> => {
-  const {
-    data: {
-      adminListContributions: { contributionList },
-    },
-  } = await query({
+  const { data, errors } = await query({
     query: adminListContributions,
     variables: { paginated: { pageSize: 100 }, filter: { groupTag } },
   })
-  return contributionList.map((contribution: { memo: string }) => contribution.memo)
+  if (errors?.length) {
+    throw new Error(`adminListContributions(groupTag: ${groupTag}) failed: ${errors[0].message}`)
+  }
+  return data.adminListContributions.contributionList.map(
+    (contribution: { memo: string }) => contribution.memo,
+  )
 }
 const listUntaggedMemos = (): Promise<string[]> => listFilteredMemos('*untagged')
 const listGroupedMemos = (): Promise<string[]> => listFilteredMemos('*grouped')
