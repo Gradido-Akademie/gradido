@@ -89,6 +89,7 @@
     "deleted": "De bijdrage werd verwijderd! Blijft echter zichtbaar.",
     "filter": {
       "allGroups": "(all groups)",
+      "noGroup": "(zonder groep)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",
       "searchOwn": "Search contributions …"

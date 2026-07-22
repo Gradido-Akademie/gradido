@@ -6,6 +6,19 @@ import { GroupTag } from '@/graphql/model/GroupTag'
 import { LogError } from '@/server/LogError'
 import { parseModeratorScope } from './util/findContributions'
 
+// Normalise a slug into the form it is stored in: strip a leading '#' and trim. Rejected
+// are the empty string, inner whitespace (the classic "# Gruppe" error) and a leading '*'
+// -- '*' opens the reserved tokens '*all' and '*untagged', which the moderator scope and
+// the group filter read as "everything" and "no group". A real group carrying one of those
+// names would quietly take over that meaning.
+const normaliseTag = (tag: string): string => {
+  const normalised = tag.trim().replace(/^#+/, '')
+  if (normalised.length === 0 || /\s/.test(normalised) || normalised.startsWith('*')) {
+    throw new LogError('Invalid group tag', tag)
+  }
+  return normalised
+}
+
 // Group functions ("Weg A"): the canonical, admin-managed list of valid group tags.
 // Tags are stored WITHOUT the leading '#'. This list feeds submission autocomplete,
 // the personal per-user tag lists and the moderator visibility scope.
@@ -24,12 +37,7 @@ export class GroupTagResolver {
     @Arg('tag', () => String) tag: string,
     @Arg('name', () => String, { nullable: true }) name?: string | null,
   ): Promise<GroupTag> {
-    // Normalise: strip a leading '#', trim, and reject inner whitespace (the classic
-    // "# Gruppe" error). The tag is stored in canonical form.
-    const normalised = tag.trim().replace(/^#+/, '')
-    if (normalised.length === 0 || /\s/.test(normalised)) {
-      throw new LogError('Invalid group tag', tag)
-    }
+    const normalised = normaliseTag(tag)
     const existing = await DbGroupTag.findOne({ where: { tag: normalised } })
     if (existing) {
       throw new LogError('Group tag already exists', normalised)
@@ -59,10 +67,7 @@ export class GroupTagResolver {
     }
     let renamedFrom: string | null = null
     if (tag !== undefined && tag !== null) {
-      const normalised = tag.trim().replace(/^#+/, '')
-      if (normalised.length === 0 || /\s/.test(normalised)) {
-        throw new LogError('Invalid group tag', tag)
-      }
+      const normalised = normaliseTag(tag)
       if (normalised !== entry.tag) {
         const clash = await DbGroupTag.findOne({ where: { tag: normalised } })
         if (clash) {

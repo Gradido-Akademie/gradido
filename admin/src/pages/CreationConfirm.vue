@@ -2,10 +2,6 @@
 <template>
   <div class="creation-confirm">
     <user-query v-model="query" class="mb-2 mt-2" :placeholder="$t('user_memo_search')" />
-    <p class="mb-2">
-      <input v-model="noHashtag" type="checkbox" class="noHashtag" />
-      <span v-b-tooltip="$t('no_hashtag_tooltip')" class="ms-2">{{ $t('no_hashtag') }}</span>
-    </p>
     <p class="mb-2 d-flex align-items-center">
       <span class="me-2">{{ $t('groupTagFilter.label') }}</span>
       <BFormSelect
@@ -162,7 +158,6 @@ const rows = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(25)
 const query = ref('')
-const noHashtag = ref(null)
 const hideResubmissionModel = ref(true)
 // Group functions ("Weg A"): filter the contribution list by a single group tag.
 const groupTag = ref('')
@@ -325,6 +320,10 @@ watch(tabIndex, () => {
 const { result: groupTagsResult } = useQuery(groupTags)
 const groupTagFilterOptions = computed(() => [
   { value: '', text: t('groupTagFilter.all') },
+  // Reserved token, matched by the backend against the contributions that belong to no
+  // group at all -- the ones no group moderator is looking after. A real slug can never
+  // be '*…', so it cannot collide.
+  { value: '*untagged', text: t('groupTagFilter.untagged') },
   ...(groupTagsResult.value?.groupTags ?? []).map((groupTagItem) => ({
     value: groupTagItem.tag,
     text: groupTagItem.name
@@ -339,7 +338,6 @@ const { onResult, onError, result, refetch } = useQuery(
     filter: {
       statusFilter: statusFilter.value,
       query: query.value,
-      noHashtag: noHashtag.value,
       hideResubmission: hideResubmission.value,
       groupTag: groupTag.value,
     },
@@ -354,12 +352,11 @@ const { onResult, onError, result, refetch } = useQuery(
   },
 )
 
-watch([statusFilter, query, noHashtag, hideResubmission, groupTag, currentPage], () => {
+watch([statusFilter, query, hideResubmission, groupTag, currentPage], () => {
   refetch({
     filter: {
       statusFilter: statusFilter.value,
       query: query.value,
-      noHashtag: noHashtag.value,
       hideResubmission: hideResubmission.value,
       groupTag: groupTag.value,
     },

@@ -89,6 +89,7 @@
     "deleted": "Пост удалён! Но будет оставаться доступным для просмотра.",
     "filter": {
       "allGroups": "(all groups)",
+      "noGroup": "(без группы)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",
       "searchOwn": "Search contributions …"

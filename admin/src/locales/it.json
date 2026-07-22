@@ -243,7 +243,8 @@
   },
   "groupTagFilter": {
     "all": "(all groups)",
-    "label": "Group:"
+    "label": "Group:",
+    "untagged": "(senza gruppo)"
   },
   "groupTagsAdmin": {
     "add": "Create",
@@ -316,8 +317,6 @@
     "statistic": "Statistica",
     "user_search": "Ricerca utenti"
   },
-  "no_hashtag": "Nascondi gli #hashtag",
-  "no_hashtag_tooltip": "Mostra solo i contributi senza hashtag nel testo",
   "not_open_creations": "Nessuna creazione aperta",
   "notice": "Notice",
   "open": "aperto",

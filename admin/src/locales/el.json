@@ -243,7 +243,8 @@
   },
   "groupTagFilter": {
     "all": "(all groups)",
-    "label": "Group:"
+    "label": "Group:",
+    "untagged": "(χωρίς ομάδα)"
   },
   "groupTagsAdmin": {
     "add": "Create",
@@ -316,8 +317,6 @@
     "statistic": "Στατιστικά",
     "user_search": "Αναζήτηση χρηστών"
   },
-  "no_hashtag": "Απόκρυψη #hashtag",
-  "no_hashtag_tooltip": "Εμφανίζει μόνο τις συνεισφορές χωρίς hashtag στο κείμενο",
   "not_open_creations": "Καμία ανοιχτή δημιουργία",
   "notice": "Notice",
   "open": "ανοιχτή",

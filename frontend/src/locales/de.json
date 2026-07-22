@@ -89,6 +89,7 @@
     "deleted": "Der Beitrag wurde gelöscht! Wird aber sichtbar bleiben.",
     "filter": {
       "allGroups": "(alle Gruppen)",
+      "noGroup": "(ohne Gruppe)",
       "noResults": "Keine Beiträge gefunden.",
       "searchAll": "Nach Text oder Namen suchen …",
       "searchOwn": "Beiträge durchsuchen …"

@@ -72,6 +72,19 @@ const listMemos = async (): Promise<string[]> => {
   return contributionList.map((contribution: { memo: string }) => contribution.memo)
 }
 
+// The same list, filtered to the contributions that belong to no group at all.
+const listUntaggedMemos = async (): Promise<string[]> => {
+  const {
+    data: {
+      adminListContributions: { contributionList },
+    },
+  } = await query({
+    query: adminListContributions,
+    variables: { paginated: { pageSize: 100 }, filter: { groupTag: '*untagged' } },
+  })
+  return contributionList.map((contribution: { memo: string }) => contribution.memo)
+}
+
 const contributionIdByMemo = async (memo: string): Promise<number> => {
   const contribution = await DbContribution.findOneOrFail({ where: { memo } })
   return contribution.id
@@ -196,6 +209,82 @@ describe('adminListContributions — moderator visibility scope', () => {
     const memos = await listMemos()
     expect(memos).toContain(UMLAUT)
     expect(memos).not.toContain(FIREFIGHTER)
+  })
+})
+
+// The "(no group)" filter: a moderator who works through the contributions no group
+// moderator is looking after picks it from the same dropdown as a real group. It replaces
+// the old "hide #hashtags" switch, which asked whether the memo contained a '#' and
+// therefore answered the wrong question once the group lived in its own field.
+describe('adminListContributions — the "no group" filter', () => {
+  let moderator: User
+
+  beforeAll(async () => {
+    await userFactory(testEnv, peterLustig) // administrator
+    moderator = await userFactory(testEnv, bibiBloxberg)
+
+    await loginAs('bibi@bloxberg.de')
+    for (const memo of [FIREFIGHTER, MUSIC, UNTAGGED]) {
+      await mutate({
+        mutation: createContribution,
+        variables: { amount: '100', memo, contributionDate: new Date().toString() },
+      })
+    }
+    resetToken()
+    // Legacy stock, as in the suite above: the inline "#tag" only counts while the group
+    // was never set through the field.
+    await DbContribution.update(
+      { memo: In([FIREFIGHTER, MUSIC, UNTAGGED]) },
+      { groupTagsSetAt: null },
+    )
+  })
+
+  afterAll(() => {
+    resetToken()
+  })
+
+  it('shows an administrator only the contributions that belong to no group', async () => {
+    await loginAs('peter@lustig.de')
+    const memos = await listUntaggedMemos()
+    expect(memos).toContain(UNTAGGED)
+    expect(memos).not.toContain(FIREFIGHTER)
+    expect(memos).not.toContain(MUSIC)
+  })
+
+  // The filter is a convenience, the scope is an access boundary — picking "(no group)"
+  // must not hand a scoped moderator the contributions they are not authorised for.
+  //
+  // On its own this would also pass if the filter matched nothing at all, so it only means
+  // something next to the administrator case above: that one proves the filter really
+  // selects UNTAGGED, this one proves the scope still keeps it away. Do not delete one
+  // without the other.
+  it('does not let a scoped moderator reach past their scope with it', async () => {
+    const role = UserRole.create()
+    role.createdAt = new Date()
+    role.userId = moderator.id
+    role.role = RoleNames.MODERATOR
+    role.visibleGroupTags = JSON.stringify(['firefighter'])
+    await role.save()
+
+    await loginAs('bibi@bloxberg.de')
+    const memos = await listUntaggedMemos()
+    expect(memos).not.toContain(UNTAGGED)
+    expect(memos).not.toContain(MUSIC)
+    expect(memos).not.toContain(FIREFIGHTER)
+  })
+
+  // A moderator whose scope *is* "no group" gets exactly those — the pairing the filter
+  // was asked for.
+  it('gives a moderator scoped to "no group" exactly those contributions', async () => {
+    const role = await UserRole.findOneOrFail({ where: { userId: moderator.id } })
+    role.visibleGroupTags = JSON.stringify(['*untagged'])
+    await role.save()
+
+    await loginAs('bibi@bloxberg.de')
+    const memos = await listUntaggedMemos()
+    expect(memos).toContain(UNTAGGED)
+    expect(memos).not.toContain(FIREFIGHTER)
+    expect(memos).not.toContain(MUSIC)
   })
 })
 

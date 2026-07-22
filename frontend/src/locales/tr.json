@@ -89,6 +89,7 @@
     "deleted": "Hizmet silindi! Fakat hala görünüyor olacak.",
     "filter": {
       "allGroups": "(all groups)",
+      "noGroup": "(grupsuz)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",
       "searchOwn": "Search contributions …"

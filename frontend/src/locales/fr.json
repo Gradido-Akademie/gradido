@@ -89,6 +89,7 @@
     "deleted": "La contribution a été supprimée! Mais elle restera visible.",
     "filter": {
       "allGroups": "(all groups)",
+      "noGroup": "(sans groupe)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",
       "searchOwn": "Search contributions …"
