@@ -501,6 +501,22 @@ export default {
   --bs-table-hover-bg: #e06a6a;
 }
 
+/* The group dropdown sits on a coloured contribution row. A white box would pull the eye
+   away from the text it belongs to, so the control stays transparent and lets the row
+   colour through -- striped, hovered or plain, it always matches by itself. It only firms
+   up while it is being used. Element + class so it wins over .form-select whatever the
+   stylesheet order is. */
+select.group-select {
+  background-color: transparent;
+  border-color: rgb(0 0 0 / 12%);
+}
+
+select.group-select:hover,
+select.group-select:focus {
+  background-color: rgb(255 255 255 / 35%);
+  border-color: rgb(0 0 0 / 25%);
+}
+
 /* Crea logo used as the per-row trigger button (replaces the former robot icon) */
 .crea-logo-btn {
   padding: 2px;
