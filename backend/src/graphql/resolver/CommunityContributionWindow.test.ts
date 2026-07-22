@@ -42,6 +42,7 @@ const RECENT = 'community window: filed last month'
 const OLD = 'community window: filed long ago and never decided'
 const OLD_BUT_DECIDED = 'community window: filed long ago, confirmed last month'
 const OLD_DENIED = 'community window: denied long ago'
+const BACKDATED_DECISION = 'community window: filed today, decision dated long ago'
 const IN_GROUP_RECENT = '#windowlive community window: the live group'
 const IN_GROUP_OLD = '#windowquiet community window: the quiet group'
 
@@ -77,7 +78,15 @@ beforeAll(async () => {
   member = await userFactory(testEnv, bibiBloxberg)
   resetToken()
   await mutate({ mutation: login, variables: { email: 'bibi@bloxberg.de', password: 'Aa12345_' } })
-  for (const memo of [RECENT, OLD, OLD_BUT_DECIDED, OLD_DENIED, IN_GROUP_RECENT, IN_GROUP_OLD]) {
+  for (const memo of [
+    RECENT,
+    OLD,
+    OLD_BUT_DECIDED,
+    OLD_DENIED,
+    BACKDATED_DECISION,
+    IN_GROUP_RECENT,
+    IN_GROUP_OLD,
+  ]) {
     await mutate({
       mutation: createContribution,
       variables: { amount: '100', memo, contributionDate: new Date().toString() },
@@ -107,6 +116,10 @@ beforeAll(async () => {
     { memo: OLD_DENIED },
     { createdAt: monthsAgo(OUTSIDE), deniedAt: monthsAgo(OUTSIDE) },
   )
+  // Created now, decision dated long before that. Impossible in ordinary operation, but
+  // the seed data does exactly this (creationFactory backdates confirmedAt via
+  // moveCreationDate), and a migration or a wrong clock would too.
+  await DbContribution.update({ memo: BACKDATED_DECISION }, { confirmedAt: monthsAgo(OUTSIDE) })
 })
 
 afterAll(async () => {
@@ -133,10 +146,19 @@ describe('community list window', () => {
     expect(await communityMemos()).not.toContain(OLD_DENIED)
   })
 
+  it('keeps a contribution filed today whose decision is dated long before it', async () => {
+    // The window means the LATER of submission and decision. Reading the decision date
+    // whenever there is one would hide a contribution filed today just because something
+    // backdated its confirmation — which the seed data does, and a migration or a wrong
+    // clock would too.
+    expect(await communityMemos()).toContain(BACKDATED_DECISION)
+  })
+
   it('counts only what it shows', async () => {
     const [contributions, count] = await loadAllContributions(PAGINATED, {})
     expect(count).toBe(contributions.length)
-    expect(count).toBe(2 + 1) // RECENT, OLD_BUT_DECIDED, IN_GROUP_RECENT
+    // RECENT, OLD_BUT_DECIDED, BACKDATED_DECISION, IN_GROUP_RECENT
+    expect(count).toBe(4)
   })
 })
 
@@ -146,7 +168,9 @@ describe('the submitter keeps everything', () => {
     // person can still look up and quote it.
     const [contributions] = await loadUserContributions(member.id, PAGINATED)
     const memos = contributions.map((contribution) => contribution.memo)
-    expect(memos).toEqual(expect.arrayContaining([RECENT, OLD, OLD_BUT_DECIDED, OLD_DENIED]))
+    expect(memos).toEqual(
+      expect.arrayContaining([RECENT, OLD, OLD_BUT_DECIDED, OLD_DENIED, BACKDATED_DECISION]),
+    )
   })
 })
 

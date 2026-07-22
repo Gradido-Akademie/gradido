@@ -29,8 +29,13 @@ export const COMMUNITY_WINDOW_MONTHS = 6
 // a contribution may be filed today for an activity three months back, and anchoring on
 // the activity would hide it on the day it was submitted. A contribution decided last week
 // stays visible however old the deed is.
+//
+// GREATEST, not COALESCE alone: a decision date can sit BEFORE the row was created —
+// backdated fixtures do it, and so would a data migration or a moderator machine with a
+// wrong clock. Taking the decision date whenever there is one would then hide a
+// contribution filed today. "Later of the two" is what this window means, so say it.
 const COMMUNITY_WINDOW_SQL =
-  'COALESCE(Contribution.confirmed_at, Contribution.denied_at, Contribution.created_at) >= :communityWindowStart'
+  'GREATEST(Contribution.created_at, COALESCE(Contribution.confirmed_at, Contribution.denied_at, Contribution.created_at)) >= :communityWindowStart'
 
 // Month arithmetic rolls over on month ends (31 August minus 6 months lands in early
 // March), which shifts the edge of the window by a day or two. Immaterial at this scale.
