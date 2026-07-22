@@ -58,15 +58,13 @@ query listAllContributions ($pagination: Paginated!, $filter: ContributionFilter
   listAllContributions(pagination: $pagination, filter: $filter) {
     contributionCount
     contributionList {
+      id
       amount
       memo
       groupTags {
         tag
         name
       }
-      user {
-        ...userFields
-      }      
       contributionDate
       updatedBy
       contributionStatus

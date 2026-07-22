@@ -9,9 +9,10 @@ import { bibiBloxberg } from '@/seeds/users/bibi-bloxberg'
 import { loadAllContributions } from './util/contributions'
 
 // Group functions ("Weg A"): the wallet's own contribution search. A member may search by
-// text, by the name of the person who submitted, and by group — but NEVER by e-mail
-// address. That last one is the point of this file: the admin search does match e-mails,
-// and it must not leak into the wallet.
+// text and by group — never by a person. The community list shows deeds without their
+// author (each contribution is identified by its number instead), so there is nothing to
+// look people up by: not their name, and not, as ever, their e-mail address. The admin
+// search does match both; it must not leak into the wallet.
 
 jest.mock('core', () => {
   const originalModule = jest.requireActual('core')
@@ -76,16 +77,33 @@ describe('wallet contribution search', () => {
     expect(memos).not.toContain(TAGGED)
   })
 
-  it('finds contributions by the name of the person who submitted', async () => {
-    const memos = await memosFor({ query: member.firstName })
-    expect(memos).toEqual(expect.arrayContaining([PLAIN, TAGGED]))
+  it('does NOT find anything by the name of the person who submitted', async () => {
+    // Both fixtures belong to `member`. Searching for any spelling of their name must come
+    // up empty — otherwise a member could pull up everything another one ever submitted,
+    // including the contributions a moderator denied.
+    for (const query of [
+      member.firstName,
+      member.lastName,
+      `${member.firstName} ${member.lastName}`,
+    ]) {
+      expect(await memosFor({ query })).toHaveLength(0)
+    }
   })
 
   it('does NOT find anything by e-mail address', async () => {
-    // The decisive one: searching the wallet by e-mail must come up empty, so members
-    // cannot look each other up by their address.
     const memos = await memosFor({ query: 'bibi@bloxberg.de' })
     expect(memos).toHaveLength(0)
+  })
+
+  it('does not even load the person behind a contribution', async () => {
+    // The search cannot match a person because the person is not there at all. This is the
+    // guarantee the wallet rests on: it holds for anyone querying the API directly, not
+    // just for what our own list happens to display.
+    const [contributions] = await loadAllContributions(PAGINATED, {})
+    expect(contributions.length).toBeGreaterThan(0)
+    for (const contribution of contributions) {
+      expect(contribution.user).toBeUndefined()
+    }
   })
 
   it('filters by group, matching the legacy inline tag as well', async () => {

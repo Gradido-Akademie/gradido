@@ -92,8 +92,7 @@
       "grouped": "(todos os grupos)",
       "noGroup": "(sem grupo)",
       "noResults": "No contributions found.",
-      "searchAll": "Search by text or name …",
-      "searchOwn": "Search contributions …"
+      "search": "Search contributions …"
     },
     "formText": {
       "bringYourTalentsTo": "Traz os teus talentos para a comunidade! Recompensamos o teu compromisso voluntário com 20 GDD por hora, até um máximo de 1.000 GDD por mês.",
@@ -109,6 +108,7 @@
     },
     "isEdited": "editou a contribuição",
     "lastContribution": "Últimas contribuições",
+    "memoIsPublic": "Your description appears in the community list, where it is visible to all members. It shows the contribution's number instead of your name.",
     "noContributions": {
       "allContributions": "Ainda não foram submetidas contribuições.",
       "emptyPage": "Esta página está vazia.",
@@ -119,6 +119,7 @@
       "lastMonth": "O limite de criação foi atingido para o mês selecionado.",
       "thisMonth": "O limite de criação foi atingido para o mês atual."
     },
+    "number": "Contribution no. {number}",
     "oldContribution": "Versão anterior",
     "selectDate": "Quando foi a tua contribuição?",
     "submit": "Submeter",

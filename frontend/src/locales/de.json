@@ -92,8 +92,7 @@
       "grouped": "(alle Gruppen)",
       "noGroup": "(ohne Gruppe)",
       "noResults": "Keine Beiträge gefunden.",
-      "searchAll": "Nach Text oder Namen suchen …",
-      "searchOwn": "Beiträge durchsuchen …"
+      "search": "Beiträge durchsuchen …"
     },
     "formText": {
       "bringYourTalentsTo": "Bring dich mit deinen Talenten in die Gemeinschaft ein! Dein freiwilliges Engagement honorieren wir mit 20 GDD pro Stunde bis maximal 1.000 GDD im Monat.",
@@ -109,6 +108,7 @@
     },
     "isEdited": "hat den Beitrag bearbeitet",
     "lastContribution": "Letzte Beiträge",
+    "memoIsPublic": "Deine Beschreibung erscheint in der Gemeinschafts-Liste und ist dort für alle Mitglieder sichtbar. Statt Deines Namens steht dort die Nummer des Beitrags.",
     "noContributions": {
       "allContributions": "Es wurden noch keine Beiträge eingereicht.",
       "emptyPage": "Diese Seite ist leer.",
@@ -119,6 +119,7 @@
       "lastMonth": "Für den ausgewählten Monat ist das Schöpfungslimit erreicht.",
       "thisMonth": "Für den aktuellen Monat ist das Schöpfungslimit erreicht."
     },
+    "number": "Beitrag Nr. {number}",
     "oldContribution": "Vorherige Version",
     "selectDate": "Wann war dein Beitrag?",
     "submit": "Einreichen",

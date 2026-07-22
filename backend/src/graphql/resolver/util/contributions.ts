@@ -2,40 +2,25 @@ import { ContributionFilterArgs } from '@arg/ContributionFilterArgs'
 import { Paginated } from '@arg/Paginated'
 import { Contribution as DbContribution } from 'database'
 import { FRONTEND_CONTRIBUTIONS_ITEM_ANCHOR_PREFIX } from 'shared'
-import { Brackets, In, SelectQueryBuilder } from 'typeorm'
+import { In, SelectQueryBuilder } from 'typeorm'
 import { CONFIG } from '@/config'
 import { Order } from '@/graphql/enum/Order'
 import { buildGroupTagPredicate } from './findContributions'
 
-// Group functions ("Weg A"): the wallet's own search. The text matches the memo and — in
-// the community list — the name of the person who submitted. The e-mail address is
-// deliberately NOT searchable here (admin only), so nobody can look people up by e-mail
-// from the wallet.
+// Group functions ("Weg A"): the wallet's own search. It matches the memo and the group,
+// never a person. The community list does not carry the submitter at all (see
+// loadAllContributions), so there is nothing here to search people by — neither by name
+// nor, as always, by e-mail address.
 const applyWalletFilter = (
   queryBuilder: SelectQueryBuilder<DbContribution>,
   filter: ContributionFilterArgs | null | undefined,
-  searchUserNames: boolean,
 ): void => {
   if (!filter) {
     return
   }
   const query = filter.query?.trim()
   if (query) {
-    const like = `%${query}%`
-    queryBuilder.andWhere(
-      new Brackets((qb) => {
-        qb.where('Contribution.memo LIKE :walletQuery', { walletQuery: like })
-        if (searchUserNames) {
-          qb.orWhere('user.first_name LIKE :walletQuery', { walletQuery: like })
-            .orWhere('user.last_name LIKE :walletQuery', { walletQuery: like })
-            .orWhere('user.alias LIKE :walletQuery', { walletQuery: like })
-            .orWhere(
-              "LOWER(CONCAT(user.first_name, ' ', user.last_name)) LIKE LOWER(:walletQuery)",
-              { walletQuery: like },
-            )
-        }
-      }),
-    )
+    queryBuilder.andWhere('Contribution.memo LIKE :walletQuery', { walletQuery: `%${query}%` })
   }
   if (filter.groupTag) {
     const groupPredicate = buildGroupTagPredicate(filter.groupTag)
@@ -63,8 +48,7 @@ export const loadUserContributions = async (
     .select(['Contribution.id', 'Contribution.createdAt'])
     .where('Contribution.userId = :userId', { userId })
     .withDeleted()
-  // Own contributions: searching by name is pointless, they all belong to this member.
-  applyWalletFilter(idQuery, filter, false)
+  applyWalletFilter(idQuery, filter)
 
   const count = await idQuery.getCount()
   const contributionIds = await idQuery
@@ -84,7 +68,15 @@ export const loadUserContributions = async (
 }
 
 /*
- * Load all contributions
+ * Load all contributions for the community list
+ *
+ * Data protection: this list is open to every logged-in member, and it shows deeds
+ * including the ones a moderator denied. It therefore carries NO person — the submitter is
+ * deliberately not loaded, so the field stays empty even for someone querying the API
+ * directly. Each contribution is identified by its number instead; only the person
+ * themselves can connect a number to a name, and only if they choose to (their own list
+ * shows their numbers). Do not add the user relation back here.
+ *
  * @param paginated pagination, see {@link Paginated}
  */
 export const loadAllContributions = async (
@@ -94,16 +86,12 @@ export const loadAllContributions = async (
   const { order, currentPage, pageSize } = paginated
   // Same two-step shape as above: filterable id selection first, then the full rows.
   // See above: createdAt must be in the select, otherwise the "distinctAlias" subquery
-  // typeorm builds for skip/take cannot order by it (fails as soon as the user is joined).
+  // typeorm builds for skip/take cannot order by it.
   const idQuery = DbContribution.createQueryBuilder('Contribution').select([
     'Contribution.id',
     'Contribution.createdAt',
   ])
-  // The community list may be searched by the submitter's name — never by e-mail.
-  if (filter?.query) {
-    idQuery.leftJoin('Contribution.user', 'user')
-  }
-  applyWalletFilter(idQuery, filter, true)
+  applyWalletFilter(idQuery, filter)
 
   const count = await idQuery.getCount()
   const contributionIds = await idQuery
@@ -114,7 +102,6 @@ export const loadAllContributions = async (
     .getMany()
 
   const contributions = await DbContribution.find({
-    relations: { user: { emailContact: true } },
     order: { createdAt: order, id: order },
     where: { id: In(contributionIds.map((contribution) => contribution.id)) },
   })

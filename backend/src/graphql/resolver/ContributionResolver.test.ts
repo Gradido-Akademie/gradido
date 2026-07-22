@@ -1244,6 +1244,29 @@ describe('ContributionResolver', () => {
         })
         expect(contributionListObject.contributionList).toHaveLength(7)
       })
+
+      it('returns no person, even though the query asks for one', async () => {
+        // Data protection: the community list is open to every member and shows denied
+        // contributions too, so it carries deeds without their author. The query above
+        // requests `user { firstName lastName }` on purpose — the answer must still be
+        // empty, which is what makes this a guarantee of the API and not of our own list.
+        const {
+          data: { listAllContributions: contributionListObject },
+        } = await query({
+          query: listAllContributions,
+          variables: {
+            pagination: {
+              currentPage: 1,
+              pageSize: 25,
+              order: 'DESC',
+            },
+          },
+        })
+        expect(contributionListObject.contributionList.length).toBeGreaterThan(0)
+        for (const contribution of contributionListObject.contributionList) {
+          expect(contribution.user).toBeNull()
+        }
+      })
     })
   })
 

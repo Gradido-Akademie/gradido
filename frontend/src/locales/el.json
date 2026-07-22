@@ -92,8 +92,7 @@
       "grouped": "(όλες οι ομάδες)",
       "noGroup": "(χωρίς ομάδα)",
       "noResults": "No contributions found.",
-      "searchAll": "Search by text or name …",
-      "searchOwn": "Search contributions …"
+      "search": "Search contributions …"
     },
     "formText": {
       "bringYourTalentsTo": "Φέρε τα ταλέντα σου στην κοινότητα! Επιβραβεύουμε την εθελοντική σου προσφορά με 20 GDD την ώρα, έως 1.000 GDD τον μήνα κατ' ανώτατο όριο.",
@@ -109,6 +108,7 @@
     },
     "isEdited": "επεξεργάστηκε τη συνεισφορά",
     "lastContribution": "Τελευταίες συνεισφορές",
+    "memoIsPublic": "Your description appears in the community list, where it is visible to all members. It shows the contribution's number instead of your name.",
     "noContributions": {
       "allContributions": "Δεν έχουν υποβληθεί ακόμη συνεισφορές.",
       "emptyPage": "Αυτή η σελίδα είναι κενή.",
@@ -119,6 +119,7 @@
       "lastMonth": "Το όριο δημιουργίας έχει επιτευχθεί για τον επιλεγμένο μήνα.",
       "thisMonth": "Το όριο δημιουργίας έχει επιτευχθεί για τον τρέχοντα μήνα."
     },
+    "number": "Contribution no. {number}",
     "oldContribution": "Προηγούμενη έκδοση",
     "selectDate": "Πότε έγινε η συνεισφορά σου;",
     "submit": "Υποβολή",
