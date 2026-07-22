@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { ref } from 'vue'
+import { useQuery } from '@vue/apollo-composable'
+import { suggestedGroupTag } from '@/graphql/contributions.graphql'
 import ContributionForm from './ContributionForm.vue'
 
 vi.mock('vue-i18n', () => ({
@@ -191,5 +194,47 @@ describe('ContributionForm', () => {
     wrapper.vm.submit()
 
     expect(wrapper.emitted('upsert-contribution')).toBeTruthy()
+  })
+
+  // The group field is pre-filled with what the member last said themselves — derived in
+  // the backend from their own history, so there is no stored "main group" to go stale.
+  describe('group pre-fill', () => {
+    const withSuggestion = (tag) => {
+      vi.mocked(useQuery).mockImplementation((query) => {
+        if (query === suggestedGroupTag) {
+          return { result: ref(tag ? { suggestedGroupTag: { id: 1, tag, name: null } } : {}) }
+        }
+        return { result: ref(undefined) }
+      })
+    }
+
+    const mountWith = (modelValue = {}) =>
+      mount(ContributionForm, {
+        props: { ...defaultProps, modelValue: { ...defaultProps.modelValue, ...modelValue } },
+        global,
+      })
+
+    it('pre-fills the suggested group', () => {
+      withSuggestion('feuerwehr')
+      expect(mountWith().vm.selectedGroupTag).toBe('feuerwehr')
+    })
+
+    it('leaves the field empty when there is nothing to suggest', () => {
+      // Also the deliberate "no group" case: the backend answers with nothing, and the
+      // field must not fall back to some earlier group.
+      withSuggestion(null)
+      expect(mountWith().vm.selectedGroupTag).toBe('')
+    })
+
+    it('does not overwrite a group that is already chosen', () => {
+      withSuggestion('feuerwehr')
+      expect(mountWith({ groupTags: ['chor'] }).vm.selectedGroupTag).toBe('chor')
+    })
+
+    it('does not pre-fill when an existing contribution is edited', () => {
+      // Editing must not silently move a contribution into another group.
+      withSuggestion('feuerwehr')
+      expect(mountWith({ id: '123' }).vm.selectedGroupTag).toBe('')
+    })
   })
 })

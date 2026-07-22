@@ -1,7 +1,17 @@
 import { ContributionGroupTag as DbContributionGroupTag, GroupTag as DbGroupTag } from 'database'
 import { In } from 'typeorm'
-import { Contribution } from '@/graphql/model/Contribution'
 import { GroupTag } from '@/graphql/model/GroupTag'
+
+// Everything this needs of a contribution. Typed structurally rather than as the
+// Contribution model so callers that only care about the group — the submission
+// suggestion, for one — can hand over the three columns instead of building a half-filled
+// model. The Contribution model satisfies it as it is.
+export interface GroupTaggable {
+  id: number
+  memo: string
+  groupTagsSetAt: Date | null
+  groupTags: GroupTag[]
+}
 
 // Legacy path: pick the "#word" tokens out of a memo and keep the ones that name a real
 // group. Letters (umlauts included), digits, '_' and '-' are tag characters; anything else
@@ -29,7 +39,9 @@ const inlineGroupTags = (memo: string, byTag: Map<string, DbGroupTag>): DbGroupT
 // ignores whatever hashtags its memo happens to contain. Same rule as the search filter and
 // the moderator scope; the three must not drift apart.
 // Batched: two queries for the whole page, not one per contribution.
-export const attachContributionGroupTags = async (contributions: Contribution[]): Promise<void> => {
+export const attachContributionGroupTags = async (
+  contributions: GroupTaggable[],
+): Promise<void> => {
   if (contributions.length === 0) {
     return
   }
