@@ -90,9 +90,11 @@ const contributionIdByMemo = async (memo: string): Promise<number> => {
   return contribution.id
 }
 
-describe('adminListContributions — moderator visibility scope', () => {
-  let moderator: User
+// Shared by both suites below: cleanDB() runs once per file, so the users and the
+// contributions the first suite seeds are still there for the second one.
+let moderator: User
 
+describe('adminListContributions — moderator visibility scope', () => {
   beforeAll(async () => {
     await userFactory(testEnv, peterLustig) // administrator
     moderator = await userFactory(testEnv, bibiBloxberg) // becomes the scoped moderator
@@ -216,29 +218,10 @@ describe('adminListContributions — moderator visibility scope', () => {
 // moderator is looking after picks it from the same dropdown as a real group. It replaces
 // the old "hide #hashtags" switch, which asked whether the memo contained a '#' and
 // therefore answered the wrong question once the group lived in its own field.
+// Runs on the users and contributions the suite above already seeded -- seeding them
+// again would collide on the unique email. Each test sets the scope it needs, so it does
+// not matter which scope the previous suite left behind.
 describe('adminListContributions — the "no group" filter', () => {
-  let moderator: User
-
-  beforeAll(async () => {
-    await userFactory(testEnv, peterLustig) // administrator
-    moderator = await userFactory(testEnv, bibiBloxberg)
-
-    await loginAs('bibi@bloxberg.de')
-    for (const memo of [FIREFIGHTER, MUSIC, UNTAGGED]) {
-      await mutate({
-        mutation: createContribution,
-        variables: { amount: '100', memo, contributionDate: new Date().toString() },
-      })
-    }
-    resetToken()
-    // Legacy stock, as in the suite above: the inline "#tag" only counts while the group
-    // was never set through the field.
-    await DbContribution.update(
-      { memo: In([FIREFIGHTER, MUSIC, UNTAGGED]) },
-      { groupTagsSetAt: null },
-    )
-  })
-
   afterAll(() => {
     resetToken()
   })
@@ -259,9 +242,9 @@ describe('adminListContributions — the "no group" filter', () => {
   // selects UNTAGGED, this one proves the scope still keeps it away. Do not delete one
   // without the other.
   it('does not let a scoped moderator reach past their scope with it', async () => {
-    const role = UserRole.create()
-    role.createdAt = new Date()
-    role.userId = moderator.id
+    // The moderator already carries a role from the suite above; give it the scope this
+    // test needs rather than adding a second one.
+    const role = await UserRole.findOneOrFail({ where: { userId: moderator.id } })
     role.role = RoleNames.MODERATOR
     role.visibleGroupTags = JSON.stringify(['firefighter'])
     await role.save()

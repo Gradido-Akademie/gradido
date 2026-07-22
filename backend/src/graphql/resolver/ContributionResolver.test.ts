@@ -2716,7 +2716,10 @@ describe('ContributionResolver', () => {
           })
         })
 
-        it('returns only contributions of the queried user without hashtags', async () => {
+        // Successor of the removed "hide #hashtags" switch: the filter now asks which group
+        // a contribution belongs to. For stock written before the group field existed the
+        // two coincide -- no assignment, no stamp -- so the expectations are unchanged.
+        it('returns only contributions of the queried user that belong to no group', async () => {
           const {
             data: { adminListContributions: contributionListObject },
           } = await query({
@@ -2724,7 +2727,7 @@ describe('ContributionResolver', () => {
             variables: {
               filter: {
                 query: 'Peter',
-                noHashtag: true,
+                groupTag: '*untagged',
               },
               paginated: { pageSize: 20 },
             },
@@ -2812,7 +2815,7 @@ describe('ContributionResolver', () => {
           })
         })
 
-        it('returns no contributions with #firefighter and no hashtag', async () => {
+        it('returns nothing for "#firefighter" combined with "no group"', async () => {
           const {
             data: { adminListContributions: contributionListObject },
           } = await query({
@@ -2820,7 +2823,7 @@ describe('ContributionResolver', () => {
             variables: {
               filter: {
                 query: '#firefighter',
-                noHashtag: true,
+                groupTag: '*untagged',
               },
             },
           })
