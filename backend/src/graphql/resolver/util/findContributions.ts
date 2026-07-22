@@ -64,12 +64,20 @@ export const GROUPED_FILTER = '*grouped'
 // in old stock names no group, so nobody moderates it by that hashtag and it belongs here.
 // Testing for any '#' at all would drop those contributions out of both lists — no group
 // moderator sees them, and the one working through the ungrouped ones would not either.
+//
+// The COLLATE is required, not cosmetic: contributions.memo is utf8mb4_general_ci while
+// group_tags.tag is utf8mb4_unicode_ci, and comparing two columns of different collations
+// is an error (ER_CANT_AGGREGATE_2COLLATIONS). Matching a tag against a bound string does
+// not hit this, which is why the comparisons elsewhere need nothing. utf8mb4_unicode_ci is
+// the right side to land on: it is what the canonical list is compared with everywhere
+// else, case- and accent-insensitive.
 const UNTAGGED_SQL =
   `(NOT EXISTS (SELECT 1 FROM contribution_group_tags cgt ` +
   `WHERE cgt.contribution_id = Contribution.id) ` +
   `AND (Contribution.group_tags_set_at IS NOT NULL ` +
   `OR NOT EXISTS (SELECT 1 FROM group_tags gt ` +
-  `WHERE Contribution.memo LIKE CONCAT('%#', gt.tag, '%'))))`
+  `WHERE Contribution.memo COLLATE utf8mb4_unicode_ci ` +
+  `LIKE CONCAT('%#', gt.tag, '%'))))`
 
 // Parse a moderator's stored scope (JSON text on user_roles.visible_group_tags) into a
 // string array. null (= no restriction) for empty/invalid input.
