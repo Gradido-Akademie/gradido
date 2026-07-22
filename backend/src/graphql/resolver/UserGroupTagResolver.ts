@@ -3,6 +3,7 @@ import { RIGHTS } from '@/auth/RIGHTS'
 import { GroupTag } from '@/graphql/model/GroupTag'
 import { Context, getUser } from '@/server/context'
 import { loadModeratorScope, saveModeratorScope } from './util/moderatorGroupScope'
+import { suggestGroupTagForUser } from './util/suggestGroupTag'
 import { loadUserGroupTags, saveUserGroupTags } from './util/userGroupTags'
 
 // Group functions ("Weg A"): a user's personal group-tag list. Users manage their own
@@ -15,6 +16,16 @@ export class UserGroupTagResolver {
   async myGroupTags(@Ctx() context: Context): Promise<GroupTag[]> {
     const user = getUser(context)
     return (await loadUserGroupTags(user.id)).map((tag) => new GroupTag(tag))
+  }
+
+  // What the group field is pre-filled with when submitting: the member's own last
+  // statement, derived from their history — see suggestGroupTagForUser. The personal list
+  // below is only the fallback for someone who has never said anything yet.
+  @Authorized([RIGHTS.MANAGE_OWN_GROUP_TAGS])
+  @Query(() => GroupTag, { nullable: true })
+  async suggestedGroupTag(@Ctx() context: Context): Promise<GroupTag | null> {
+    const user = getUser(context)
+    return suggestGroupTagForUser(user.id)
   }
 
   @Authorized([RIGHTS.MANAGE_OWN_GROUP_TAGS])

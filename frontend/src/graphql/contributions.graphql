@@ -111,8 +111,11 @@ query communityGroupTags {
   }
 }
 
-query myGroupTags {
-  myGroupTags {
+# What the group field is pre-filled with: the member's own last statement, derived from
+# their history in the backend. Null means "(no group)" — either chosen deliberately last
+# time, or nothing to go on.
+query suggestedGroupTag {
+  suggestedGroupTag {
     id
     tag
     name

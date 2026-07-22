@@ -118,7 +118,7 @@ import { GDD_PER_HOUR } from '../../constants'
 import { useMinimalContributionDate } from '@/composables/useMinimalContributionDate'
 import {
   groupTags as groupTagsQuery,
-  myGroupTags as myGroupTagsQuery,
+  suggestedGroupTag as suggestedGroupTagQuery,
 } from '@/graphql/contributions.graphql'
 import { groupTagLabel } from '@/utils/groupTagLabel'
 
@@ -150,10 +150,11 @@ const entityDataToForm = computed(() => ({
 const form = reactive({ ...entityDataToForm.value })
 
 // Group functions ("Weg A"): the group-tag field (create only). Options come from the
-// canonical list; the user's main tag (first entry of their personal list) is pre-filled
-// once it loads, unless something is already chosen. Optional / non-blocking.
+// canonical list — every group stays choosable here, including quiet ones, otherwise a
+// dormant group could never be woken up. Pre-filled with the member's own last statement,
+// derived in the backend, unless something is already chosen. Optional / non-blocking.
 const { result: groupTagsResult } = useQuery(groupTagsQuery)
-const { result: myGroupTagsResult } = useQuery(myGroupTagsQuery)
+const { result: suggestedGroupTagResult } = useQuery(suggestedGroupTagQuery)
 
 const selectedGroupTag = ref(form.groupTags?.[0] ?? '')
 
@@ -166,10 +167,10 @@ const groupTagSelectOptions = computed(() => [
 ])
 
 watch(
-  () => myGroupTagsResult.value?.myGroupTags?.[0]?.tag ?? '',
-  (mainTag) => {
-    if (!form.id && mainTag && !selectedGroupTag.value) {
-      selectedGroupTag.value = mainTag
+  () => suggestedGroupTagResult.value?.suggestedGroupTag?.tag ?? '',
+  (suggestion) => {
+    if (!form.id && suggestion && !selectedGroupTag.value) {
+      selectedGroupTag.value = suggestion
     }
   },
   { immediate: true },
