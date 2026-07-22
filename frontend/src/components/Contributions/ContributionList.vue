@@ -93,7 +93,12 @@ const isFiltered = computed(() => Boolean(searchText.value || selectedGroup.valu
 
 const { result: groupTagsResult } = useQuery(groupTagsQuery)
 const groupOptions = computed(() => [
-  { value: null, text: t('contribution.filter.allGroups') },
+  // Same three answers as the community tab: everything, everything that belongs to some
+  // group, everything that belongs to none. The last two are reserved tokens the backend
+  // matches; a real slug can never be '*…', so they cannot collide.
+  { value: null, text: t('contribution.filter.all') },
+  { value: '*grouped', text: t('contribution.filter.grouped') },
+  { value: '*untagged', text: t('contribution.filter.noGroup') },
   ...(groupTagsResult.value?.groupTags ?? []).map((group) => ({
     value: group.tag,
     text: group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`,
