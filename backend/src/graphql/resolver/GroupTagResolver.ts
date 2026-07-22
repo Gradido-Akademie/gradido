@@ -4,6 +4,7 @@ import { Like } from 'typeorm'
 import { RIGHTS } from '@/auth/RIGHTS'
 import { GroupTag } from '@/graphql/model/GroupTag'
 import { LogError } from '@/server/LogError'
+import { groupTagsInCommunityWindow } from './util/contributions'
 import { parseModeratorScope } from './util/findContributions'
 
 // Normalise a slug into the form it is stored in: strip a leading '#' and trim. Rejected
@@ -29,6 +30,22 @@ export class GroupTagResolver {
   async groupTags(): Promise<GroupTag[]> {
     const tags = await DbGroupTag.find({ order: { tag: 'ASC' } })
     return tags.map((tag) => new GroupTag(tag))
+  }
+
+  // The groups the community list currently has something to show for. Only the filter
+  // above that list uses this — it should offer exactly what can be found behind it, and a
+  // group that has been quiet longer than the window would otherwise lead into an empty
+  // result and read as "nothing going on here".
+  //
+  // ⚠️ Do NOT reach for this in the submission field: a group missing there could never be
+  // woken up, because nobody could file a contribution for it. That field asks groupTags,
+  // and it must keep doing so.
+  @Authorized([RIGHTS.LIST_GROUP_TAGS])
+  @Query(() => [GroupTag])
+  async communityGroupTags(): Promise<GroupTag[]> {
+    const tags = await DbGroupTag.find({ order: { tag: 'ASC' } })
+    const visible = new Set(await groupTagsInCommunityWindow(tags.map((tag) => tag.tag)))
+    return tags.filter((tag) => visible.has(tag.tag)).map((tag) => new GroupTag(tag))
   }
 
   @Authorized([RIGHTS.MANAGE_GROUP_TAGS])

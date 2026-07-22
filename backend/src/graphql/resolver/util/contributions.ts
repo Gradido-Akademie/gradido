@@ -7,6 +7,43 @@ import { CONFIG } from '@/config'
 import { Order } from '@/graphql/enum/Order'
 import { buildGroupTagPredicate } from './findContributions'
 
+// Data protection: the community list forgets. It shows a recent stretch and nothing
+// older, so nobody can read a member's deeds back over years, and a decision that was
+// settled long ago stops being on permanent display. Only the display forgets — the
+// submitter keeps every contribution in their own list, moderation and the ledger keep the
+// full record.
+//
+// Six months rather than three: the shortest sensible window is three, because a
+// contribution may be submitted for the current and the two preceding months (see
+// getUserCreations), and moderation oversight needs enough cases in view to tell a
+// consistent decision from an arbitrary one — a small group may have two in a quarter.
+//
+// A fixed value on purpose, not a setting in the admin: whoever is being checked must not
+// be able to turn down the evidence they are checked by. Changing it is an ordinary
+// delivery, which is more visible than a field somebody edits. The number is served to the
+// wallet (see CommunityContributionListResult) so the heading above the list cannot claim
+// a window that is not the real one.
+export const COMMUNITY_WINDOW_MONTHS = 6
+
+// The window runs on the later of submission and decision, never on the date of the deed:
+// a contribution may be filed today for an activity three months back, and anchoring on
+// the activity would hide it on the day it was submitted. A contribution decided last week
+// stays visible however old the deed is.
+const COMMUNITY_WINDOW_SQL =
+  'COALESCE(Contribution.confirmed_at, Contribution.denied_at, Contribution.created_at) >= :communityWindowStart'
+
+// Month arithmetic rolls over on month ends (31 August minus 6 months lands in early
+// March), which shifts the edge of the window by a day or two. Immaterial at this scale.
+const communityWindowStart = (): Date => {
+  const start = new Date()
+  start.setMonth(start.getMonth() - COMMUNITY_WINDOW_MONTHS)
+  return start
+}
+
+const applyCommunityWindow = (queryBuilder: SelectQueryBuilder<DbContribution>): void => {
+  queryBuilder.andWhere(COMMUNITY_WINDOW_SQL, { communityWindowStart: communityWindowStart() })
+}
+
 // Group functions ("Weg A"): the wallet's own search. It matches the memo and the group,
 // never a person. The community list does not carry the submitter at all (see
 // loadAllContributions), so there is nothing here to search people by — neither by name
@@ -91,6 +128,7 @@ export const loadAllContributions = async (
     'Contribution.id',
     'Contribution.createdAt',
   ])
+  applyCommunityWindow(idQuery)
   applyWalletFilter(idQuery, filter)
 
   const count = await idQuery.getCount()
@@ -106,6 +144,37 @@ export const loadAllContributions = async (
     where: { id: In(contributionIds.map((contribution) => contribution.id)) },
   })
   return [contributions, count]
+}
+
+// Which groups have something to show in the community list right now. The dropdown then
+// offers exactly what can be found behind it: a group that has been quiet for longer than
+// the window drops out, and comes back by itself as soon as one of its contributions is
+// filed again — no upkeep, and no line saying "nothing here for six months".
+//
+// Asked group by group through buildGroupTagPredicate — the very condition the filter and
+// the moderator scope use — rather than as one clever join. A second derivation of "belongs
+// to this group" would be a second place to drift apart, and this project has paid for that
+// once already: the structured link wins, and a legacy inline "#tag" counts only where no
+// group was ever assigned. One small count per group, and the list of groups is short.
+//
+// ⚠️ This is for the wallet's community filter alone. The submission field must go on
+// offering EVERY group — a group dropped from there could never be woken up again, because
+// nobody could file a contribution for it. The admin has to find old contributions, and
+// "my contributions" is not windowed at all.
+export const groupTagsInCommunityWindow = async (tags: string[]): Promise<string[]> => {
+  const windowStart = communityWindowStart()
+  const found = await Promise.all(
+    tags.map(async (tag) => {
+      const predicate = buildGroupTagPredicate(tag)
+      const count = await DbContribution.createQueryBuilder('Contribution')
+        .select('Contribution.id')
+        .where(COMMUNITY_WINDOW_SQL, { communityWindowStart: windowStart })
+        .andWhere(predicate.sql, predicate.params)
+        .getCount()
+      return count > 0 ? tag : null
+    }),
+  )
+  return found.filter((tag): tag is string => tag !== null)
 }
 
 export const contributionFrontendLink = async (

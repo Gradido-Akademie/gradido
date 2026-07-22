@@ -85,6 +85,7 @@
       "myContributionNoteList": "Puedes editar o eliminar las contribuciones enviadas que aún no han sido confirmadas en cualquier momento.",
       "pending": "Enviado y a la espera de confirmación"
     },
+    "communityWindow": "Contributions from the last {months} months",
     "delete": "Eliminar la contribución. ¿Estás seguro?",
     "deleted": "¡La contribución ha sido borrada! Pero seguirá siendo visible.",
     "filter": {

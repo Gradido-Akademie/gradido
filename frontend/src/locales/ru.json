@@ -85,6 +85,7 @@
       "myContributionNoteList": "Внесённые вклады, которые ещё не подтверждены, вы всегда можете изменить или удалить.",
       "pending": "Внесено и ожидает подтверждения"
     },
+    "communityWindow": "Contributions from the last {months} months",
     "delete": "Удалить пост! Вы уверены?",
     "deleted": "Пост удалён! Но будет оставаться доступным для просмотра.",
     "filter": {
