@@ -319,10 +319,11 @@ watch(tabIndex, () => {
 // Group functions ("Weg A"): canonical tag options for the filter dropdown.
 const { result: groupTagsResult } = useQuery(groupTags)
 const groupTagFilterOptions = computed(() => [
+  // Three answers that cover the list exactly once: everything, everything some group
+  // moderator looks after, everything nobody does. The last two are reserved tokens the
+  // backend matches; a real slug can never be '*…', so they cannot collide.
   { value: '', text: t('groupTagFilter.all') },
-  // Reserved token, matched by the backend against the contributions that belong to no
-  // group at all -- the ones no group moderator is looking after. A real slug can never
-  // be '*…', so it cannot collide.
+  { value: '*grouped', text: t('groupTagFilter.grouped') },
   { value: '*untagged', text: t('groupTagFilter.untagged') },
   ...(groupTagsResult.value?.groupTags ?? []).map((groupTagItem) => ({
     value: groupTagItem.tag,

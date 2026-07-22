@@ -121,7 +121,7 @@ describe('ContributionListAll', () => {
     // it too -- otherwise you can see the state but never single it out. BFormSelect is
     // registered app-wide rather than imported, so the test puts its own stand-in there to
     // read the options off.
-    it('offers "no group" in the group filter, right after "all groups"', () => {
+    it('offers all, all groups and no group before the real groups', () => {
       const SelectStub = {
         name: 'BFormSelect',
         props: ['options', 'modelValue'],
@@ -131,7 +131,11 @@ describe('ContributionListAll', () => {
         global: { ...global, stubs: { ...global.stubs, BFormSelect: SelectStub } },
       })
       const options = localWrapper.findComponent(SelectStub).props('options')
-      expect(options.slice(0, 2).map((option) => option.value)).toEqual([null, '*untagged'])
+      expect(options.slice(0, 3).map((option) => option.value)).toEqual([
+        null,
+        '*grouped',
+        '*untagged',
+      ])
     })
 
     describe('pagination', () => {

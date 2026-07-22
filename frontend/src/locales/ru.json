@@ -88,7 +88,8 @@
     "delete": "Удалить пост! Вы уверены?",
     "deleted": "Пост удалён! Но будет оставаться доступным для просмотра.",
     "filter": {
-      "allGroups": "(all groups)",
+      "all": "(все)",
+      "grouped": "(все группы)",
       "noGroup": "(без группы)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",

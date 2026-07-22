@@ -88,7 +88,8 @@
     "delete": "Bijdrage verwijderen! Weet je het zeker?",
     "deleted": "De bijdrage werd verwijderd! Blijft echter zichtbaar.",
     "filter": {
-      "allGroups": "(all groups)",
+      "all": "(alle)",
+      "grouped": "(alle groepen)",
       "noGroup": "(zonder groep)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",

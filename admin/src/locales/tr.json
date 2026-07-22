@@ -242,7 +242,8 @@
     "userSearch": "Kullanıcı aramasına git"
   },
   "groupTagFilter": {
-    "all": "(all groups)",
+    "all": "(tümü)",
+    "grouped": "(tüm gruplar)",
     "label": "Group:",
     "untagged": "(grupsuz)"
   },

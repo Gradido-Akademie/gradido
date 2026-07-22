@@ -1,7 +1,13 @@
 import { RoleNames } from '@enum/RoleNames'
 import { cleanDB, resetToken, testEnvironment } from '@test/helpers'
 import { ApolloServerTestClient } from 'apollo-server-testing'
-import { AppDatabase, Contribution as DbContribution, User, UserRole } from 'database'
+import {
+  AppDatabase,
+  Contribution as DbContribution,
+  GroupTag as DbGroupTag,
+  User,
+  UserRole,
+} from 'database'
 import { getLogger as originalGetLogger } from 'log4js'
 import { In } from 'typeorm'
 import { userFactory } from '@/seeds/factory/user'
@@ -41,6 +47,8 @@ const FIREFIGHTER = '#firefighter group-scope test fire brigade'
 const MUSIC = '#music group-scope test choir'
 const UNTAGGED = 'group-scope test contribution without any tag'
 const UMLAUT = '#Grünwald-Süd group-scope test Straßenfest'
+// A hashtag that is not a group: nobody moderates it, so it counts as "no group".
+const STRAY_HASHTAG = '#thanks group-scope test with a hashtag that names no group'
 
 beforeAll(async () => {
   testEnv = await testEnvironment(originalGetLogger('apollo'))
@@ -72,18 +80,20 @@ const listMemos = async (): Promise<string[]> => {
   return contributionList.map((contribution: { memo: string }) => contribution.memo)
 }
 
-// The same list, filtered to the contributions that belong to no group at all.
-const listUntaggedMemos = async (): Promise<string[]> => {
+// The same list, narrowed by one of the group-filter tokens.
+const listFilteredMemos = async (groupTag: string): Promise<string[]> => {
   const {
     data: {
       adminListContributions: { contributionList },
     },
   } = await query({
     query: adminListContributions,
-    variables: { paginated: { pageSize: 100 }, filter: { groupTag: '*untagged' } },
+    variables: { paginated: { pageSize: 100 }, filter: { groupTag } },
   })
   return contributionList.map((contribution: { memo: string }) => contribution.memo)
 }
+const listUntaggedMemos = (): Promise<string[]> => listFilteredMemos('*untagged')
+const listGroupedMemos = (): Promise<string[]> => listFilteredMemos('*grouped')
 
 const contributionIdByMemo = async (memo: string): Promise<number> => {
   const contribution = await DbContribution.findOneOrFail({ where: { memo } })
@@ -96,6 +106,15 @@ let moderator: User
 
 describe('adminListContributions — moderator visibility scope', () => {
   beforeAll(async () => {
+    // The canonical list is what decides whether an inline "#tag" names a group at all.
+    // In production every real group is in it, so the fixtures put the ones used here in
+    // too -- without them "#firefighter" would name nothing and count as ungrouped.
+    for (const tag of ['firefighter', 'music', 'grünwald-süd']) {
+      const entry = DbGroupTag.create()
+      entry.tag = tag
+      entry.name = null
+      await entry.save()
+    }
     await userFactory(testEnv, peterLustig) // administrator
     moderator = await userFactory(testEnv, bibiBloxberg) // becomes the scoped moderator
 
@@ -268,6 +287,41 @@ describe('adminListContributions — the "no group" filter', () => {
     expect(memos).toContain(UNTAGGED)
     expect(memos).not.toContain(FIREFIGHTER)
     expect(memos).not.toContain(MUSIC)
+  })
+
+  // A hashtag that names no group leaves the contribution ungrouped. Old stock written
+  // before the group field is the case that matters: nobody moderates "#thanks", so it
+  // has to turn up here — asking merely for a '#' would have dropped it out of every
+  // list at once.
+  it('counts a hashtag that names no group as "no group"', async () => {
+    await loginAs('bibi@bloxberg.de')
+    await mutate({
+      mutation: createContribution,
+      variables: { amount: '100', memo: STRAY_HASHTAG, contributionDate: new Date().toString() },
+    })
+    resetToken()
+    // Legacy stock: written before the group field, so it carries no stamp.
+    await DbContribution.update({ memo: STRAY_HASHTAG }, { groupTagsSetAt: null })
+
+    await loginAs('peter@lustig.de')
+    expect(await listUntaggedMemos()).toContain(STRAY_HASHTAG)
+    expect(await listGroupedMemos()).not.toContain(STRAY_HASHTAG)
+  })
+
+  // "all groups" and "no group" partition the list: every contribution is in exactly one.
+  it('splits the contributions into "all groups" and "no group" without overlap', async () => {
+    await loginAs('peter@lustig.de')
+    const grouped = await listGroupedMemos()
+    const untagged = await listUntaggedMemos()
+
+    expect(grouped).toContain(FIREFIGHTER)
+    expect(grouped).toContain(MUSIC)
+    expect(grouped).not.toContain(UNTAGGED)
+    expect(untagged).toContain(UNTAGGED)
+
+    expect(grouped.filter((memo) => untagged.includes(memo))).toEqual([])
+    const everything = await listFilteredMemos('')
+    expect([...grouped, ...untagged].sort()).toEqual([...everything].sort())
   })
 })
 

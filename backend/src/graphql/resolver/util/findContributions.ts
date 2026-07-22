@@ -51,13 +51,25 @@ const tagMatchSql = (key: string): string =>
 // the group filter, so both mean exactly the same set of contributions.
 export const UNTAGGED_FILTER = '*untagged'
 
-// "Untagged": no structured tag, and — only where nothing was ever assigned — no inline
-// hashtag either. A contribution deliberately set to "no group" is untagged whatever its
+// Its complement, offered by the group filter only: everything that does belong to some
+// group. "all" (the empty filter) plus these two cover every contribution exactly once.
+export const GROUPED_FILTER = '*grouped'
+
+// "Untagged" = no group moderator is looking after this. That means no structured tag,
+// and — only where nothing was ever assigned — no inline hashtag naming a group that
+// actually exists. A contribution deliberately set to "no group" is untagged whatever its
 // memo contains.
+//
+// The inline half asks the canonical list rather than just looking for a '#': a "#thanks"
+// in old stock names no group, so nobody moderates it by that hashtag and it belongs here.
+// Testing for any '#' at all would drop those contributions out of both lists — no group
+// moderator sees them, and the one working through the ungrouped ones would not either.
 const UNTAGGED_SQL =
   `(NOT EXISTS (SELECT 1 FROM contribution_group_tags cgt ` +
   `WHERE cgt.contribution_id = Contribution.id) ` +
-  `AND (Contribution.group_tags_set_at IS NOT NULL OR Contribution.memo NOT LIKE '%#%'))`
+  `AND (Contribution.group_tags_set_at IS NOT NULL ` +
+  `OR NOT EXISTS (SELECT 1 FROM group_tags gt ` +
+  `WHERE Contribution.memo LIKE CONCAT('%#', gt.tag, '%'))))`
 
 // Parse a moderator's stored scope (JSON text on user_roles.visible_group_tags) into a
 // string array. null (= no restriction) for empty/invalid input.
@@ -105,15 +117,18 @@ export const buildModeratorScopePredicate = (
 }
 
 // A single group filter, as picked from the dropdown in the admin or in the wallet. Matched
-// the same way the list does: a structured link OR a legacy inline "#tag". The sentinel
-// '*untagged' selects the contributions that belong to no group at all -- the ones no group
-// moderator is looking after. A real slug can never collide with it: '*' is rejected when a
-// group is created or renamed.
+// the same way the list does: a structured link OR a legacy inline "#tag". Two reserved
+// tokens stand beside the real groups: '*untagged' selects the contributions no group
+// moderator is looking after, '*grouped' their complement. A real slug can never collide
+// with either: '*' is rejected when a group is created or renamed.
 export const buildGroupTagPredicate = (
   tag: string,
 ): { sql: string; params: Record<string, string> } => {
   if (tag === UNTAGGED_FILTER) {
     return { sql: UNTAGGED_SQL, params: {} }
+  }
+  if (tag === GROUPED_FILTER) {
+    return { sql: `(NOT ${UNTAGGED_SQL})`, params: {} }
   }
   return {
     sql: tagMatchSql('groupTagFilter'),

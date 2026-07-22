@@ -242,7 +242,8 @@
     "userSearch": "Μετάβαση στην αναζήτηση χρηστών"
   },
   "groupTagFilter": {
-    "all": "(all groups)",
+    "all": "(όλα)",
+    "grouped": "(όλες οι ομάδες)",
     "label": "Group:",
     "untagged": "(χωρίς ομάδα)"
   },

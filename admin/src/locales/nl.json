@@ -242,7 +242,8 @@
     "userSearch": "Naar gebruikerszoekopdracht gaan"
   },
   "groupTagFilter": {
-    "all": "(all groups)",
+    "all": "(alle)",
+    "grouped": "(alle groepen)",
     "label": "Group:",
     "untagged": "(zonder groep)"
   },

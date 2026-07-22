@@ -88,7 +88,8 @@
     "delete": "Διαγραφή συνεισφοράς! Είσαι σίγουρος;",
     "deleted": "Η συνεισφορά διαγράφηκε! Αλλά θα παραμείνει ορατή.",
     "filter": {
-      "allGroups": "(all groups)",
+      "all": "(όλα)",
+      "grouped": "(όλες οι ομάδες)",
       "noGroup": "(χωρίς ομάδα)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",

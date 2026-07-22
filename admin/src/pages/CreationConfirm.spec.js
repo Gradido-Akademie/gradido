@@ -181,11 +181,12 @@ describe('CreationConfirm', () => {
     )
   })
 
-  it('offers "(no group)" in the group filter, right after "all groups"', () => {
-    // The real groups follow behind; here the query is mocked away, so only the two fixed
-    // entries remain -- which is exactly what this asserts.
+  it('offers all, all groups and no group before the real groups', () => {
+    // The real groups follow behind; here the query is mocked away, so only the three
+    // fixed entries remain -- which is exactly what this asserts.
     expect(wrapper.vm.groupTagFilterOptions.map((option) => option.value)).toEqual([
       '',
+      '*grouped',
       '*untagged',
     ])
   })

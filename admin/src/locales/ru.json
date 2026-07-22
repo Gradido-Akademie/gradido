@@ -242,7 +242,8 @@
     "userSearch": "Перейти к поиску пользователей"
   },
   "groupTagFilter": {
-    "all": "(all groups)",
+    "all": "(все)",
+    "grouped": "(все группы)",
     "label": "Group:",
     "untagged": "(без группы)"
   },

@@ -88,7 +88,8 @@
     "delete": "Eliminar contribuição! Tens a certeza?",
     "deleted": "A contribuição foi eliminada! Mas continuará visível.",
     "filter": {
-      "allGroups": "(all groups)",
+      "all": "(todas)",
+      "grouped": "(todos os grupos)",
       "noGroup": "(sem grupo)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",
