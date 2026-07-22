@@ -242,8 +242,10 @@
     "userSearch": "Ir para a pesquisa de utilizadores"
   },
   "groupTagFilter": {
-    "all": "(all groups)",
-    "label": "Group:"
+    "all": "(todas)",
+    "grouped": "(todos os grupos)",
+    "label": "Group:",
+    "untagged": "(sem grupo)"
   },
   "groupTagsAdmin": {
     "add": "Create",
@@ -316,8 +318,6 @@
     "statistic": "Estatística",
     "user_search": "Pesquisa de utilizadores"
   },
-  "no_hashtag": "Ocultar #hashtags",
-  "no_hashtag_tooltip": "Mostra apenas as contribuições sem hashtag no texto",
   "not_open_creations": "Sem criações abertas",
   "notice": "Notice",
   "open": "aberta",

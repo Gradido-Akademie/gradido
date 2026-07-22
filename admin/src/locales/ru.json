@@ -242,8 +242,10 @@
     "userSearch": "Перейти к поиску пользователей"
   },
   "groupTagFilter": {
-    "all": "(all groups)",
-    "label": "Group:"
+    "all": "(все)",
+    "grouped": "(все группы)",
+    "label": "Group:",
+    "untagged": "(без группы)"
   },
   "groupTagsAdmin": {
     "add": "Create",
@@ -316,8 +318,6 @@
     "statistic": "Статистика",
     "user_search": "Поиск пользователей"
   },
-  "no_hashtag": "Скрыть #хештеги",
-  "no_hashtag_tooltip": "Показывает только вклады без хештега в тексте",
   "not_open_creations": "Нет открытых созданий",
   "notice": "Notice",
   "open": "открыто",

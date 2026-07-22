@@ -1,7 +1,7 @@
 import { Paginated } from '@arg/Paginated'
 import { SearchContributionsFilterArgs } from '@arg/SearchContributionsFilterArgs'
 import { AppDatabase, Contribution as DbContribution } from 'database'
-import { Brackets, In, IsNull, LessThanOrEqual, Like, Not, SelectQueryBuilder } from 'typeorm'
+import { Brackets, In, IsNull, LessThanOrEqual, Like, SelectQueryBuilder } from 'typeorm'
 
 import { LogError } from '@/server/LogError'
 
@@ -47,13 +47,37 @@ const tagMatchSql = (key: string): string =>
   `WHERE cgt.contribution_id = Contribution.id AND gt.tag = :${key}) ` +
   `OR (${NO_ASSIGNMENT_SQL} AND Contribution.memo LIKE :${key}Like))`
 
-// "Untagged": no structured tag, and — only where nothing was ever assigned — no inline
-// hashtag either. A contribution deliberately set to "no group" is untagged whatever its
+// The one token that stands for "belongs to no group". Used by the moderator scope and by
+// the group filter, so both mean exactly the same set of contributions.
+export const UNTAGGED_FILTER = '*untagged'
+
+// Its complement, offered by the group filter only: everything that does belong to some
+// group. "all" (the empty filter) plus these two cover every contribution exactly once.
+export const GROUPED_FILTER = '*grouped'
+
+// "Untagged" = no group moderator is looking after this. That means no structured tag,
+// and — only where nothing was ever assigned — no inline hashtag naming a group that
+// actually exists. A contribution deliberately set to "no group" is untagged whatever its
 // memo contains.
+//
+// The inline half asks the canonical list rather than just looking for a '#': a "#thanks"
+// in old stock names no group, so nobody moderates it by that hashtag and it belongs here.
+// Testing for any '#' at all would drop those contributions out of both lists — no group
+// moderator sees them, and the one working through the ungrouped ones would not either.
+//
+// The COLLATE is required, not cosmetic: contributions.memo is utf8mb4_general_ci while
+// group_tags.tag is utf8mb4_unicode_ci, and comparing two columns of different collations
+// is an error (ER_CANT_AGGREGATE_2COLLATIONS). Matching a tag against a bound string does
+// not hit this, which is why the comparisons elsewhere need nothing. utf8mb4_unicode_ci is
+// the right side to land on: it is what the canonical list is compared with everywhere
+// else, case- and accent-insensitive.
 const UNTAGGED_SQL =
   `(NOT EXISTS (SELECT 1 FROM contribution_group_tags cgt ` +
   `WHERE cgt.contribution_id = Contribution.id) ` +
-  `AND (Contribution.group_tags_set_at IS NOT NULL OR Contribution.memo NOT LIKE '%#%'))`
+  `AND (Contribution.group_tags_set_at IS NOT NULL ` +
+  `OR NOT EXISTS (SELECT 1 FROM group_tags gt ` +
+  `WHERE Contribution.memo COLLATE utf8mb4_unicode_ci ` +
+  `LIKE CONCAT('%#', gt.tag, '%'))))`
 
 // Parse a moderator's stored scope (JSON text on user_roles.visible_group_tags) into a
 // string array. null (= no restriction) for empty/invalid input.
@@ -82,7 +106,7 @@ export const buildModeratorScopePredicate = (
     return null
   }
   const realTags = moderatorScope.filter((tag) => tag.length > 0 && !tag.startsWith('*'))
-  const includeUntagged = moderatorScope.includes('*untagged')
+  const includeUntagged = moderatorScope.includes(UNTAGGED_FILTER)
   if (realTags.length === 0 && !includeUntagged) {
     return null
   }
@@ -101,13 +125,24 @@ export const buildModeratorScopePredicate = (
 }
 
 // A single group filter, as picked from the dropdown in the admin or in the wallet. Matched
-// the same way the list does: a structured link OR a legacy inline "#tag".
+// the same way the list does: a structured link OR a legacy inline "#tag". Two reserved
+// tokens stand beside the real groups: '*untagged' selects the contributions no group
+// moderator is looking after, '*grouped' their complement. A real slug can never collide
+// with either: '*' is rejected when a group is created or renamed.
 export const buildGroupTagPredicate = (
   tag: string,
-): { sql: string; params: Record<string, string> } => ({
-  sql: tagMatchSql('groupTagFilter'),
-  params: { groupTagFilter: tag, groupTagFilterLike: `%#${tag}%` },
-})
+): { sql: string; params: Record<string, string> } => {
+  if (tag === UNTAGGED_FILTER) {
+    return { sql: UNTAGGED_SQL, params: {} }
+  }
+  if (tag === GROUPED_FILTER) {
+    return { sql: `(NOT ${UNTAGGED_SQL})`, params: {} }
+  }
+  return {
+    sql: tagMatchSql('groupTagFilter'),
+    params: { groupTagFilter: tag, groupTagFilterLike: `%#${tag}%` },
+  }
+}
 
 export const findContributions = async (
   { pageSize, currentPage, order }: Paginated,
@@ -134,7 +169,6 @@ export const findContributions = async (
   queryBuilder.where({
     ...(filter.statusFilter?.length && { contributionStatus: In(filter.statusFilter) }),
     ...(filter.userId && { userId: filter.userId }),
-    ...(filter.noHashtag && { memo: Not(Like(`%#%`)) }),
   })
   if (filter.hideResubmission) {
     const now = new Date(new Date().toUTCString())

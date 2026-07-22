@@ -242,8 +242,10 @@
     "userSearch": "Go to user search"
   },
   "groupTagFilter": {
-    "all": "(all groups)",
-    "label": "Group:"
+    "all": "(all)",
+    "grouped": "(all groups)",
+    "label": "Group:",
+    "untagged": "(no group)"
   },
   "groupTagsAdmin": {
     "add": "Create",
@@ -316,8 +318,6 @@
     "statistic": "Statistic",
     "user_search": "User search"
   },
-  "no_hashtag": "Hide #hashtags",
-  "no_hashtag_tooltip": "Shows only contributions without hashtag in text",
   "not_open_creations": "No open creations",
   "notice": "Notice",
   "open": "open",

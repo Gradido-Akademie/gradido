@@ -88,7 +88,9 @@
     "delete": "Hizmeti sil! Emin misin?",
     "deleted": "Hizmet silindi! Fakat hala görünüyor olacak.",
     "filter": {
-      "allGroups": "(all groups)",
+      "all": "(tümü)",
+      "grouped": "(tüm gruplar)",
+      "noGroup": "(grupsuz)",
       "noResults": "No contributions found.",
       "searchAll": "Search by text or name …",
       "searchOwn": "Search contributions …"

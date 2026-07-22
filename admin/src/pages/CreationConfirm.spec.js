@@ -115,7 +115,6 @@ describe('CreationConfirm', () => {
     expect(wrapper.vm.currentPage).toBe(1)
     expect(wrapper.vm.pageSize).toBe(25)
     expect(wrapper.vm.query).toBe('')
-    expect(wrapper.vm.noHashtag).toBe(null)
     expect(wrapper.vm.hideResubmissionModel).toBe(true)
   })
 
@@ -168,16 +167,28 @@ describe('CreationConfirm', () => {
       }),
     )
 
-    wrapper.vm.noHashtag = true
+    // The group filter replaced the old "hide #hashtags" switch: it asks which group a
+    // contribution belongs to, not whether its text happens to contain a '#'.
+    wrapper.vm.groupTag = '*untagged'
     await nextTick()
 
     expect(mockRefetch).toHaveBeenCalledWith(
       expect.objectContaining({
         filter: expect.objectContaining({
-          noHashtag: true,
+          groupTag: '*untagged',
         }),
       }),
     )
+  })
+
+  it('offers all, all groups and no group before the real groups', () => {
+    // The real groups follow behind; here the query is mocked away, so only the three
+    // fixed entries remain -- which is exactly what this asserts.
+    expect(wrapper.vm.groupTagFilterOptions.map((option) => option.value)).toEqual([
+      '',
+      '*grouped',
+      '*untagged',
+    ])
   })
 
   it('updates tabIndex and refetches when changing tabs', async () => {

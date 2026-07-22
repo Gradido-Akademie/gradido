@@ -111,3 +111,34 @@ describe('group tags with capitals and accented letters', () => {
     expect(reloaded.tag).toBe('Öffentlichkeitsarbeit')
   })
 })
+
+// The moderator scope and the group filter both read '*all' and '*untagged' as reserved
+// words meaning "everything" and "no group". A real group carrying such a slug would
+// quietly take over that meaning, so '*' is refused at the door — on creating and on
+// renaming, since either way in would be enough.
+describe('reserved slugs', () => {
+  const RESERVED = ['*untagged', '*all', '*anything']
+
+  it('refuses to create a group whose slug starts with "*"', async () => {
+    for (const tag of RESERVED) {
+      await expect(resolver.createGroupTag(tag, 'Reserved')).rejects.toThrow('Invalid group tag')
+      expect(await GroupTag.findOne({ where: { tag } })).toBeNull()
+    }
+  })
+
+  it('refuses to rename an existing group onto such a slug', async () => {
+    const tag = await makeTag('ordinary', 'Ordinary')
+    for (const reserved of RESERVED) {
+      await expect(resolver.updateGroupTag(tag.id, reserved, null)).rejects.toThrow(
+        'Invalid group tag',
+      )
+    }
+    const reloaded = await GroupTag.findOneOrFail({ where: { id: tag.id } })
+    expect(reloaded.tag).toBe('ordinary')
+  })
+
+  it('still accepts a slug that merely contains "*" somewhere else', async () => {
+    const created = await resolver.createGroupTag('a*b', 'Odd but harmless')
+    expect(created.tag).toBe('a*b')
+  })
+})

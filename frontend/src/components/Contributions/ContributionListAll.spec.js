@@ -117,6 +117,27 @@ describe('ContributionListAll', () => {
       expect(wrapper.find('div.contribution-list-all').exists()).toBe(true)
     })
 
+    // Contributions already show "(no group)" as their label, so the filter has to offer
+    // it too -- otherwise you can see the state but never single it out. BFormSelect is
+    // registered app-wide rather than imported, so the test puts its own stand-in there to
+    // read the options off.
+    it('offers all, all groups and no group before the real groups', () => {
+      const SelectStub = {
+        name: 'BFormSelect',
+        props: ['options', 'modelValue'],
+        template: '<select></select>',
+      }
+      const localWrapper = mount(ContributionListAll, {
+        global: { ...global, stubs: { ...global.stubs, BFormSelect: SelectStub } },
+      })
+      const options = localWrapper.findComponent(SelectStub).props('options')
+      expect(options.slice(0, 3).map((option) => option.value)).toEqual([
+        null,
+        '*grouped',
+        '*untagged',
+      ])
+    })
+
     describe('pagination', () => {
       describe('list count smaller than page size', () => {
         it('has no pagination buttons', () => {
