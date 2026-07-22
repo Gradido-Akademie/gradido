@@ -92,8 +92,7 @@
       "grouped": "(tüm gruplar)",
       "noGroup": "(grupsuz)",
       "noResults": "No contributions found.",
-      "searchAll": "Search by text or name …",
-      "searchOwn": "Search contributions …"
+      "search": "Search contributions …"
     },
     "formText": {
       "bringYourTalentsTo": "Yeteneklerini topluluğa sun! Gönüllü olarak sunduğun hizmetler ayda max 1,000 GDD olacak şekilde saati 20 GDD olarak ödüllendirilecektir! Bir moderatör tarafından onaylandıktan sonra bu tutar hesabına yatırılacaktır.",
@@ -109,6 +108,7 @@
     },
     "isEdited": "katkıyı düzenledi",
     "lastContribution": "Son Katkılar",
+    "memoIsPublic": "Your description appears in the community list, where it is visible to all members. It shows the contribution's number instead of your name.",
     "noContributions": {
       "allContributions": "Henüz hiç katkı gönderilmedi.",
       "emptyPage": "Bu sayfa boş.",
@@ -119,6 +119,7 @@
       "lastMonth": "Seçilen ay için yaratım limitine ulaşıldı.",
       "thisMonth": "İçinde bulunduğun ay için yaratım limitine ulaşıldı."
     },
+    "number": "Contribution no. {number}",
     "oldContribution": "Önceki sürüm",
     "selectDate": "Hizmet ne zaman verildi?",
     "submit": "Başvuru yapıldı",

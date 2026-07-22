@@ -11,6 +11,11 @@
           </BAvatar>
         </BCol>
         <BCol>
+          <!-- The number identifies the contribution in the community list, where no name
+               is shown. Its author can quote it if they want to be identified there. -->
+          <div class="small text-muted" data-test="contribution-number">
+            {{ $t('contribution.number', { number: id }) }}
+          </div>
           <div class="small">
             {{ $d(new Date(contributionDate), 'short') }}
           </div>

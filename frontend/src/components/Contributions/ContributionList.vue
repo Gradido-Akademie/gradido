@@ -3,7 +3,7 @@
     <BFormInput
       v-model="searchInput"
       class="contribution-filter-search"
-      :placeholder="t('contribution.filter.searchOwn')"
+      :placeholder="t('contribution.filter.search')"
     />
     <BFormSelect
       v-model="selectedGroup"

@@ -92,8 +92,7 @@
       "grouped": "(все группы)",
       "noGroup": "(без группы)",
       "noResults": "No contributions found.",
-      "searchAll": "Search by text or name …",
-      "searchOwn": "Search contributions …"
+      "search": "Search contributions …"
     },
     "formText": {
       "bringYourTalentsTo": "Принесите свои таланты в общество! Мы вознаграждаем вас за добровольную работу 20 GDD в час, но не более 1 000 GDD в месяц.",
@@ -109,6 +108,7 @@
     },
     "isEdited": "отредактировал вклад",
     "lastContribution": "Последние вклады",
+    "memoIsPublic": "Your description appears in the community list, where it is visible to all members. It shows the contribution's number instead of your name.",
     "noContributions": {
       "allContributions": "Пока не внесено ни одного вклада.",
       "emptyPage": "Эта страница пуста.",
@@ -119,6 +119,7 @@
       "lastMonth": "За выбранный месяц достигнут лимит создания.",
       "thisMonth": "За текущий месяц достигнут лимит создания."
     },
+    "number": "Contribution no. {number}",
     "oldContribution": "Предыдущая версия",
     "selectDate": "Когда был сделан ваш вклад?",
     "submit": "Отправить",

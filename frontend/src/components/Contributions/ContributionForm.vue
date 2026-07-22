@@ -50,6 +50,12 @@
           :disable-smart-valid-state="disableSmartValidState"
           @update:model-value="updateField"
         />
+        <!-- Data protection: said where the text is written, not buried in a help page.
+             Deliberately without a duration — the wording must stay true if the community
+             list's time window ever changes. -->
+        <div class="form-text mb-3" data-test="contribution-memo-publication-hint">
+          {{ $t('contribution.memoIsPublic') }}
+        </div>
         <ValidatedInput
           name="hours"
           :model-value="form.hours"

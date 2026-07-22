@@ -92,8 +92,7 @@
       "grouped": "(alle groepen)",
       "noGroup": "(zonder groep)",
       "noResults": "No contributions found.",
-      "searchAll": "Search by text or name …",
-      "searchOwn": "Search contributions …"
+      "search": "Search contributions …"
     },
     "formText": {
       "bringYourTalentsTo": "Bied je met jouw talenten in de gemeenschap aan! Jouw vrijwillige inzet belonen we met 20 GGD per uur, tot maximaal 1.000 GGD per maand.",
@@ -109,6 +108,7 @@
     },
     "isEdited": "heeft de bijdrage bewerkt",
     "lastContribution": "Laatste bijdragen",
+    "memoIsPublic": "Your description appears in the community list, where it is visible to all members. It shows the contribution's number instead of your name.",
     "noContributions": {
       "allContributions": "Er zijn nog geen bijdragen ingediend.",
       "emptyPage": "Deze pagina is leeg.",
@@ -119,6 +119,7 @@
       "lastMonth": "De creatielimiet is bereikt voor de geselecteerde maand.",
       "thisMonth": "De creatielimiet is bereikt voor de huidige maand."
     },
+    "number": "Contribution no. {number}",
     "oldContribution": "Vorige versie",
     "selectDate": "Wanneer was jouw bijdrage?",
     "submit": "Indienen",
