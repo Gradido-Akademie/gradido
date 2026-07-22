@@ -507,6 +507,7 @@ export default {
    up while it is being used. Element + class so it wins over .form-select whatever the
    stylesheet order is. */
 select.group-select {
+  max-width: 28rem;
   background-color: transparent;
   border-color: rgb(0 0 0 / 12%);
 }
