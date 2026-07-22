@@ -85,6 +85,7 @@
       "myContributionNoteList": "Eingereichte Beiträge, die noch nicht bestätigt wurden, kannst du jederzeit bearbeiten oder löschen.",
       "pending": "Eingereicht und wartet auf Bestätigung"
     },
+    "communityWindow": "Beiträge der letzten {months} Monate",
     "delete": "Beitrag löschen! Bist du sicher?",
     "deleted": "Der Beitrag wurde gelöscht! Wird aber sichtbar bleiben.",
     "filter": {

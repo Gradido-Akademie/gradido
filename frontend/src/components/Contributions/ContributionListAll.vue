@@ -1,4 +1,10 @@
 <template>
+  <!-- The window is stated where it applies, and it is the number the backend actually
+       filters by — never a duration written into an explanatory text, which would keep
+       claiming the old number if the window ever changed. -->
+  <div v-if="windowMonths" class="text-muted small mb-2" data-test="community-window">
+    {{ $t('contribution.communityWindow', { months: windowMonths }) }}
+  </div>
   <div class="contribution-filter d-flex flex-wrap gap-2 mb-3">
     <BFormInput
       v-model="searchInput"
@@ -39,7 +45,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import ContributionListAllItem from '@/components/Contributions/ContributionListAllItem.vue'
-import { listAllContributions, groupTags as groupTagsQuery } from '@/graphql/contributions.graphql'
+import {
+  listAllContributions,
+  communityGroupTags as communityGroupTagsQuery,
+} from '@/graphql/contributions.graphql'
 import { useQuery } from '@vue/apollo-composable'
 import CONFIG from '@/config'
 import PaginatorRouteParamsPage from '@/components/PaginatorRouteParamsPage.vue'
@@ -78,7 +87,12 @@ watch(selectedGroup, () => {
 
 const isFiltered = computed(() => Boolean(searchText.value || selectedGroup.value))
 
-const { result: groupTagsResult } = useQuery(groupTagsQuery)
+// Only the groups this list currently has something to show for, so the dropdown offers
+// exactly what can be found behind it. A group that has been quiet longer than the window
+// drops out and returns by itself once one of its contributions is filed again. The
+// submission field keeps asking groupTags — every group has to stay choosable there, or a
+// dormant one could never be woken up.
+const { result: groupTagsResult } = useQuery(communityGroupTagsQuery)
 const groupOptions = computed(() => [
   // Three answers that cover the list exactly once: everything, everything that belongs
   // to some group, everything that belongs to none. The last two are reserved tokens the
@@ -86,7 +100,7 @@ const groupOptions = computed(() => [
   { value: null, text: t('contribution.filter.all') },
   { value: '*grouped', text: t('contribution.filter.grouped') },
   { value: '*untagged', text: t('contribution.filter.noGroup') },
-  ...(groupTagsResult.value?.groupTags ?? []).map((group) => ({
+  ...(groupTagsResult.value?.communityGroupTags ?? []).map((group) => ({
     value: group.tag,
     text: group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`,
   })),
@@ -110,6 +124,10 @@ const { result, loading } = useQuery(
     pollInterval,
   },
 )
+
+// Served by the backend rather than written down here a second time: the heading must state
+// the window that is really in force, or it starts telling a lie the day the window changes.
+const windowMonths = computed(() => result.value?.listAllContributions?.windowMonths ?? null)
 
 const contributionCount = computed(() => {
   return result.value?.listAllContributions.contributionCount || 0

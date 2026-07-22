@@ -85,6 +85,7 @@
       "myContributionNoteList": "À tout moment tu peux éditer ou supprimer les données qui n'ont pas été confirmées.",
       "pending": "Inscription en attente de validation"
     },
+    "communityWindow": "Contributions from the last {months} months",
     "delete": "Supprimer la contribution ! Es-tu sûr ?",
     "deleted": "La contribution a été supprimée! Mais elle restera visible.",
     "filter": {

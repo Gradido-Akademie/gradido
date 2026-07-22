@@ -111,3 +111,17 @@ export class ContributionListResult {
   @Field(() => [Contribution])
   contributionList: Contribution[]
 }
+
+// The community list carries its own window length, so the heading above it states the
+// window that is actually in force instead of a number written down a second time in the
+// wallet. A duplicated constant is exactly how such a heading starts telling a lie.
+@ObjectType()
+export class CommunityContributionListResult extends ContributionListResult {
+  constructor(count: number, list: DbContribution[], windowMonths: number) {
+    super(count, list)
+    this.windowMonths = windowMonths
+  }
+
+  @Field(() => Int)
+  windowMonths: number
+}

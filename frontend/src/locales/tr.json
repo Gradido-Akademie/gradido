@@ -85,6 +85,7 @@
       "myContributionNoteList": "Bildirmiş olduğun henüz onaylanmamış olan  faaliyetleri istediğin zaman düzenleyebilir veya silebilirsin.",
       "pending": "Gönderildi ve onay bekleniyor"
     },
+    "communityWindow": "Contributions from the last {months} months",
     "delete": "Hizmeti sil! Emin misin?",
     "deleted": "Hizmet silindi! Fakat hala görünüyor olacak.",
     "filter": {

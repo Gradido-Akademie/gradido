@@ -8,7 +8,11 @@ import { ContributionMessageType } from '@enum/ContributionMessageType'
 import { ContributionStatus } from '@enum/ContributionStatus'
 import { ContributionType } from '@enum/ContributionType'
 import { AdminUpdateContribution } from '@model/AdminUpdateContribution'
-import { Contribution, ContributionListResult } from '@model/Contribution'
+import {
+  CommunityContributionListResult,
+  Contribution,
+  ContributionListResult,
+} from '@model/Contribution'
 import { OpenCreation } from '@model/OpenCreation'
 import { UnconfirmedContribution } from '@model/UnconfirmedContribution'
 import {
@@ -53,6 +57,7 @@ import { LogError } from '@/server/LogError'
 import { attachContributionGroupTags } from './util/attachContributionGroupTags'
 import { setContributionGroupTags } from './util/contributionGroupTags'
 import {
+  COMMUNITY_WINDOW_MONTHS,
   contributionFrontendLink,
   loadAllContributions,
   loadUserContributions,
@@ -222,14 +227,18 @@ export class ContributionResolver {
   }
 
   @Authorized([RIGHTS.LIST_ALL_CONTRIBUTIONS])
-  @Query(() => ContributionListResult)
+  @Query(() => CommunityContributionListResult)
   async listAllContributions(
     @Arg('pagination') pagination: Paginated,
     @Arg('filter', () => ContributionFilterArgs, { nullable: true })
     filter?: ContributionFilterArgs | null,
-  ): Promise<ContributionListResult> {
+  ): Promise<CommunityContributionListResult> {
     const [dbContributions, count] = await loadAllContributions(pagination, filter)
-    const result = new ContributionListResult(count, dbContributions)
+    const result = new CommunityContributionListResult(
+      count,
+      dbContributions,
+      COMMUNITY_WINDOW_MONTHS,
+    )
     await attachContributionGroupTags(result.contributionList)
     return result
   }

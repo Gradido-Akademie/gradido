@@ -85,6 +85,7 @@
       "myContributionNoteList": "Ingediende bijdragen, die nog niet bevestigd zijn, kun je op elk moment wijzigen of verwijderen.",
       "pending": "Ingediend en wacht op bevestiging"
     },
+    "communityWindow": "Contributions from the last {months} months",
     "delete": "Bijdrage verwijderen! Weet je het zeker?",
     "deleted": "De bijdrage werd verwijderd! Blijft echter zichtbaar.",
     "filter": {

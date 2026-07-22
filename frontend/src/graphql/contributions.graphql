@@ -57,6 +57,7 @@ query listContributions ($pagination: Paginated!, $filter: ContributionFilterArg
 query listAllContributions ($pagination: Paginated!, $filter: ContributionFilterArgs) {
   listAllContributions(pagination: $pagination, filter: $filter) {
     contributionCount
+    windowMonths
     contributionList {
       id
       amount
@@ -93,6 +94,17 @@ query openCreationsAmounts {
 # Group functions ("Weg A"): canonical tag list (autocomplete) + the user's own list (main tag)
 query groupTags {
   groupTags {
+    id
+    tag
+    name
+  }
+}
+
+# Only the groups the community list currently has something to show for. For the filter
+# above that list — never for the submission field, which must keep offering every group so
+# a dormant one can be woken up again.
+query communityGroupTags {
+  communityGroupTags {
     id
     tag
     name
