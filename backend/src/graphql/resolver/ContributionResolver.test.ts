@@ -2716,9 +2716,11 @@ describe('ContributionResolver', () => {
           })
         })
 
-        // Successor of the removed "hide #hashtags" switch: the filter now asks which group
-        // a contribution belongs to. For stock written before the group field existed the
-        // two coincide -- no assignment, no stamp -- so the expectations are unchanged.
+        // Successor of the removed "hide #hashtags" switch, and deliberately not the same
+        // set: the filter asks which group a contribution belongs to, not whether its text
+        // happens to contain a '#'. "#firefighters" is submitted without a group, so it is
+        // one of the contributions no group moderator looks after -- the old switch hid it
+        // for the wrong reason, and it is counted here.
         it('returns only contributions of the queried user that belong to no group', async () => {
           const {
             data: { adminListContributions: contributionListObject },
@@ -2732,9 +2734,9 @@ describe('ContributionResolver', () => {
               paginated: { pageSize: 20 },
             },
           })
-          expect(contributionListObject.contributionList).toHaveLength(3)
+          expect(contributionListObject.contributionList).toHaveLength(4)
           expect(contributionListObject).toMatchObject({
-            contributionCount: 3,
+            contributionCount: 4,
             contributionList: expect.arrayContaining([
               expect.objectContaining({
                 amount: '400',
@@ -2815,7 +2817,9 @@ describe('ContributionResolver', () => {
           })
         })
 
-        it('returns nothing for "#firefighter" combined with "no group"', async () => {
+        // Same point from the other side: the text search finds "#firefighters", and the
+        // group filter keeps it because it belongs to no group.
+        it('finds "#firefighters" when it belongs to no group', async () => {
           const {
             data: { adminListContributions: contributionListObject },
           } = await query({
@@ -2827,9 +2831,9 @@ describe('ContributionResolver', () => {
               },
             },
           })
-          expect(contributionListObject.contributionList).toHaveLength(0)
+          expect(contributionListObject.contributionList).toHaveLength(1)
           expect(contributionListObject).toMatchObject({
-            contributionCount: 0,
+            contributionCount: 1,
           })
         })
 
