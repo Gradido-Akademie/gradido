@@ -86,8 +86,8 @@
       "pending": "Submitted and waiting for confirmation"
     },
     "communityWindow": "Contributions from the last {months} months",
-    "delete": "Delete Contribution! Are you sure?",
-    "deleted": "The contribution has been deleted! But it will remain visible.",
+    "delete": "Really delete this contribution? Afterwards it is visible only to you and the moderators, invisible to the community.",
+    "deleted": "The contribution has been deleted. It is now visible only to you and the moderators, invisible to the community.",
     "filter": {
       "all": "(all)",
       "grouped": "(all groups)",

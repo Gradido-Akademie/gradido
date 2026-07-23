@@ -86,8 +86,8 @@
       "pending": "Submetido e à espera de confirmação"
     },
     "communityWindow": "Contributions from the last {months} months",
-    "delete": "Eliminar contribuição! Tens a certeza?",
-    "deleted": "A contribuição foi eliminada! Mas continuará visível.",
+    "delete": "Eliminar mesmo a contribuição? Depois fica visível apenas para ti e os moderadores, invisível para a comunidade.",
+    "deleted": "A contribuição foi eliminada. Agora fica visível apenas para ti e os moderadores, invisível para a comunidade.",
     "filter": {
       "all": "(todas)",
       "grouped": "(todos os grupos)",

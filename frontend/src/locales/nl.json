@@ -86,8 +86,8 @@
       "pending": "Ingediend en wacht op bevestiging"
     },
     "communityWindow": "Contributions from the last {months} months",
-    "delete": "Bijdrage verwijderen! Weet je het zeker?",
-    "deleted": "De bijdrage werd verwijderd! Blijft echter zichtbaar.",
+    "delete": "Bijdrage echt verwijderen? Daarna is ze alleen nog zichtbaar voor jou en de moderatoren, onzichtbaar voor de gemeenschap.",
+    "deleted": "De bijdrage is verwijderd. Ze is nu alleen nog zichtbaar voor jou en de moderatoren, onzichtbaar voor de gemeenschap.",
     "filter": {
       "all": "(alle)",
       "grouped": "(alle groepen)",

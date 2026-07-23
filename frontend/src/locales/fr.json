@@ -86,8 +86,8 @@
       "pending": "Inscription en attente de validation"
     },
     "communityWindow": "Contributions from the last {months} months",
-    "delete": "Supprimer la contribution ! Es-tu sûr ?",
-    "deleted": "La contribution a été supprimée! Mais elle restera visible.",
+    "delete": "Vraiment supprimer la contribution ? Elle ne sera alors visible que pour toi et les modérateurs, invisible pour la communauté.",
+    "deleted": "La contribution a été supprimée. Elle n'est désormais visible que pour toi et les modérateurs, invisible pour la communauté.",
     "filter": {
       "all": "(toutes)",
       "grouped": "(tous les groupes)",

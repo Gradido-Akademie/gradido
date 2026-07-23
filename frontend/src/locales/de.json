@@ -86,8 +86,8 @@
       "pending": "Eingereicht und wartet auf Bestätigung"
     },
     "communityWindow": "Beiträge der letzten {months} Monate",
-    "delete": "Beitrag löschen! Bist du sicher?",
-    "deleted": "Der Beitrag wurde gelöscht! Wird aber sichtbar bleiben.",
+    "delete": "Beitrag wirklich löschen? Danach ist er nur noch für Dich und die Moderatoren sichtbar, für die Gemeinschaft unsichtbar.",
+    "deleted": "Der Beitrag wurde gelöscht. Er ist nur noch für Dich und die Moderatoren sichtbar, für die Gemeinschaft unsichtbar.",
     "filter": {
       "all": "(alle)",
       "grouped": "(alle Gruppen)",
