@@ -3,6 +3,12 @@ html > body {
   height: 100%;
   transition: background-color 0.5s ease, color 0.5s ease;
   overflow-x: hidden;
+
+  // Render native controls (select popups, date pickers, scrollbars, form defaults) to match
+  // the app's light theme instead of the browser's OS default. Inherited by #app and by
+  // controls teleported onto <body> (modals). The dark override lives in
+  // gradido-template-dark.scss (color-scheme: dark on .dark-mode), which wins when present.
+  color-scheme: light;
 }
 
 .pointer {
