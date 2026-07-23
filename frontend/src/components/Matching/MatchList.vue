@@ -426,6 +426,17 @@ function closeResults() {
   min-width: 200px;
 }
 
+/* The dropdowns sit beside a plain search field but inherited the wallet's default
+   button size (16px, semibold, tall). Bring them down to the search field's weight --
+   smaller, lighter, less height -- so they read as controls, not calls to action. Only
+   here: the shared ThemedSelect keeps its size in the six other places it is used. */
+.list-sort :deep(.themed-select-toggle) {
+  --bs-btn-font-size: 14px;
+  --bs-btn-font-weight: 500;
+  --bs-btn-padding-y: 6px;
+  --bs-btn-padding-x: 12px;
+}
+
 .center-label {
   flex: 0 0 100%;
   order: 2;
