@@ -1,10 +1,11 @@
 import { GroupTag as DbGroupTag, UserRole as DbUserRole } from 'database'
-import { Arg, Authorized, Int, Mutation, Query, Resolver } from 'type-graphql'
+import { Arg, Authorized, Ctx, Int, Mutation, Query, Resolver } from 'type-graphql'
 import { Like } from 'typeorm'
 import { RIGHTS } from '@/auth/RIGHTS'
 import { GroupTag } from '@/graphql/model/GroupTag'
+import { Context, getUser } from '@/server/context'
 import { LogError } from '@/server/LogError'
-import { groupTagsInCommunityWindow } from './util/contributions'
+import { groupTagsInCommunityWindow, groupTagsInUserContributions } from './util/contributions'
 import { parseModeratorScope } from './util/findContributions'
 
 // Normalise a slug into the form it is stored in: strip a leading '#' and trim. Rejected
@@ -46,6 +47,26 @@ export class GroupTagResolver {
     const tags = await DbGroupTag.find({ order: { tag: 'ASC' } })
     const visible = new Set(await groupTagsInCommunityWindow(tags.map((tag) => tag.tag)))
     return tags.filter((tag) => visible.has(tag.tag)).map((tag) => new GroupTag(tag))
+  }
+
+  // The groups the caller's own "my contributions" list has something to show for. Like
+  // communityGroupTags, but for the user's own list: it is NOT windowed and it counts their
+  // deleted contributions too, because that list shows them. Same reason as above — the
+  // filter should offer exactly what can be found behind it, not a group that comes back
+  // empty. The submission field must keep asking groupTags, so a group the caller has never
+  // filed in stays choosable there.
+  @Authorized([RIGHTS.LIST_GROUP_TAGS])
+  @Query(() => [GroupTag])
+  async myContributionGroupTags(@Ctx() context: Context): Promise<GroupTag[]> {
+    const user = getUser(context)
+    const tags = await DbGroupTag.find({ order: { tag: 'ASC' } })
+    const present = new Set(
+      await groupTagsInUserContributions(
+        user.id,
+        tags.map((tag) => tag.tag),
+      ),
+    )
+    return tags.filter((tag) => present.has(tag.tag)).map((tag) => new GroupTag(tag))
   }
 
   @Authorized([RIGHTS.MANAGE_GROUP_TAGS])

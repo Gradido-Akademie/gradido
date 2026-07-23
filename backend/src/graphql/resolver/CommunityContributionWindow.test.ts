@@ -9,6 +9,7 @@ import { bibiBloxberg } from '@/seeds/users/bibi-bloxberg'
 import {
   COMMUNITY_WINDOW_MONTHS,
   groupTagsInCommunityWindow,
+  groupTagsInUserContributions,
   loadAllContributions,
   loadUserContributions,
 } from './util/contributions'
@@ -190,5 +191,21 @@ describe('groups offered by the community filter', () => {
     // could file a contribution for it.
     const canonical = await DbGroupTag.find({ order: { tag: 'ASC' } })
     expect(canonical.map((tag) => tag.tag)).toEqual(['windowlive', 'windowquiet'])
+  })
+})
+
+describe('groups offered by "my contributions"', () => {
+  it('is not windowed: keeps a group whose only contribution has gone quiet', async () => {
+    // Unlike the community filter (which drops "windowquiet"), the submitter's own list is
+    // not windowed, so a group still holding one of their older contributions stays offered.
+    expect(await groupTagsInUserContributions(member.id, ['windowlive', 'windowquiet'])).toEqual(
+      expect.arrayContaining(['windowlive', 'windowquiet']),
+    )
+  })
+
+  it('drops a group the submitter has no contribution in', async () => {
+    expect(
+      await groupTagsInUserContributions(member.id, ['windowlive', 'unfiledgroup']),
+    ).not.toContain('unfiledgroup')
   })
 })
