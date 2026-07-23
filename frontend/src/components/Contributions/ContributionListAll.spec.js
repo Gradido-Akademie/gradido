@@ -142,12 +142,12 @@ describe('ContributionListAll', () => {
     // read the options off.
     it('offers all, all groups and no group before the real groups', () => {
       const SelectStub = {
-        name: 'BFormSelect',
+        name: 'ThemedSelect',
         props: ['options', 'modelValue'],
         template: '<select></select>',
       }
       const localWrapper = mount(ContributionListAll, {
-        global: { ...global, stubs: { ...global.stubs, BFormSelect: SelectStub } },
+        global: { ...global, stubs: { ...global.stubs, ThemedSelect: SelectStub } },
       })
       const options = localWrapper.findComponent(SelectStub).props('options')
       expect(options.slice(0, 3).map((option) => option.value)).toEqual([
@@ -162,12 +162,12 @@ describe('ContributionListAll', () => {
     // window would otherwise lead into an empty result and read as "nothing going on here".
     it('takes its groups from the windowed list, not the canonical one', () => {
       const SelectStub = {
-        name: 'BFormSelect',
+        name: 'ThemedSelect',
         props: ['options', 'modelValue'],
         template: '<select></select>',
       }
       const localWrapper = mount(ContributionListAll, {
-        global: { ...global, stubs: { ...global.stubs, BFormSelect: SelectStub } },
+        global: { ...global, stubs: { ...global.stubs, ThemedSelect: SelectStub } },
       })
       const options = localWrapper.findComponent(SelectStub).props('options')
       expect(options.slice(3)).toEqual([

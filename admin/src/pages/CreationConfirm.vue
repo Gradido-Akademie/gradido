@@ -4,7 +4,7 @@
     <user-query v-model="query" class="mb-2 mt-2" :placeholder="$t('user_memo_search')" />
     <p class="mb-2 d-flex align-items-center">
       <span class="me-2">{{ $t('groupTagFilter.label') }}</span>
-      <BFormSelect
+      <ThemedSelect
         v-model="groupTag"
         :options="groupTagFilterOptions"
         class="group-tag-filter"

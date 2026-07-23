@@ -5,7 +5,7 @@
       class="contribution-filter-search"
       :placeholder="t('contribution.filter.search')"
     />
-    <BFormSelect
+    <ThemedSelect
       v-model="selectedGroup"
       class="contribution-filter-group"
       :options="groupOptions"
