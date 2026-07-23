@@ -170,8 +170,9 @@ describe('ContributionListAll', () => {
         global: { ...global, stubs: { ...global.stubs, ThemedSelect: SelectStub } },
       })
       const options = localWrapper.findComponent(SelectStub).props('options')
+      // The wallet shows the group name only; a group without a name falls back to its tag.
       expect(options.slice(3)).toEqual([
-        { value: 'choir', text: 'Choir (#choir)' },
+        { value: 'choir', text: 'Choir' },
         { value: 'fire', text: '#fire' },
       ])
     })

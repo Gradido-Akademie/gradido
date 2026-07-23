@@ -153,9 +153,12 @@ describe('InfoStatistic', () => {
   describe('groups and moderators', () => {
     it('names every group, with and without a display name', async () => {
       await wrapper.vm.$nextTick()
-      expect(wrapper.text()).toContain('Feuerwehr (#feuerwehr)')
+      // The wallet shows the group name only; a group without a name falls back to its tag.
+      expect(wrapper.text()).toContain('Feuerwehr')
+      expect(wrapper.text()).not.toContain('#feuerwehr')
       expect(wrapper.text()).toContain('#musik')
-      expect(wrapper.text()).toContain('Chor (#chor)')
+      expect(wrapper.text()).toContain('Chor')
+      expect(wrapper.text()).not.toContain('#chor')
     })
 
     it('lists a moderator under each group they may see', async () => {

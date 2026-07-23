@@ -53,6 +53,7 @@ import { useI18n } from 'vue-i18n'
 import CONFIG from '@/config'
 import { useRoute } from 'vue-router'
 import PaginatorRouteParamsPage from '@/components/PaginatorRouteParamsPage.vue'
+import { groupTagLabel } from '@/utils/groupTagLabel'
 
 const route = useRoute()
 
@@ -101,7 +102,7 @@ const groupOptions = computed(() => [
   { value: '*untagged', text: t('contribution.filter.noGroup') },
   ...(groupTagsResult.value?.groupTags ?? []).map((group) => ({
     value: group.tag,
-    text: group.name ? `${group.name} (#${group.tag})` : `#${group.tag}`,
+    text: groupTagLabel(group),
   })),
 ])
 
