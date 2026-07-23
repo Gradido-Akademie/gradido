@@ -77,7 +77,9 @@ describe('ContributionListAllItem', () => {
   it('shows the deed, the group and the amount', () => {
     const wrapper = mountWrapper({ groupTags: [{ tag: 'choir', name: 'Choir' }] })
     expect(wrapper.text()).toContain('Ich habe 10 Stunden die Elbwiesen von Müll befreit.')
-    expect(wrapper.text()).toContain('Choir (#choir)')
+    // The wallet shows the group name only -- the tag is dropped (kept in the admin).
+    expect(wrapper.text()).toContain('Choir')
+    expect(wrapper.text()).not.toContain('#choir')
     expect(wrapper.text()).toContain('200 GDD')
   })
 
