@@ -55,7 +55,7 @@
       </template>
       <template #cell(memo)="row">
         <div class="mb-1">
-          <BFormSelect
+          <ThemedSelect
             v-if="canEditGroup(row.item)"
             :model-value="displayedGroupTag(row.item)"
             :options="groupSelectOptions"
@@ -506,14 +506,21 @@ export default {
    colour through -- striped, hovered or plain, it always matches by itself. It only firms
    up while it is being used. Element + class so it wins over .form-select whatever the
    stylesheet order is. */
-select.group-select {
+.group-select {
   max-width: 28rem;
+}
+
+/* The inline picker is now a BDropdown (its option list follows the app theme in every
+   browser, unlike a native <select> popup). Keep the toggle transparent so the row colour
+   shows through; it only firms up while it is being used. */
+.group-select > .btn.themed-select-toggle {
   background-color: transparent;
   border-color: rgb(0 0 0 / 12%);
 }
 
-select.group-select:hover,
-select.group-select:focus {
+.group-select > .btn.themed-select-toggle:hover,
+.group-select > .btn.themed-select-toggle:focus,
+.group-select.show > .btn.themed-select-toggle {
   background-color: rgb(255 255 255 / 35%);
   border-color: rgb(0 0 0 / 25%);
 }

@@ -20,7 +20,7 @@
         <hr />
         <div class="mb-3">
           <label class="d-block mb-1">{{ $t('userRole.groupTags.label') }}</label>
-          <BFormSelect
+          <ThemedSelect
             v-model="userMainTag"
             class="role-select"
             :options="mainTagSelectOptions"

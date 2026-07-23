@@ -33,7 +33,7 @@
           :label="$t('contribution.groupTag.label')"
           :description="$t('contribution.groupTag.help')"
         >
-          <BFormSelect
+          <ThemedSelect
             v-model="selectedGroupTag"
             :options="groupTagSelectOptions"
             data-test="contribution-group-tag"

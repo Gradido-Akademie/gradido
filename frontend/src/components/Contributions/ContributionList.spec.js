@@ -136,12 +136,12 @@ describe('ContributionList', () => {
     // its own stand-in there to read the options off.
     it('offers all, all groups and no group before the real groups', () => {
       const SelectStub = {
-        name: 'BFormSelect',
+        name: 'ThemedSelect',
         props: ['options', 'modelValue'],
         template: '<select></select>',
       }
       const localWrapper = mount(ContributionList, {
-        global: { ...global, stubs: { ...global.stubs, BFormSelect: SelectStub } },
+        global: { ...global, stubs: { ...global.stubs, ThemedSelect: SelectStub } },
       })
       const options = localWrapper.findComponent(SelectStub).props('options')
       expect(options.slice(0, 3).map((option) => option.value)).toEqual([
