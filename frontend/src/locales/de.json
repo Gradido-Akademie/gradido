@@ -105,7 +105,7 @@
     "groupTag": {
       "help": "Optional. Ohne Gruppe geht es auch.",
       "label": "Gruppe",
-      "none": "(keine Gruppe)"
+      "none": "(ohne Gruppe)"
     },
     "isEdited": "hat den Beitrag bearbeitet",
     "lastContribution": "Letzte Beiträge",

@@ -105,7 +105,7 @@
     "groupTag": {
       "help": "Optional. It works without a group, too.",
       "label": "Group",
-      "none": "(no group)"
+      "none": "(без группы)"
     },
     "isEdited": "отредактировал вклад",
     "lastContribution": "Последние вклады",

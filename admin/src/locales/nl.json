@@ -37,7 +37,7 @@
     "createdBy": "Aangemaakt door {name}.",
     "deletedBy": "Verwijderd door {name}.",
     "deniedBy": "Afgewezen door {name}.",
-    "noGroup": "(no group)"
+    "noGroup": "(zonder groep)"
   },
   "contributionLink": {
     "amount": "Bedrag",
@@ -421,17 +421,17 @@
   "userRole": {
     "groupTags": {
       "help": "Pre-filled on submission.",
-      "label": "User's main tag",
-      "none": "(no tag)"
+      "label": "User's main group",
+      "none": "(no group)"
     },
     "notChangeYourSelf": "Als admin/moderator kun je je eigen rol niet wijzigen.",
-    "savedGroupTags": "Group tags saved.",
+    "savedGroupTags": "Groups saved.",
     "savedScope": "Visibility saved.",
     "scope": {
       "all": "all groups",
       "help": "Empty = all contributions.",
       "label": "Visible groups",
-      "untagged": "untagged"
+      "untagged": "no group"
     },
     "selectLabel": "Rol:",
     "selectRoles": {
