@@ -73,7 +73,12 @@ const select = (option) => {
 
 <style lang="scss">
 /* Make the toggle read like a form control: full width, label on the left, caret on the
-   right. Colours come from the theme tokens so it follows light/dark like everything else. */
+   right, in the theme's heading grey (dark in light mode, near-white in dark mode). The
+   label and the caret (which inherits currentColor) need !important to beat the wallet's
+   global `.btn-outline-secondary { color: #4385b1 !important }`, or both come out
+   pigeon-blue. The border is a faded shade of the text colour (via color-mix, like
+   .separator-start) so it stays visible in dark mode and in Firefox, where the token
+   border all but disappears. */
 .themed-select {
   width: 100%;
 
@@ -84,12 +89,12 @@ const select = (option) => {
     width: 100%;
     text-align: left;
     background-color: var(--surface);
-    border-color: var(--border);
-    color: var(--text);
+    color: var(--text) !important;
+    border-color: color-mix(in srgb, currentcolor 30%, transparent);
   }
 
   &.themed-select-placeholder > .btn.themed-select-toggle {
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
   }
 
   .themed-select-menu {
