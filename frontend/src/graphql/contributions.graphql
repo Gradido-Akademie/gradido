@@ -111,6 +111,17 @@ query communityGroupTags {
   }
 }
 
+# Only the groups the caller's own "my contributions" list has something to show for, so the
+# filter above that list never offers a group that would come back empty. Not windowed, and
+# it counts deleted contributions too, because that list shows them.
+query myContributionGroupTags {
+  myContributionGroupTags {
+    id
+    tag
+    name
+  }
+}
+
 # What the group field is pre-filled with: the member's own last statement, derived from
 # their history in the backend. Null means "(no group)" — either chosen deliberately last
 # time, or nothing to go on.

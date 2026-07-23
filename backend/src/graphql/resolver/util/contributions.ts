@@ -182,6 +182,30 @@ export const groupTagsInCommunityWindow = async (tags: string[]): Promise<string
   return found.filter((tag): tag is string => tag !== null)
 }
 
+// The groups the submitter's own "my contributions" list has something to show for. Same
+// idea as groupTagsInCommunityWindow, but for one user's own list: scoped to the user and
+// NOT windowed, and it counts their deleted contributions too, because that list shows them
+// (loadUserContributions loads withDeleted). So the filter offers exactly the groups that
+// can be found behind it, and never one that would lead into an empty result.
+export const groupTagsInUserContributions = async (
+  userId: number,
+  tags: string[],
+): Promise<string[]> => {
+  const found = await Promise.all(
+    tags.map(async (tag) => {
+      const predicate = buildGroupTagPredicate(tag)
+      const count = await DbContribution.createQueryBuilder('Contribution')
+        .select('Contribution.id')
+        .where('Contribution.userId = :userId', { userId })
+        .withDeleted()
+        .andWhere(predicate.sql, predicate.params)
+        .getCount()
+      return count > 0 ? tag : null
+    }),
+  )
+  return found.filter((tag): tag is string => tag !== null)
+}
+
 export const contributionFrontendLink = async (
   contributionId: number,
   _createdAt: Date,

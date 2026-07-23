@@ -46,7 +46,10 @@
 <script setup>
 import { ref, computed, nextTick, watch } from 'vue'
 import ContributionListItem from '@/components/Contributions/ContributionListItem.vue'
-import { listContributions, groupTags as groupTagsQuery } from '@/graphql/contributions.graphql'
+import {
+  listContributions,
+  myContributionGroupTags as groupTagsQuery,
+} from '@/graphql/contributions.graphql'
 import { useQuery } from '@vue/apollo-composable'
 import { PAGE_SIZE } from '@/constants'
 import { useI18n } from 'vue-i18n'
@@ -100,7 +103,7 @@ const groupOptions = computed(() => [
   { value: null, text: t('contribution.filter.all') },
   { value: '*grouped', text: t('contribution.filter.grouped') },
   { value: '*untagged', text: t('contribution.filter.noGroup') },
-  ...(groupTagsResult.value?.groupTags ?? []).map((group) => ({
+  ...(groupTagsResult.value?.myContributionGroupTags ?? []).map((group) => ({
     value: group.tag,
     text: groupTagLabel(group),
   })),
