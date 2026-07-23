@@ -105,7 +105,7 @@
     "groupTag": {
       "help": "Optional. It works without a group, too.",
       "label": "Group",
-      "none": "(no group)"
+      "none": "(senza gruppo)"
     },
     "isEdited": "ha modificato il contributo",
     "lastContribution": "Ultimi contributi",

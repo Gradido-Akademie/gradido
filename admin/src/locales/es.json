@@ -37,7 +37,7 @@
     "createdBy": "Creado por {name}.",
     "deletedBy": "Eliminado por {name}.",
     "deniedBy": "Rechazado por {name}.",
-    "noGroup": "(no group)"
+    "noGroup": "(sin grupo)"
   },
   "contributionLink": {
     "amount": "Importe",
@@ -421,17 +421,17 @@
   "userRole": {
     "groupTags": {
       "help": "Pre-filled on submission.",
-      "label": "User's main tag",
-      "none": "(no tag)"
+      "label": "User's main group",
+      "none": "(no group)"
     },
     "notChangeYourSelf": "Como administrador/moderador, no puedes cambiar tu propio rol.",
-    "savedGroupTags": "Group tags saved.",
+    "savedGroupTags": "Groups saved.",
     "savedScope": "Visibility saved.",
     "scope": {
       "all": "all groups",
       "help": "Empty = all contributions.",
       "label": "Visible groups",
-      "untagged": "untagged"
+      "untagged": "no group"
     },
     "selectLabel": "Rol:",
     "selectRoles": {
