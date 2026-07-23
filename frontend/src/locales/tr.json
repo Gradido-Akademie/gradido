@@ -86,8 +86,8 @@
       "pending": "Gönderildi ve onay bekleniyor"
     },
     "communityWindow": "Contributions from the last {months} months",
-    "delete": "Hizmeti sil! Emin misin?",
-    "deleted": "Hizmet silindi! Fakat hala görünüyor olacak.",
+    "delete": "Hizmet gerçekten silinsin mi? Bundan sonra onu yalnızca sen ve moderatörler görebilir, topluluk göremez.",
+    "deleted": "Hizmet silindi. Artık onu yalnızca sen ve moderatörler görebilir, topluluk göremez.",
     "filter": {
       "all": "(tümü)",
       "grouped": "(tüm gruplar)",

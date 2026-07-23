@@ -86,8 +86,8 @@
       "pending": "Inviato e in attesa di conferma"
     },
     "communityWindow": "Contributions from the last {months} months",
-    "delete": "Eliminare il contributo! Sei sicuro?",
-    "deleted": "Il contributo è stato eliminato! Ma rimarrà visibile.",
+    "delete": "Eliminare davvero il contributo? Dopo sarà visibile solo a te e ai moderatori, invisibile alla comunità.",
+    "deleted": "Il contributo è stato eliminato. Ora è visibile solo a te e ai moderatori, invisibile alla comunità.",
     "filter": {
       "all": "(tutte)",
       "grouped": "(tutti i gruppi)",
