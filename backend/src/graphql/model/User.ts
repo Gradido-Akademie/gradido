@@ -51,6 +51,9 @@ export class User {
       this.gmsPublishLocation = dbUser.gmsPublishLocation
       this.aboutMe = dbUser.aboutMe
       this.userLocation = dbUser.location ? Point2Location(dbUser.location as Point) : null
+      // Unrestricted by default; verifyLogin fills in a scoped moderator's real groups.
+      this.visibleGroupTags = []
+      this.seesAllGroups = true
     }
   }
 
@@ -132,6 +135,16 @@ export class User {
 
   @Field(() => [String])
   roles: string[]
+
+  // Group functions ("Weg A"): the signed-in moderator's visibility scope, so the admin
+  // interface can offer only the groups they may actually work in. Derived the same way as
+  // on the community info page (describeModeratorGroups); filled in by verifyLogin. The
+  // default is unrestricted, which keeps every other User valid and matches an administrator.
+  @Field(() => [String])
+  visibleGroupTags: string[]
+
+  @Field(() => Boolean)
+  seesAllGroups: boolean
 
   @Field(() => UserContact, { nullable: true })
   emailContact: UserContact | null

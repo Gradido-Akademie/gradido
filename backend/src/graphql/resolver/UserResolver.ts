@@ -31,6 +31,7 @@ import {
   TransactionLink as DbTransactionLink,
   User as DbUser,
   UserContact as DbUserContact,
+  UserRole as DbUserRole,
   dbFindProjectBrandingByAlias,
   dbFindProjectSpaceId,
   findUserByIdentifier,
@@ -99,6 +100,7 @@ import { extractGraphQLFieldsForSelect } from './util/extractGraphQLFields'
 import { findUsers } from './util/findUsers'
 import { getKlicktippState } from './util/getKlicktippState'
 import { Location2Point, Point2Location } from './util/Location2Point'
+import { describeModeratorGroups } from './util/moderatorGroupScope'
 import { deleteUserRole, setUserRole } from './util/modifyUserRole'
 import { sendUsersToGms } from './util/sendUserToGms'
 import { syncHumhub } from './util/syncHumhub'
@@ -154,6 +156,14 @@ export class UserResolver {
     const userEntity = getUser(context)
     logger.addContext('user', userEntity.id)
     const user = new User(userEntity)
+    // Group functions ("Weg A"): hand the admin interface the moderator's visibility scope
+    // so its group filter can offer only the groups they may work in. Loaded from the role
+    // directly (like loadModeratorScope), so it does not depend on how the context happened
+    // to load the user's roles. Same derivation as the community info page.
+    const role = await DbUserRole.findOne({ where: { userId: userEntity.id } })
+    const moderatorGroups = describeModeratorGroups(role)
+    user.visibleGroupTags = moderatorGroups.tags
+    user.seesAllGroups = moderatorGroups.seesAllGroups
     // Elopage Status & Stored PublisherId
     user.hasElopage = await this.hasElopage(context)
 

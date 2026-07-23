@@ -318,20 +318,58 @@ watch(tabIndex, () => {
 
 // Group functions ("Weg A"): canonical tag options for the filter dropdown.
 const { result: groupTagsResult } = useQuery(groupTags)
-const groupTagFilterOptions = computed(() => [
-  // Three answers that cover the list exactly once: everything, everything some group
-  // moderator looks after, everything nobody does. The last two are reserved tokens the
-  // backend matches; a real slug can never be '*…', so they cannot collide.
-  { value: '', text: t('groupTagFilter.all') },
-  { value: '*grouped', text: t('groupTagFilter.grouped') },
-  { value: '*untagged', text: t('groupTagFilter.untagged') },
-  ...(groupTagsResult.value?.groupTags ?? []).map((groupTagItem) => ({
-    value: groupTagItem.tag,
-    text: groupTagItem.name
-      ? `${groupTagItem.name} (#${groupTagItem.tag})`
-      : `#${groupTagItem.tag}`,
-  })),
-])
+
+// A scoped moderator may only work in the groups their role covers, so the filter offers
+// only those. The backend already restricts what they can load; this keeps the dropdown from
+// offering choices that would return nothing. An administrator — or an unrestricted moderator
+// — gets the full set unchanged.
+const seesAllGroups = computed(() => store.state.moderator?.seesAllGroups ?? true)
+const visibleGroupTags = computed(() => store.state.moderator?.visibleGroupTags ?? [])
+
+const groupTagOption = (groupTagItem) => ({
+  value: groupTagItem.tag,
+  text: groupTagItem.name ? `${groupTagItem.name} (#${groupTagItem.tag})` : `#${groupTagItem.tag}`,
+})
+
+const groupTagFilterOptions = computed(() => {
+  const allGroups = groupTagsResult.value?.groupTags ?? []
+  if (seesAllGroups.value) {
+    // Three answers that cover the list exactly once: everything, everything some group
+    // moderator looks after, everything nobody does — plus every group. The two '*…' values
+    // are reserved tokens the backend matches; a real slug can never be '*…', so no collision.
+    return [
+      { value: '', text: t('groupTagFilter.all') },
+      { value: '*grouped', text: t('groupTagFilter.grouped') },
+      { value: '*untagged', text: t('groupTagFilter.untagged') },
+      ...allGroups.map(groupTagOption),
+    ]
+  }
+  // Scoped moderator. The store already says which groups they cover, so the shape is decided
+  // before the full group list has even loaded.
+  if (visibleGroupTags.value.length === 0) {
+    // Scoped to untagged contributions only — the one thing this moderator can see.
+    return [{ value: '*untagged', text: t('groupTagFilter.untagged') }]
+  }
+  // "All my groups" plus each of them; no "all", no "untagged", no group outside the scope.
+  return [
+    { value: '*grouped', text: t('groupTagFilter.grouped') },
+    ...allGroups
+      .filter((groupTagItem) => visibleGroupTags.value.includes(groupTagItem.tag))
+      .map(groupTagOption),
+  ]
+})
+
+// Keep the chosen filter among the options actually on offer. A scoped moderator has no "all"
+// entry, so the default falls to their first option ("all my groups", or "untagged").
+watch(
+  groupTagFilterOptions,
+  (options) => {
+    if (options.length > 0 && !options.some((option) => option.value === groupTag.value)) {
+      groupTag.value = options[0].value
+    }
+  },
+  { immediate: true },
+)
 
 const { onResult, onError, result, refetch } = useQuery(
   adminListContributions,

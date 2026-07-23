@@ -191,6 +191,105 @@ describe('CreationConfirm', () => {
     ])
   })
 
+  // A scoped moderator may only work in their own groups, so the filter offers only those.
+  // The backend enforces the boundary; this keeps the dropdown from offering choices that
+  // would return nothing (no "all", no "no group", no group outside the scope).
+  describe('group filter for a scoped moderator', () => {
+    const GROUPS = [
+      { tag: 'firefighter', name: 'Feuerwehr' },
+      { tag: 'garden', name: 'Garten' },
+      { tag: 'other', name: 'Andere' },
+    ]
+
+    const mountWithModerator = (moderator) => {
+      const scopedStore = createStore({
+        state: { openCreations: 0, moderator },
+        mutations: {
+          setOpenCreations(state, count) {
+            state.openCreations = count
+          },
+          openCreationsMinus(state, count) {
+            state.openCreations -= count
+          },
+        },
+      })
+      return mount(CreationConfirm, {
+        global: {
+          plugins: [scopedStore],
+          stubs: {
+            UserQuery: true,
+            BButton: true,
+            BTabs,
+            BTab,
+            BBadge,
+            OpenCreationsTable: true,
+            BPagination,
+            Overlay: true,
+            IBiBellFill: true,
+            IBiCheck: true,
+            IBiXCircle: true,
+            IBiTrash: true,
+            IBiList: true,
+          },
+          mocks: { $t: mockT, $d: mockD },
+        },
+      })
+    }
+
+    beforeEach(() => {
+      // Both queries share the mocked useQuery; this feeds the group list to the dropdown.
+      mockResult.value = { groupTags: GROUPS }
+    })
+
+    it('offers only "all my groups" and the moderator\'s own groups', () => {
+      const scoped = mountWithModerator({
+        roles: ['MODERATOR'],
+        seesAllGroups: false,
+        visibleGroupTags: ['firefighter', 'garden'],
+      })
+      expect(scoped.vm.groupTagFilterOptions.map((option) => option.value)).toEqual([
+        '*grouped',
+        'firefighter',
+        'garden',
+      ])
+    })
+
+    it('defaults the selection to "all my groups"', () => {
+      const scoped = mountWithModerator({
+        roles: ['MODERATOR'],
+        seesAllGroups: false,
+        visibleGroupTags: ['firefighter', 'garden'],
+      })
+      expect(scoped.vm.groupTag).toBe('*grouped')
+    })
+
+    it('offers only "no group" to a moderator scoped to untagged contributions', () => {
+      const scoped = mountWithModerator({
+        roles: ['MODERATOR'],
+        seesAllGroups: false,
+        visibleGroupTags: [],
+      })
+      expect(scoped.vm.groupTagFilterOptions.map((option) => option.value)).toEqual(['*untagged'])
+      expect(scoped.vm.groupTag).toBe('*untagged')
+    })
+
+    it('leaves an administrator the full set', () => {
+      const scoped = mountWithModerator({
+        roles: ['ADMIN'],
+        seesAllGroups: true,
+        visibleGroupTags: [],
+      })
+      expect(scoped.vm.groupTagFilterOptions.map((option) => option.value)).toEqual([
+        '',
+        '*grouped',
+        '*untagged',
+        'firefighter',
+        'garden',
+        'other',
+      ])
+    })
+  })
+
   it('updates tabIndex and refetches when changing tabs', async () => {
     wrapper.vm.tabIndex = 2
     await nextTick()
