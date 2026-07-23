@@ -32,6 +32,14 @@ body.dark-mode {
   color: var(--text);
 }
 
+// The open <select> popup follows the ROOT element's color-scheme, not the inherited value,
+// so the dark scheme has to reach <html> too (the rule above only covers #app/body). The
+// dark-mode class sits on #app/body (App.vue sets it there); :has() carries it up to the root
+// reactively, so no extra class toggle is needed. Base is :root { color-scheme: light }.
+html:has(body.dark-mode) {
+  color-scheme: dark;
+}
+
 .dark-mode {
   .bg-white,
   .card,
