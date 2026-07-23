@@ -56,21 +56,24 @@
 
       <div class="list-sort">
         <label class="control-label" for="match-list-sort">{{ $t('matching.list.sortBy') }}</label>
-        <select id="match-list-sort" class="sort-select" :value="sortMode" @change="onSort">
-          <option value="naehe">{{ $t('matching.list.sortNaehe') }}</option>
-          <option value="passung">{{ $t('matching.list.sortPassung') }}</option>
-          <option value="breite">{{ $t('matching.list.sortBreite') }}</option>
-        </select>
+        <ThemedSelect
+          id="match-list-sort"
+          :model-value="sortMode"
+          :options="sortOptions"
+          @change="onSort"
+        />
       </div>
 
       <!-- The travel lens: appears only once the search has left home, and switches
            whether the shown distances measure from the search point or from home. -->
       <div v-if="showLens" class="list-sort">
         <label class="control-label" for="match-list-lens">{{ $t('matching.list.lensBy') }}</label>
-        <select id="match-list-lens" class="sort-select" :value="lensMode" @change="onLens">
-          <option value="suchpunkt">{{ $t('matching.list.lensSearch') }}</option>
-          <option value="wohnort">{{ $t('matching.list.lensHome') }}</option>
-        </select>
+        <ThemedSelect
+          id="match-list-lens"
+          :model-value="lensMode"
+          :options="lensOptions"
+          @change="onLens"
+        />
       </div>
 
       <!-- Confirmation that the search took hold: the place stays named (and is
@@ -148,7 +151,7 @@
 </template>
 
 <script setup>
-import { h, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { OpenStreetMapProvider } from 'leaflet-geosearch'
 import { distanceKm } from '@/composables/useMatches'
@@ -182,13 +185,26 @@ const emit = defineEmits(['open', 'sort', 'lens', 'recenter'])
 
 const { t, locale } = useI18n()
 
-function onSort(event) {
-  emit('sort', event.target.value)
+// ThemedSelect emits `change` with the chosen value directly (not a DOM event).
+function onSort(value) {
+  emit('sort', value)
 }
 
-function onLens(event) {
-  emit('lens', event.target.value)
+function onLens(value) {
+  emit('lens', value)
 }
+
+// The sort and lens choices as ThemedSelect option lists ([{ value, text }]).
+const sortOptions = computed(() => [
+  { value: 'naehe', text: t('matching.list.sortNaehe') },
+  { value: 'passung', text: t('matching.list.sortPassung') },
+  { value: 'breite', text: t('matching.list.sortBreite') },
+])
+
+const lensOptions = computed(() => [
+  { value: 'suchpunkt', text: t('matching.list.lensSearch') },
+  { value: 'wohnort', text: t('matching.list.lensHome') },
+])
 
 // --- which channels, the strongest line, the breadth ----------------------
 
@@ -403,8 +419,11 @@ function closeResults() {
   order: 1;
 }
 
+/* The sort and lens rows each hold a themed dropdown that fills its box; give them a
+   sensible width so the toggle sizes like the search field, not the whole control bar. */
 .list-sort {
   order: 3;
+  min-width: 200px;
 }
 
 .center-label {
@@ -423,7 +442,6 @@ function closeResults() {
   margin-bottom: 3px;
 }
 
-.sort-select,
 .search-input {
   font: inherit;
   font-size: 14px;
@@ -432,14 +450,11 @@ function closeResults() {
   border-radius: 8px;
   background: var(--surface);
   color: inherit;
+  min-width: 220px;
 }
 
 .search-box {
   position: relative;
-}
-
-.search-input {
-  min-width: 220px;
 }
 
 .search-results {

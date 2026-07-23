@@ -94,7 +94,17 @@ function silentPerson(over = {}) {
   }
 }
 
-function mountList(props = {}) {
+// The sort and lens controls are ThemedSelects (themed dropdowns, no native <select>).
+// ThemedSelect is registered app-wide rather than imported, so it does not resolve in a
+// unit mount; stub it by name so every mount renders cleanly and the tests do not lean on
+// auto-import. It carries `change`, which the list turns into `sort` / `lens`.
+const THEMED_SELECT_STUB = {
+  name: 'ThemedSelect',
+  props: ['options', 'modelValue'],
+  template: '<div />',
+}
+
+function mountList(props = {}, stubs = { ThemedSelect: THEMED_SELECT_STUB }) {
   return mount(MatchList, {
     props: {
       matches: [],
@@ -104,7 +114,7 @@ function mountList(props = {}) {
       sortMode: 'naehe',
       ...props,
     },
-    global: { plugins: [i18n] },
+    global: { plugins: [i18n], stubs },
   })
 }
 
@@ -176,9 +186,9 @@ describe('MatchList', () => {
     expect(wrapper.find('.row-silent').element.tagName).not.toBe('BUTTON')
   })
 
-  it('emits the chosen sort', async () => {
+  it('emits the chosen sort', () => {
     const wrapper = mountList({ matches: [matchItem()] })
-    await wrapper.find('.sort-select').setValue('breite')
+    wrapper.findComponent(THEMED_SELECT_STUB).vm.$emit('change', 'breite')
     expect(wrapper.emitted('sort')[0]).toEqual(['breite'])
   })
 
