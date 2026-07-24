@@ -37,12 +37,7 @@
               <span class="ms-2">{{ $t('creation') }}</span>
             </div>
           </BNavItem>
-          <BNavItem
-            to="/matching"
-            class="mb-3"
-            active-class="active-route"
-            :active="isMatchingRoute"
-          >
+          <BNavItem ref="matchingLink" to="/matching" class="mb-3" active-class="active-route">
             <div class="sidebar-menu-item-wrapper">
               <i-tabler-heart-handshake class="svg-icon" />
               <span class="ms-2">Matching</span>
@@ -111,7 +106,7 @@
 </template>
 <script setup>
 import { useRoute } from 'vue-router'
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 
 const props = defineProps({
   shadow: { type: Boolean, default: true },
@@ -127,6 +122,7 @@ const emit = defineEmits(['closeSidebar'])
 
 const route = useRoute()
 const contributionsLink = ref(null)
+const matchingLink = ref(null)
 
 const transactionClass = computed(() => {
   if (route.path === '/gdt') {
@@ -135,26 +131,32 @@ const transactionClass = computed(() => {
   return 'mb-3'
 })
 
-// The matching item stays lit across the whole stack. Its own route redirects to
-// /matching/entries and the map lives at /matching/karte, so an exact-match active
-// class never catches — :active drives it from the path instead (and, unlike the
-// contributions watcher, it holds on a fresh load too).
-const isMatchingRoute = computed(() => route.path.startsWith('/matching'))
+// BNavItem lights active-route only on an exact route match. Two items span more
+// than one route — contributions its sub-pages, matching its tabs and the map
+// (/matching redirects to /matching/entries, the map is /matching/karte) — so their
+// own link element is lit by hand from the path, on a route change and on first
+// mount alike (a fresh load has no change to react to).
+function setLinkActive(navRef, on) {
+  const link = navRef.value?.$el?.children?.[0]
+  if (!link) return
+  link.classList.toggle('active-route', on)
+  link.classList.toggle('router-link-exact-active', on)
+}
+
+function syncNavActive() {
+  setLinkActive(contributionsLink, route.path.includes('contributions'))
+  setLinkActive(matchingLink, route.path.startsWith('/matching'))
+}
 
 watch(
   () => route.path,
   () => {
-    const link = [...contributionsLink.value.$el.children][0]
-    if (route.path.includes('contributions')) {
-      link.classList.add('active-route')
-      link.classList.add('router-link-exact-active')
-    } else {
-      link.classList.remove('active-route')
-      link.classList.remove('router-link-exact-active')
-    }
+    syncNavActive()
     emit('closeSidebar')
   },
 )
+
+onMounted(syncNavActive)
 </script>
 <style scoped>
 .sidebar-logo {
