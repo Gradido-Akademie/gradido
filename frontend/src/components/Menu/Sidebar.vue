@@ -37,7 +37,12 @@
               <span class="ms-2">{{ $t('creation') }}</span>
             </div>
           </BNavItem>
-          <BNavItem to="/matching" class="mb-3" active-class="active-route">
+          <BNavItem
+            to="/matching"
+            class="mb-3"
+            active-class="active-route"
+            :active="isMatchingRoute"
+          >
             <div class="sidebar-menu-item-wrapper">
               <i-tabler-heart-handshake class="svg-icon" />
               <span class="ms-2">Matching</span>
@@ -129,6 +134,12 @@ const transactionClass = computed(() => {
   }
   return 'mb-3'
 })
+
+// The matching item stays lit across the whole stack. Its own route redirects to
+// /matching/entries and the map lives at /matching/karte, so an exact-match active
+// class never catches — :active drives it from the path instead (and, unlike the
+// contributions watcher, it holds on a fresh load too).
+const isMatchingRoute = computed(() => route.path.startsWith('/matching'))
 
 watch(
   () => route.path,
