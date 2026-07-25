@@ -10,6 +10,7 @@ export const creaEvaluateContribution = gql`
       confidence
       reasoning
       responseText
+      salutation
       activities {
         activity
         categoryKey

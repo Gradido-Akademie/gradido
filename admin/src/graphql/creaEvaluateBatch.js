@@ -10,6 +10,7 @@ export const creaEvaluateBatch = gql`
       confidence
       reasoning
       responseText
+      salutation
       openPoints {
         question
         options
