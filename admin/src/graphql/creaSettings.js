@@ -6,6 +6,7 @@ export const creaSettings = gql`
       model
       effort
       defaultModel
+      fastMode
     }
   }
 `
@@ -16,6 +17,7 @@ export const setCreaSettings = gql`
       model
       effort
       defaultModel
+      fastMode
     }
   }
 `
