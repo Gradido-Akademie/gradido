@@ -11,6 +11,7 @@ export const creaEvaluateContribution = gql`
       reasoning
       responseText
       salutation
+      defaultSalutation
       activities {
         activity
         categoryKey

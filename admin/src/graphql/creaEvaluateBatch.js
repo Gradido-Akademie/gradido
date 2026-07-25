@@ -11,6 +11,7 @@ export const creaEvaluateBatch = gql`
       reasoning
       responseText
       salutation
+      defaultSalutation
       openPoints {
         question
         options

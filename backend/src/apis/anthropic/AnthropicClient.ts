@@ -232,6 +232,8 @@ export class AnthropicClient {
     return {
       ...parsed,
       salutation,
+      defaultSalutation: resolveSalutation({ recipientFirstName: input.recipientFirstName })
+        .salutation,
       flags: uncertain ? ['anrede_unsicher'] : [],
     }
   }
