@@ -117,6 +117,26 @@ export function peakStage(channelStages) {
 }
 
 /** Steps per channel for one person, honouring the channel filter. */
+/**
+ * The strengths a person shows per channel, read off their entries.
+ *
+ * Lives here rather than beside the data because it is display logic, and because
+ * two callers need the same answer: whoever builds a match, and the focus lens,
+ * which narrows a person's entries to the one question asked and must then let the
+ * brightness follow. Were the lens to keep the old scores, a person would glow for
+ * an entry the member just filtered away.
+ */
+export function scoresOf(channels) {
+  const scores = {}
+  for (const channel of CHANNELS) {
+    const strengths = (channels?.[channel] || [])
+      .map((entry) => entry.strength)
+      .filter((strength) => strength !== null && strength !== undefined)
+    if (strengths.length) scores[channel] = strengths
+  }
+  return scores
+}
+
 export function stagesOf(match, cfg = DEFAULTS, breiteOn = false, visible = null) {
   const stages = {}
   for (const channel of CHANNELS) {
