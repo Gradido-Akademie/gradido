@@ -37,7 +37,13 @@
               <span class="ms-2">{{ $t('creation') }}</span>
             </div>
           </BNavItem>
-          <BNavItem ref="matchingLink" to="/matching" class="mb-3" active-class="active-route">
+          <BNavItem
+            v-if="matchingActive"
+            ref="matchingLink"
+            to="/matching"
+            class="mb-3"
+            active-class="active-route"
+          >
             <div class="sidebar-menu-item-wrapper">
               <i-tabler-heart-handshake class="svg-icon" />
               <span class="ms-2">Matching</span>
@@ -107,6 +113,10 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { ref, watch, computed, onMounted } from 'vue'
+import CONFIG from '@/config'
+
+// Read once: the flag is baked in at build time, it cannot change while the app runs.
+const matchingActive = CONFIG.MATCHING_ACTIVE
 
 const props = defineProps({
   shadow: { type: Boolean, default: true },
