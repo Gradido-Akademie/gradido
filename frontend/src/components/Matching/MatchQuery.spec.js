@@ -1,0 +1,178 @@
+import { mount } from '@vue/test-utils'
+import { describe, it, expect } from 'vitest'
+import { createI18n } from 'vue-i18n'
+import MatchQuery from './MatchQuery.vue'
+
+const i18n = createI18n({
+  legacy: false,
+  locale: 'de',
+  messages: {
+    de: {
+      matching: {
+        query: {
+          all: 'Alles',
+          allHint: 'alle meine Einträge',
+          clear: 'Suche zurücksetzen',
+          label: 'Ich suche gerade nach',
+          open: 'Suche wählen',
+          other: 'Etwas anderes suchen …',
+          pick: 'Wähle, wie Du es meinst — damit wird gesucht.',
+          placeholder: 'Fahrrad',
+          untouched: 'Deine Einträge bleiben unberührt.',
+        },
+        type: {
+          interesse: { prefix: 'Ich liebe' },
+          angebot: { prefix: 'Ich biete' },
+          gesuch: { prefix: 'Ich suche' },
+        },
+      },
+    },
+  },
+})
+
+const entries = [
+  { uuid: 'e1', matchingType: 'gesuch', summary: 'einen Klavierlehrer' },
+  { uuid: 'e2', matchingType: 'angebot', summary: 'Gartenarbeit' },
+]
+
+const mountQuery = (selection = { kind: 'all' }) =>
+  mount(MatchQuery, {
+    props: { entries, selection },
+    global: {
+      plugins: [i18n],
+      stubs: ['i-bi-search', 'i-bi-chevron-down', 'i-bi-check', 'i-bi-pencil', 'i-bi-x-lg'],
+    },
+  })
+
+const emitted = (wrapper) => wrapper.emitted('update:selection') ?? []
+const last = (wrapper) => emitted(wrapper).at(-1)?.[0]
+
+describe('MatchQuery', () => {
+  describe('the closed bar', () => {
+    it('says what is being searched for', () => {
+      expect(mountQuery().text()).toContain('Alles')
+    })
+
+    it('names the entry when one of mine is the question', () => {
+      const wrapper = mountQuery({ kind: 'entry', uuid: 'e1' })
+
+      expect(wrapper.text()).toContain('Ich suche einen Klavierlehrer')
+    })
+
+    it('shows the words themselves when the question was typed', () => {
+      const wrapper = mountQuery({ kind: 'typed', text: 'Fahrrad', matchingType: 'gesuch' })
+
+      expect(wrapper.text()).toContain('Fahrrad')
+    })
+  })
+
+  describe('the menu', () => {
+    it('offers everything, each of my entries, and something else', async () => {
+      const wrapper = mountQuery()
+      await wrapper.find('.query-bar').trigger('click')
+
+      const options = wrapper.findAll('.query-option').map((o) => o.text())
+
+      expect(options).toHaveLength(4)
+      expect(options[0]).toContain('Alles')
+      expect(options[1]).toContain('Ich suche einen Klavierlehrer')
+      expect(options[2]).toContain('Ich biete Gartenarbeit')
+      expect(options[3]).toContain('Etwas anderes')
+    })
+
+    it('asks straight away when the question is one of my entries', async () => {
+      // No trigger needed here: a stored entry is already a finished sentence.
+      const wrapper = mountQuery()
+      await wrapper.find('.query-bar').trigger('click')
+      await wrapper.findAll('.query-option')[1].trigger('click')
+
+      expect(last(wrapper)).toEqual({ kind: 'entry', uuid: 'e1' })
+    })
+  })
+
+  describe('typing a question', () => {
+    const startTyping = async (wrapper) => {
+      await wrapper.find('.query-bar').trigger('click')
+      await wrapper.findAll('.query-option').at(-1).trigger('click')
+    }
+
+    it('does not search while the words are still being typed', async () => {
+      // The whole point of the trigger rule: typing is free, asking is deliberate.
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+      await wrapper.find('.typed-input').setValue('Fahrrad')
+
+      expect(emitted(wrapper)).toHaveLength(0)
+    })
+
+    it('asks when a stance finishes the sentence', async () => {
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+      await wrapper.find('.typed-input').setValue('Fahrrad')
+      await wrapper.findAll('.stance')[2].trigger('click')
+
+      expect(last(wrapper)).toEqual({ kind: 'typed', text: 'Fahrrad', matchingType: 'gesuch' })
+    })
+
+    it('keeps the stances inert while there is nothing to complete', async () => {
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+
+      expect(wrapper.findAll('.stance').every((s) => s.attributes('disabled') !== undefined)).toBe(
+        true,
+      )
+
+      await wrapper.find('.typed-input').setValue('Fahrrad')
+
+      expect(wrapper.findAll('.stance').every((s) => s.attributes('disabled') === undefined)).toBe(
+        true,
+      )
+    })
+
+    it('takes the stance back when the words change', async () => {
+      // Otherwise the list below would still hold answers to a sentence that no
+      // longer exists. Letting the choice fall keeps one rule: what you see belongs
+      // to the sentence you finished.
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+      await wrapper.find('.typed-input').setValue('Fahrrad')
+      await wrapper.findAll('.stance')[2].trigger('click')
+
+      expect(wrapper.find('.stance.is-chosen').exists()).toBe(true)
+
+      await wrapper.find('.typed-input').setValue('Lastenrad')
+
+      expect(wrapper.find('.stance.is-chosen').exists()).toBe(false)
+    })
+
+    it('trims the words before asking', async () => {
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+      await wrapper.find('.typed-input').setValue('  Fahrrad  ')
+      await wrapper.findAll('.stance')[2].trigger('click')
+
+      expect(last(wrapper).text).toBe('Fahrrad')
+    })
+
+    it('offers the three stances in the wallet is own words', async () => {
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+
+      expect(wrapper.findAll('.stance').map((s) => s.text())).toEqual([
+        'Ich liebe',
+        'Ich biete',
+        'Ich suche',
+      ])
+    })
+
+    it('goes back to everything when the search is cleared', async () => {
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+      await wrapper.find('.typed-input').setValue('Fahrrad')
+      await wrapper.find('.typed-clear').trigger('click')
+
+      expect(last(wrapper)).toEqual({ kind: 'all' })
+      expect(wrapper.find('.typed-input').exists()).toBe(false)
+    })
+  })
+})

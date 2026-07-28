@@ -1,0 +1,361 @@
+<template>
+  <div class="match-query" :class="{ 'is-typing': typing }">
+    <!-- Closed: what is being searched for right now, and a way to change it. -->
+    <button
+      v-if="!typing"
+      type="button"
+      class="query-bar"
+      :aria-expanded="String(open)"
+      :aria-label="$t('matching.query.open')"
+      @click="open = !open"
+    >
+      <i-bi-search class="query-icon" />
+      <span class="query-label">{{ $t('matching.query.label') }}</span>
+      <span class="query-value">{{ currentLabel }}</span>
+      <i-bi-chevron-down class="query-caret" />
+    </button>
+
+    <!-- Open: everything that can be searched for — all of my entries, one of
+         them, or something typed. One question, one list of answers. -->
+    <ul v-if="open && !typing" class="query-menu" role="listbox">
+      <li
+        class="query-option"
+        :class="{ 'is-current': selection.kind === 'all' }"
+        role="option"
+        :aria-selected="String(selection.kind === 'all')"
+        @click="chooseAll"
+      >
+        <i-bi-check v-if="selection.kind === 'all'" class="option-check" />
+        <span class="option-text">
+          {{ $t('matching.query.all') }}
+          <span class="option-hint">{{ $t('matching.query.allHint') }}</span>
+        </span>
+      </li>
+
+      <li
+        v-for="entry in entries"
+        :key="entry.uuid"
+        class="query-option"
+        :class="{ 'is-current': selection.kind === 'entry' && selection.uuid === entry.uuid }"
+        role="option"
+        :aria-selected="String(selection.kind === 'entry' && selection.uuid === entry.uuid)"
+        @click="chooseEntry(entry)"
+      >
+        <span class="option-dot" :style="{ background: dotColor(entry.matchingType) }" />
+        <span class="option-text">
+          {{ $t(`matching.type.${entry.matchingType}.prefix`) }} {{ entry.summary }}
+        </span>
+      </li>
+
+      <li class="query-option is-other" role="option" aria-selected="false" @click="startTyping">
+        <i-bi-pencil class="option-check" />
+        <span class="option-text">{{ $t('matching.query.other') }}</span>
+      </li>
+    </ul>
+
+    <!-- Typing: the field alone is not a question. The three stances below finish
+         the sentence, and finishing it is what asks. -->
+    <div v-if="typing" class="query-typed">
+      <div class="typed-row">
+        <i-bi-search class="query-icon" />
+        <input
+          ref="textInput"
+          v-model="text"
+          type="text"
+          class="typed-input"
+          :placeholder="$t('matching.query.placeholder')"
+          :aria-label="$t('matching.query.label')"
+          @input="onText"
+          @keydown.esc="cancelTyping"
+        />
+        <button
+          type="button"
+          class="typed-clear"
+          :aria-label="$t('matching.query.clear')"
+          @click="cancelTyping"
+        >
+          <i-bi-x-lg />
+        </button>
+      </div>
+
+      <div class="typed-stances" role="group" :aria-label="$t('matching.query.pick')">
+        <button
+          v-for="channel in CHANNELS"
+          :key="channel"
+          type="button"
+          class="stance"
+          :class="{ 'is-chosen': chosen === channel }"
+          :disabled="!canAsk"
+          :aria-pressed="String(chosen === channel)"
+          @click="ask(channel)"
+        >
+          {{ $t(`matching.type.${channel}.prefix`) }}
+        </button>
+      </div>
+
+      <p class="typed-hint">
+        {{ chosen ? $t('matching.query.untouched') : $t('matching.query.pick') }}
+      </p>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { CHANNELS, LABEL_COLORS } from './displayCore'
+
+const props = defineProps({
+  /** The member's own entries, so one of them can be the question. */
+  entries: { type: Array, default: () => [] },
+  /** { kind: 'all' } | { kind: 'entry', uuid } | { kind: 'typed', text, matchingType } */
+  selection: { type: Object, required: true },
+})
+
+const emit = defineEmits(['update:selection'])
+
+const { t } = useI18n()
+
+const open = ref(false)
+const typing = ref(false)
+const text = ref('')
+const chosen = ref(null)
+const textInput = ref(null)
+
+// A blank field has nothing to ask about, so the stances stay inert until there is
+// something to complete.
+const canAsk = computed(() => text.value.trim().length > 1)
+
+const currentLabel = computed(() => {
+  if (props.selection.kind === 'typed') return props.selection.text
+  if (props.selection.kind === 'entry') {
+    const entry = props.entries.find((e) => e.uuid === props.selection.uuid)
+    if (entry) return `${t(`matching.type.${entry.matchingType}.prefix`)} ${entry.summary}`
+  }
+  return t('matching.query.all')
+})
+
+function dotColor(matchingType) {
+  return LABEL_COLORS[matchingType] ?? LABEL_COLORS.interesse
+}
+
+function chooseAll() {
+  open.value = false
+  emit('update:selection', { kind: 'all' })
+}
+
+function chooseEntry(entry) {
+  open.value = false
+  emit('update:selection', { kind: 'entry', uuid: entry.uuid })
+}
+
+async function startTyping() {
+  open.value = false
+  typing.value = true
+  text.value = props.selection.kind === 'typed' ? props.selection.text : ''
+  chosen.value = props.selection.kind === 'typed' ? props.selection.matchingType : null
+  await nextTick()
+  textInput.value?.focus()
+}
+
+function cancelTyping() {
+  typing.value = false
+  text.value = ''
+  chosen.value = null
+  emit('update:selection', { kind: 'all' })
+}
+
+/**
+ * Changing the words takes the stance back.
+ *
+ * Otherwise the list below would still hold answers to a sentence that no longer
+ * exists. Letting the choice fall means one rule holds throughout: what you see
+ * belongs to the sentence you finished.
+ */
+function onText() {
+  chosen.value = null
+}
+
+function ask(channel) {
+  if (!canAsk.value) return
+  chosen.value = channel
+  emit('update:selection', { kind: 'typed', text: text.value.trim(), matchingType: channel })
+}
+
+// Someone else may reset the search - leaving the page, or picking an entry from
+// somewhere. Fold the typing away when that happens, rather than leaving a field
+// standing that no longer describes what is shown.
+watch(
+  () => props.selection,
+  (next) => {
+    if (next.kind !== 'typed' && typing.value && !text.value) typing.value = false
+  },
+)
+</script>
+
+<style scoped>
+.match-query {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.query-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-subtle, rgb(0 0 0 / 15%));
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.query-icon {
+  flex: none;
+  opacity: 0.65;
+}
+
+.query-label {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.query-value {
+  flex: 1;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.query-caret {
+  flex: none;
+  opacity: 0.5;
+}
+
+.query-menu {
+  position: absolute;
+  z-index: 1200;
+  right: 0;
+  left: 0;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  border: 1px solid var(--border-subtle, rgb(0 0 0 / 15%));
+  border-radius: 0.5rem;
+  background: var(--surface);
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 15%);
+  list-style: none;
+}
+
+.query-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--surface-muted);
+  cursor: pointer;
+}
+
+.query-option:first-child {
+  border-top: 0;
+}
+
+.query-option:hover,
+.query-option.is-current {
+  background: var(--surface-muted);
+}
+
+.query-option.is-other {
+  font-weight: 600;
+}
+
+.option-check {
+  flex: none;
+  opacity: 0.7;
+}
+
+.option-dot {
+  flex: none;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}
+
+.option-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option-hint {
+  margin-left: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.typed-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-subtle, rgb(0 0 0 / 15%));
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+.typed-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.typed-input:focus {
+  outline: none;
+}
+
+.typed-clear {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.typed-stances {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+/* Grey on purpose. On the map a colour already means "what the other person said";
+   giving these the same colours for MY stance would put two meanings on one screen. */
+.stance {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border-subtle, rgb(0 0 0 / 20%));
+  border-radius: 1rem;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.stance:disabled {
+  opacity: 0.5;
+}
+
+.stance.is-chosen {
+  border-color: transparent;
+  background: var(--text);
+  color: var(--surface);
+  font-weight: 600;
+}
+
+.typed-hint {
+  margin: 0.375rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+</style>
