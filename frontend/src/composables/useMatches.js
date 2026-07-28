@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { scoresOf } from '@/components/Matching/displayCore'
 
 /**
  * The seam between the glow map and its data.
@@ -363,25 +364,23 @@ const STUB_PEOPLE = [
 const CHANNELS = ['interesse', 'angebot', 'gesuch']
 
 /** The map reads strengths only: derive them from the matched entries. */
-function scoresOf(channels) {
-  const scores = {}
-  for (const channel of CHANNELS) {
-    const strengths = (channels[channel] || [])
-      .map((entry) => entry.strength)
-      .filter((strength) => strength !== null && strength !== undefined)
-    if (strengths.length) scores[channel] = strengths
-  }
-  return scores
-}
-
-/** Give every entry a stable uuid, so the window can key on it across reloads. */
-function withEntryUuids(channels, personIndex) {
+/**
+ * Give every entry a stable uuid, so the window can key on it across reloads, and
+ * say which entry of MINE it answers.
+ *
+ * Live that second one comes from the GMS, which knows the pairing because it made
+ * it. Here it is handed round the member's real entry uuids in turn - invented, like
+ * the people, but enough for the focus lens to have something to narrow to.
+ */
+function withEntryUuids(channels, personIndex, mineUuids = []) {
   const out = {}
+  let taken = personIndex
   for (const channel of CHANNELS) {
     const entries = channels[channel]
     if (!entries || !entries.length) continue
     out[channel] = entries.map((entry, entryIndex) => ({
       uuid: `stub-entry-${personIndex}-${channel}-${entryIndex}`,
+      matchedEntryUuid: mineUuids.length ? mineUuids[taken++ % mineUuids.length] : null,
       summary: entry.summary,
       details: entry.details,
       remote: entry.remote,
@@ -389,6 +388,44 @@ function withEntryUuids(channels, personIndex) {
     }))
   }
   return out
+}
+
+/** What kind of entry answers mine - the same routing the GMS does. */
+const COMPLEMENT = { gesuch: 'angebot', angebot: 'gesuch', interesse: 'interesse' }
+
+/** How many of the asked words this entry carries, summary and details alike. */
+function hitsIn(entry, words) {
+  const haystack = `${entry.summary} ${entry.details ?? ''}`.toLowerCase()
+  return words.filter((word) => haystack.includes(word)).length
+}
+
+/**
+ * The stub's answer to a typed question.
+ *
+ * Live, the vector and the reranker do this. Here: keep only the channel the stance
+ * asks for, and let crude word overlap stand in for a score - enough to show that a
+ * typed question narrows to one channel and ranks by something.
+ */
+function answerQuery(channels, { text, matchingType }) {
+  const wanted = COMPLEMENT[matchingType]
+  const entries = channels[wanted]
+  if (!entries || !entries.length) return {}
+
+  const words = text
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word.length > 2)
+  const scored = entries
+    .map((entry) => ({
+      ...entry,
+      // No entry of mine is behind a typed question - the same null the GMS returns.
+      // Without this the focus lens would find answers to entries nobody asked about.
+      matchedEntryUuid: null,
+      strength: hitsIn(entry, words) ? Math.min(0.95, 0.3 + hitsIn(entry, words) * 0.25) : null,
+    }))
+    .filter((entry) => entry.strength !== null)
+
+  return scored.length ? { [wanted]: scored } : {}
 }
 
 const PRESENCE_COUNT = 240
@@ -431,23 +468,32 @@ function wobble(seed) {
   return x - Math.floor(x) - 0.5
 }
 
-function stubMatches({ center, radius }) {
-  return STUB_PEOPLE.map((person, index) => {
-    const channels = withEntryUuids(person.channels, index)
-    return {
-      uuid: `stub-match-${index}`,
-      name: person.name,
-      position: { lat: center.lat + person.dLat, lng: center.lng + person.dLng },
-      community: COMMUNITIES[person.community],
-      aboutMe: person.aboutMe,
-      channels,
-      scores: scoresOf(channels),
-      // Which precision this person chose to be found at. The map shows everyone
-      // alike; the list speaks a distance no finer than this. Live, it comes from
-      // the GMS with the position — stubbed here as a mix so the list shows both.
-      precision: index % 3 === 0 ? 'ungefaehr' : 'genau',
-    }
-  }).filter((match) => distanceKm(center, match.position) <= radius)
+function stubMatches({ center, radius, query, mineUuids }) {
+  return (
+    STUB_PEOPLE.map((person, index) => {
+      const all = withEntryUuids(person.channels, index, mineUuids)
+      // A typed question is asked INSTEAD of my entries: what comes back answers it
+      // and nothing else, and no entry of mine is behind any of it.
+      const channels = query ? answerQuery(all, query) : all
+      return {
+        uuid: `stub-match-${index}`,
+        name: person.name,
+        position: { lat: center.lat + person.dLat, lng: center.lng + person.dLng },
+        community: COMMUNITIES[person.community],
+        aboutMe: person.aboutMe,
+        channels,
+        scores: scoresOf(channels),
+        // Which precision this person chose to be found at. The map shows everyone
+        // alike; the list speaks a distance no finer than this. Live, it comes from
+        // the GMS with the position — stubbed here as a mix so the list shows both.
+        precision: index % 3 === 0 ? 'ungefaehr' : 'genau',
+      }
+    })
+      .filter((match) => distanceKm(center, match.position) <= radius)
+      // A typed question leaves people with nothing to say about it out entirely,
+      // rather than carrying them along as matches with no channels.
+      .filter((match) => !query || Object.keys(match.channels).length > 0)
+  )
 }
 
 function stubPresence({ center, radius }) {
@@ -474,8 +520,13 @@ export function useMatches() {
   const error = ref(null)
 
   /**
-   * @param {{center: {lat: number, lng: number}, radius: number}} search
-   *   where the member chose to search, and how far out
+   * @param {object} search
+   * @param {{lat: number, lng: number}} search.center where the member chose to search
+   * @param {number} search.radius how far out
+   * @param {?{text: string, matchingType: string}} [search.query]
+   *   a question typed on the spot instead of read from the member's entries
+   * @param {string[]} [search.mineUuids] the member's own entry uuids, so a match can
+   *   say which of them it answers
    */
   async function load(search) {
     if (!search?.center || !(search.radius > 0)) return

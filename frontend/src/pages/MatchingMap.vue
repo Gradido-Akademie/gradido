@@ -17,6 +17,13 @@
     </div>
 
     <div class="map-frame mx-lg-5">
+      <!-- One place for one question — "what am I looking for right now?" — and it
+           sits here, above the frame, in BOTH modes. Were it inside the map in one
+           mode and inside the list in the other, it would move under the member
+           every time they switch. The WHERE stays a map tool (the lens and the home
+           button on the canvas); this is the WHAT, and it says so in words. -->
+      <MatchQuery :entries="myEntries" :selection="selection" @update:selection="onSelection" />
+
       <div
         class="map-shell gradido-border-radius app-box-shadow"
         :class="[`look-${look}`, { 'is-list': mode === 'liste', 'is-cluster': clusterOpen }]"
@@ -136,7 +143,15 @@
               <span>{{ $t('matching.map.found', { n: foundCount }) }}</span>
             </div>
             <div class="d-flex flex-wrap gap-3">
-              <label v-for="channel in FILTERS" :key="channel" class="map-check">
+              <!-- The three channel boxes step back while a typed question is asked:
+                   such a question has only one possible channel, so a box ticked off
+                   weeks ago would empty the search with no visible reason. -->
+              <label
+                v-for="channel in FILTERS"
+                v-show="!searchQuery"
+                :key="channel"
+                class="map-check"
+              >
                 <input v-model="visible[channel]" type="checkbox" />
                 <span class="box" />
                 <span class="swatch" :style="swatchStyle(channel)" />
@@ -212,14 +227,16 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch'
 import 'leaflet-geosearch/dist/geosearch.css'
-import { userLocationQuery } from '@/graphql/queries'
+import { listMatchingEntries, userLocationQuery } from '@/graphql/queries'
 import { useMatches, distanceKm } from '@/composables/useMatches'
+import MatchQuery from '@/components/Matching/MatchQuery'
 import { useAppToast } from '@/composables/useToast'
 import {
   LABEL_COLORS,
   DEFAULTS,
   markerColor,
   peakStage,
+  scoresOf,
   stagesOf,
   listPeak,
   topScore,
@@ -300,6 +317,35 @@ const radiusDraft = ref(DEFAULT_RADIUS)
 
 const { matches, presence, load } = useMatches()
 
+// What is being searched for right now. Deliberately NOT under `pref.`, unlike
+// every other choice on this page: a typed question is a one-off by nature - shown
+// to a friend, tried once - and finding yesterday's word still in the field would
+// be a puzzle, not a convenience. Whoever wants to keep it turns it into an entry.
+const selection = ref({ kind: 'all' })
+
+// My own entries, so one of them can be the question. Real data, not the stub -
+// they are mine, and the wallet already holds them.
+const myEntries = ref([])
+const { onResult: onEntries } = useQuery(listMatchingEntries, null, { fetchPolicy: 'cache-first' })
+onEntries((result) => {
+  myEntries.value = (result.data?.listMatchingEntries ?? []).filter((entry) => entry.active)
+})
+
+function onSelection(next) {
+  selection.value = next
+  closeCluster()
+  runSearch()
+}
+
+// What the search asks for beyond the place: nothing for "everything" and for a
+// single entry of mine (the entry only narrows what is SHOWN, the search is the
+// same), and the typed sentence when there is one.
+const searchQuery = computed(() =>
+  selection.value.kind === 'typed'
+    ? { text: selection.value.text, matchingType: selection.value.matchingType }
+    : null,
+)
+
 // The profile window. `pref.gms.map.profile` holds the uuid of the open person,
 // so it survives the round trip to the send form and the auto-logout — you come
 // back to the map AND to whoever you were looking at.
@@ -334,10 +380,45 @@ const crosshairStyle = computed(() => ({
 
 // The matches the map is showing right now. Drawing and counting both read this
 // one list, so the heading can never claim a person the map does not draw.
+/**
+ * The focus lens: only what answers ONE entry of mine.
+ *
+ * Pure display. The search asked the very same question of the server; this narrows
+ * what came back, so switching between my entries costs nothing and changes nothing
+ * out there. The scores are rebuilt from the narrowed entries, or a person would
+ * keep glowing for an entry the member just filtered away.
+ */
+const focusedMatches = computed(() => {
+  if (selection.value.kind !== 'entry') return matches.value
+  const wanted = selection.value.uuid
+  const narrowed = []
+  for (const match of matches.value) {
+    const channels = {}
+    for (const [channel, entries] of Object.entries(match.channels ?? {})) {
+      const kept = entries.filter((entry) => entry.matchedEntryUuid === wanted)
+      if (kept.length) channels[channel] = kept
+    }
+    if (Object.keys(channels).length)
+      narrowed.push({ ...match, channels, scores: scoresOf(channels) })
+  }
+  return narrowed
+})
+
+/**
+ * The channel checkboxes step back while a typed question is being asked.
+ *
+ * A typed question has exactly one possible channel - "Ich suche" can only be
+ * answered by offers. Leaving the boxes in charge would let a box the member ticked
+ * off weeks ago empty their search with no visible reason.
+ */
+const channelGate = computed(() => (searchQuery.value ? null : visible))
+
+// The matches the map is showing right now. Drawing and counting both read this
+// one list, so the heading can never claim a person the map does not draw.
 const visibleMatches = computed(() => {
   const shown = []
-  for (const match of matches.value) {
-    const stages = stagesOf(match, DEFAULTS, breite.value, visible)
+  for (const match of focusedMatches.value) {
+    const stages = stagesOf(match, DEFAULTS, breite.value, channelGate.value)
     const peak = peakStage(stages)
     if (peak < 1) continue
     shown.push({ match, stages, peak })
@@ -535,7 +616,12 @@ function goBack() {
 /** The one place a search is actually asked for. */
 function runSearch() {
   if (!searchCenter.value) return
-  load({ center: searchCenter.value, radius: radius.value })
+  load({
+    center: searchCenter.value,
+    radius: radius.value,
+    query: searchQuery.value,
+    mineUuids: myEntries.value.map((entry) => entry.uuid),
+  })
 }
 
 function moveSearchTo(next, { fly = false } = {}) {
