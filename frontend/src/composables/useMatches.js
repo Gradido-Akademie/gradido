@@ -10,12 +10,22 @@ import { scoresOf } from '@/components/Matching/displayCore'
  *
  * A search, as both sides of this seam mean it:
  *
- *   { center: { lat, lng }, radius }   // radius in km
+ *   {
+ *     center: { lat, lng },
+ *     radius,                            // km
+ *     query?: { text, matchingType },    // a question typed instead of stored
+ *     mineUuids?: string[],              // my entries, so a match can name the one
+ *   }                                    // it answers
  *
  * The centre is the deliberate one, not the map's — panning around is looking,
  * and looking must not search. Both routes take the radius as a required
  * parameter, so the stub demands it too: a stub that answers questions the real
  * thing would refuse teaches the caller a contract that does not exist.
+ *
+ * `query` is the ad-hoc search: live it is POST /community-user/match-query, which
+ * takes the text and the stance and runs exactly one pass of the same chain. When
+ * it is set, nothing of mine is consulted — every answer carries a null
+ * matchedEntryUuid, because no entry of mine is behind it.
  *
  * A match, as the map AND the detail window want it:
  *
