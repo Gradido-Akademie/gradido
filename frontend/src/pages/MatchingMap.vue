@@ -26,7 +26,14 @@
 
       <div
         class="map-shell gradido-border-radius app-box-shadow"
-        :class="[`look-${look}`, { 'is-list': mode === 'liste', 'is-cluster': clusterOpen }]"
+        :class="[
+          `look-${look}`,
+          {
+            'is-list': mode === 'liste',
+            'is-cluster': clusterOpen,
+            'has-keep': searchQuery && !keepDismissed,
+          },
+        ]"
       >
         <!-- In list mode the map is only decoration behind the list, but it stays in
              the DOM (so Leaflet keeps its size). inert drops the whole map — its
@@ -53,6 +60,41 @@
           @lens="setLens"
           @recenter="moveSearchTo"
         />
+
+        <!-- The offer to keep a typed search.
+             It stands whether or not anything was found — and the empty case is the
+             stronger one: nobody offers this today, so being findable for it is
+             worth more, not less. Entering is a prepayment, which is why so few do
+             it; here the prepayment comes after the use.
+
+             It lies OVER the map rather than under it. Below the map it cost layout
+             height, and that failed on both devices for opposite reasons: on a phone
+             the map gives way (it is the flexible part of a full-height column), so
+             every added row squeezed it to a strip; on a desktop the map holds its
+             65vh and the offer was pushed past the lower edge, where it was only
+             found by looking for it. Over the map it costs no height at all.
+
+             It slides up rather than appearing: something that arrives unbidden is
+             noticed by its movement, not by its presence. -->
+        <div
+          v-if="searchQuery && !keepDismissed"
+          class="keep-offer"
+          role="status"
+          aria-live="polite"
+        >
+          <i-bi-bell class="keep-icon" />
+          <span class="keep-ask">
+            {{ $t('matching.query.keepAsk', { text: searchQuery.text }) }}
+          </span>
+          <div class="keep-actions">
+            <BButton variant="gradido" size="sm" class="keep-btn" @click="keepAsEntry">
+              {{ $t('matching.query.keep') }}
+            </BButton>
+            <button type="button" class="keep-no" @click="keepDismissed = true">
+              {{ $t('matching.query.keepNo') }}
+            </button>
+          </div>
+        </div>
 
         <!-- The people of one spot no zoom could open — a slim, half-see-through
              overlay over the map, wiped away with its close cross. A row opens the
@@ -180,21 +222,6 @@
             </div>
           </BCol>
         </BRow>
-
-        <!-- The offer to keep a typed search.
-             It stands whether or not anything was found — and the empty case is the
-             stronger one: nobody offers this today, so being findable for it is
-             worth more, not less. Entering is a prepayment, which is why so few do
-             it; here the prepayment comes after the use. -->
-        <div v-if="searchQuery" class="keep-offer">
-          <i-bi-bell class="keep-icon" />
-          <span class="keep-ask">
-            {{ $t('matching.query.keepAsk', { text: searchQuery.text }) }}
-          </span>
-          <BButton variant="gradido" size="sm" class="keep-btn" @click="keepAsEntry">
-            {{ $t('matching.query.keep') }}
-          </BButton>
-        </div>
       </div>
     </div>
 
@@ -370,8 +397,20 @@ function keepAsEntry() {
   router.push('/matching/entries')
 }
 
+/**
+ * Waved away for THIS question, not for good.
+ *
+ * The offer covers a strip of the map, so saying no has to actually clear it. But a
+ * "no" to one sentence is not a "no" to the next: ask something else and the offer
+ * belongs on screen again, because it is our answer to why so few members ever write
+ * an entry. Not persisted for the same reason the typed search is not — it belongs
+ * to a moment.
+ */
+const keepDismissed = ref(false)
+
 function onSelection(next) {
   selection.value = next
+  keepDismissed.value = false
   closeCluster()
   runSearch()
 }
@@ -1322,6 +1361,13 @@ watch(mode, (value) => {
   z-index: 400;
 }
 
+/* On the map the band covers tiles, which can be scrolled out from under it. A list
+   cannot: scrolled to its end, the last person would stay behind the band. So the
+   list gets room to scroll past it. */
+.map-shell.has-keep .list-cover {
+  padding-bottom: 5.5rem;
+}
+
 /* On a phone the page IS the map: it fills the screen, the controls sit right
    under it, and neither needs a scroll. dvh rather than vh, so the browser's own
    collapsing address bar cannot cut the controls off the bottom. */
@@ -1469,15 +1515,55 @@ watch(mode, (value) => {
   color: rgb(0 0 0 / 50%);
 }
 
-/* The offer to keep a typed search. Set off by a rule rather than a box: it is an
-   invitation at the end of a result, not a warning. */
+/* The offer to keep a typed search — a band riding the lower edge of the map.
+
+   Half-see-through on purpose (same recipe as the cluster overlay, a little lighter):
+   the map has to stay sensed underneath, or the band reads as a page of its own
+   rather than as something said about what is on screen. The small blur keeps the
+   words legible over whatever tiles happen to lie beneath.
+
+   Sits above the list cover (400) and the crosshair (450) — the offer belongs to the
+   search, and the search is the same in both modes — but under the look switch and
+   the way back (500), which must stay reachable, and under the cluster window (500),
+   which is opened deliberately. */
 .keep-offer {
+  position: absolute;
+  z-index: 460;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--surface-muted);
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid color-mix(in srgb, #c69130 45%, transparent);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  backdrop-filter: blur(3px);
+  color: var(--text);
+  animation: keep-rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) 0.25s both;
+}
+
+/* Arriving unbidden, it is the movement that is noticed — not the presence. The
+   short wait lets the results settle first, so the rise happens against a still
+   picture instead of disappearing into the redraw. */
+@keyframes keep-rise {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Whoever asked the system for less movement gets the band without the ride. */
+@media (prefers-reduced-motion: reduce) {
+  .keep-offer {
+    animation: none;
+  }
 }
 
 .keep-icon {
@@ -1488,13 +1574,41 @@ watch(mode, (value) => {
 
 .keep-ask {
   flex: 1;
-  min-width: 0;
+  min-width: 12rem;
   font-size: 0.9375rem;
 }
 
-.keep-btn {
+.keep-actions {
+  display: flex;
   flex: none;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* The house button carries 50px of side padding, which is the width of a landing
+   page, not of a band on a phone. */
+.keep-btn {
+  padding-right: 1.25rem !important;
+  padding-left: 1.25rem !important;
   white-space: nowrap;
+}
+
+/* A labelled way out, not a cross: the band was never opened, it arrived, and a
+   named answer is easier to find than a symbol. It stays quiet next to the gold
+   one — this is an offer with two answers, not two buttons of equal weight. */
+.keep-no {
+  flex: none;
+  padding: 0.35rem 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.keep-no:hover {
+  color: var(--text);
+  text-decoration: underline;
 }
 
 .controls-heading {
