@@ -14,6 +14,33 @@
 export const CHANNELS = ['interesse', 'angebot', 'gesuch']
 
 /**
+ * The same three things carry two names, and mixing them up is silent.
+ *
+ * The server speaks `interest | offer | need`; everything the member sees is keyed
+ * by `interesse | angebot | gesuch` — the locale block `matching.type.*`, the label
+ * colours, the channel filters. A stored entry arrives in the server's words, so it
+ * has to be translated before it may touch a locale key or a colour table.
+ *
+ * Getting this wrong does not throw: a locale lookup renders the raw key at the
+ * member, and a colour lookup falls through to its default, so every dot turns the
+ * same colour. Both happened. That is why the translation lives here, once, next to
+ * the tables it feeds, instead of being written out again at each place that needs it.
+ */
+const ENTRY_TO_DISPLAY = { interest: 'interesse', offer: 'angebot', need: 'gesuch' }
+const DISPLAY_TO_ENTRY = { interesse: 'interest', angebot: 'offer', gesuch: 'need' }
+
+/** Server word -> display word. Passes a display word through unharmed. */
+export function displayType(matchingType) {
+  if (CHANNELS.includes(matchingType)) return matchingType
+  return ENTRY_TO_DISPLAY[matchingType] ?? 'interesse'
+}
+
+/** Display word -> server word. */
+export function entryType(type) {
+  return DISPLAY_TO_ENTRY[type] ?? 'interest'
+}
+
+/**
  * Canonical peak colours. The mix is additive and means the same in every map
  * appearance: red + green = yellow, all three = white (the whole person).
  * Green sits at 204 and blue is lifted to 70/90 so the channels read equally

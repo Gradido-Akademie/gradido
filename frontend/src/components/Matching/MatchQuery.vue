@@ -1,5 +1,5 @@
 <template>
-  <div class="match-query" :class="{ 'is-typing': typing }">
+  <div class="match-query" :class="{ 'is-typing': typing, 'can-ask': canAsk }">
     <!-- Closed: what is being searched for right now, and a way to change it. -->
     <button
       v-if="!typing"
@@ -43,7 +43,7 @@
       >
         <span class="option-dot" :style="{ background: dotColor(entry.matchingType) }" />
         <span class="option-text">
-          {{ $t(`matching.type.${entry.matchingType}.prefix`) }} {{ entry.summary }}
+          {{ $t(`matching.type.${displayType(entry.matchingType)}.prefix`) }} {{ entry.summary }}
         </span>
       </li>
 
@@ -103,7 +103,7 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { CHANNELS, LABEL_COLORS } from './displayCore'
+import { CHANNELS, LABEL_COLORS, displayType } from './displayCore'
 
 const props = defineProps({
   /** The member's own entries, so one of them can be the question. */
@@ -130,13 +130,14 @@ const currentLabel = computed(() => {
   if (props.selection.kind === 'typed') return props.selection.text
   if (props.selection.kind === 'entry') {
     const entry = props.entries.find((e) => e.uuid === props.selection.uuid)
-    if (entry) return `${t(`matching.type.${entry.matchingType}.prefix`)} ${entry.summary}`
+    if (entry)
+      return `${t(`matching.type.${displayType(entry.matchingType)}.prefix`)} ${entry.summary}`
   }
   return t('matching.query.all')
 })
 
 function dotColor(matchingType) {
-  return LABEL_COLORS[matchingType] ?? LABEL_COLORS.interesse
+  return LABEL_COLORS[displayType(matchingType)]
 }
 
 function chooseAll() {
@@ -331,31 +332,61 @@ watch(
   margin-top: 0.5rem;
 }
 
-/* Grey on purpose. On the map a colour already means "what the other person said";
-   giving these the same colours for MY stance would put two meanings on one screen. */
+/* Not a channel colour. On the map red/green/blue already mean "what the other
+   person said"; the stance is MY word, and the house already has a colour for that
+   — the gold of the home marker. So the three states read: nothing to ask yet
+   (flat and faint) -> your turn (gold ring) -> asked (filled).
+   The ring is 2px in every state and only changes colour, so nothing shifts when
+   the field fills. Deckkraft alone was the whole difference before, and it was
+   too small to notice in either mode. */
 .stance {
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--border-subtle, rgb(0 0 0 / 20%));
+  padding: 0.3rem 0.85rem;
+  border: 2px solid transparent;
   border-radius: 1rem;
   background: var(--surface-muted);
-  color: var(--text-muted);
+  color: var(--text);
   font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
 }
 
 .stance:disabled {
-  opacity: 0.5;
+  border-color: transparent;
+  color: var(--text-muted);
+  font-weight: 400;
+  opacity: 0.55;
+  cursor: default;
+}
+
+.stance:not(:disabled) {
+  border-color: #c69130;
+  background: var(--surface);
+}
+
+.stance:not(:disabled):hover {
+  background: color-mix(in srgb, #c69130 12%, var(--surface));
 }
 
 .stance.is-chosen {
-  border-color: transparent;
+  border-color: var(--text);
   background: var(--text);
   color: var(--surface);
-  font-weight: 600;
 }
 
 .typed-hint {
   margin: 0.375rem 0 0;
   color: var(--text-muted);
   font-size: 0.8125rem;
+  transition: opacity 0.18s ease;
+}
+
+/* The hint dims with the buttons, so "not yet" and "your turn" are one signal
+   instead of two half-signals. */
+.match-query:not(.can-ask) .typed-hint {
+  opacity: 0.55;
 }
 </style>

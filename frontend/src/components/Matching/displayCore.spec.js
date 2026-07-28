@@ -2,10 +2,13 @@ import { describe, it, expect } from 'vitest'
 import {
   CANON,
   DEFAULTS,
+  LABEL_COLORS,
   applyBreite,
   bearing8,
   channelStage,
   describeDistance,
+  displayType,
+  entryType,
   listPeak,
   markerColor,
   peakStage,
@@ -248,6 +251,37 @@ describe('displayCore', () => {
     it('answers an empty object for nothing at all', () => {
       expect(scoresOf({})).toEqual({})
       expect(scoresOf(null)).toEqual({})
+    })
+  })
+
+  // The two vocabularies are the quiet kind of mistake: nothing throws, a locale key
+  // renders as itself and a colour falls through to its default. These pin the
+  // translation so a stored entry can always reach a locale key and a colour table.
+  describe('the two words for one channel', () => {
+    it('turns the server is words into the words the member sees', () => {
+      expect(displayType('interest')).toBe('interesse')
+      expect(displayType('offer')).toBe('angebot')
+      expect(displayType('need')).toBe('gesuch')
+    })
+
+    it('turns them back for the server', () => {
+      expect(entryType('interesse')).toBe('interest')
+      expect(entryType('angebot')).toBe('offer')
+      expect(entryType('gesuch')).toBe('need')
+    })
+
+    it('lets a display word through unharmed, so a double translation cannot bite', () => {
+      expect(displayType('gesuch')).toBe('gesuch')
+      expect(displayType(displayType('need'))).toBe('gesuch')
+    })
+
+    it('lands on a real colour for every server word', () => {
+      // The failure this guards is exactly the one that shipped: an untranslated
+      // word misses the table and every dot comes out the same colour.
+      const colours = ['interest', 'offer', 'need'].map((t) => LABEL_COLORS[displayType(t)])
+
+      expect(colours.every(Boolean)).toBe(true)
+      expect(new Set(colours).size).toBe(3)
     })
   })
 })
