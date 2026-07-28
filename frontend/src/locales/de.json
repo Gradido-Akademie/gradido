@@ -484,6 +484,7 @@
       "clear": "Suche zurücksetzen",
       "keep": "Als Eintrag behalten",
       "keepAsk": "Soll Dich künftig finden, wer zu „{text}“ passt?",
+      "keepNo": "Nein, danke",
       "label": "Ich suche gerade nach",
       "open": "Suche wählen",
       "other": "Etwas anderes suchen …",
