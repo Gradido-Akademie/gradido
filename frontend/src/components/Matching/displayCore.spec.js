@@ -10,6 +10,7 @@ import {
   markerColor,
   peakStage,
   scoreToStage,
+  scoresOf,
   stagesOf,
   topScore,
 } from './displayCore'
@@ -215,6 +216,38 @@ describe('displayCore', () => {
 
     it('ignores a channel the filter hides', () => {
       expect(topScore(match, { interesse: true, angebot: false, gesuch: true })).toBeCloseTo(0.2)
+    })
+  })
+
+  describe('scoresOf', () => {
+    // The focus lens narrows a person to the entries answering ONE question and
+    // then rebuilds their scores from what is left. If this ever read anything but
+    // the entries handed to it, a person would keep glowing for an entry the member
+    // just filtered away.
+    it('reads one strength per matched entry, per channel', () => {
+      const channels = {
+        angebot: [{ strength: 0.4 }, { strength: 0.55 }],
+        interesse: [{ strength: 0.2 }],
+      }
+
+      expect(scoresOf(channels)).toEqual({ angebot: [0.4, 0.55], interesse: [0.2] })
+    })
+
+    it('leaves out the entries that answer nothing', () => {
+      // A profile carries every entry a person published; only the matched ones
+      // carry a strength, and only those may reach the brightness.
+      const channels = { angebot: [{ strength: 0.4 }, { strength: null }, {}] }
+
+      expect(scoresOf(channels)).toEqual({ angebot: [0.4] })
+    })
+
+    it('drops a channel with nothing matched, rather than reporting it empty', () => {
+      expect(scoresOf({ angebot: [{ strength: null }] })).toEqual({})
+    })
+
+    it('answers an empty object for nothing at all', () => {
+      expect(scoresOf({})).toEqual({})
+      expect(scoresOf(null)).toEqual({})
     })
   })
 })
