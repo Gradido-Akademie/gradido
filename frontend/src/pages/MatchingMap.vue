@@ -326,7 +326,12 @@ const selection = ref({ kind: 'all' })
 // My own entries, so one of them can be the question. Real data, not the stub -
 // they are mine, and the wallet already holds them.
 const myEntries = ref([])
-const { onResult: onEntries } = useQuery(listMatchingEntries, null, { fetchPolicy: 'cache-first' })
+// cache-and-network, not cache-first: the entries tab writes this same list, and a
+// member who adds an entry and comes straight here would otherwise not find it in
+// the menu - the one thing they just made.
+const { onResult: onEntries } = useQuery(listMatchingEntries, null, {
+  fetchPolicy: 'cache-and-network',
+})
 onEntries((result) => {
   myEntries.value = (result.data?.listMatchingEntries ?? []).filter((entry) => entry.active)
 })
