@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect } from 'vitest'
 import { createI18n } from 'vue-i18n'
 import MatchQuery from './MatchQuery.vue'
+import { LABEL_COLORS } from './displayCore'
 
 const i18n = createI18n({
   legacy: false,
@@ -30,10 +31,25 @@ const i18n = createI18n({
   },
 })
 
+/**
+ * The SERVER's words, because that is what a stored entry carries.
+ *
+ * This fixture used to say 'gesuch' and 'angebot' — display words that no entry
+ * coming out of `listMatchingEntries` ever holds. A fixture that does not look like
+ * the real thing cannot fail on the real thing: the component read the server word
+ * straight into a locale key and a colour table, and every one of these tests stayed
+ * green while a member saw `matching.type.need.prefix` and three red dots.
+ */
 const entries = [
-  { uuid: 'e1', matchingType: 'gesuch', summary: 'einen Klavierlehrer' },
-  { uuid: 'e2', matchingType: 'angebot', summary: 'Gartenarbeit' },
+  { uuid: 'e1', matchingType: 'need', summary: 'einen Klavierlehrer' },
+  { uuid: 'e2', matchingType: 'offer', summary: 'Gartenarbeit' },
 ]
+
+/** jsdom normalises an inline hex colour to its rgb() form. */
+const asRgb = (hex) => {
+  const [r, g, b] = [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16))
+  return `rgb(${r}, ${g}, ${b})`
+}
 
 const mountQuery = (selection = { kind: 'all' }) =>
   mount(MatchQuery, {
@@ -78,6 +94,26 @@ describe('MatchQuery', () => {
       expect(options[1]).toContain('Ich suche einen Klavierlehrer')
       expect(options[2]).toContain('Ich biete Gartenarbeit')
       expect(options[3]).toContain('Etwas anderes')
+    })
+
+    it('reads a stored entry in the wallet is own words, never as a raw key', async () => {
+      // The server says `need`; the locale block and the colour table are keyed by
+      // `gesuch`. Skip the translation and both fail silently — the key renders as
+      // itself, and the colour falls through to its default.
+      const wrapper = mountQuery()
+      await wrapper.find('.query-bar').trigger('click')
+
+      expect(wrapper.text()).not.toContain('matching.type')
+    })
+
+    it('gives each entry the colour of its own channel', async () => {
+      const wrapper = mountQuery()
+      await wrapper.find('.query-bar').trigger('click')
+
+      const dots = wrapper.findAll('.option-dot').map((d) => d.attributes('style'))
+
+      expect(dots[0]).toContain(asRgb(LABEL_COLORS.gesuch))
+      expect(dots[1]).toContain(asRgb(LABEL_COLORS.angebot))
     })
 
     it('asks straight away when the question is one of my entries', async () => {

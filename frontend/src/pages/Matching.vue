@@ -365,6 +365,7 @@ import {
   updateUserInfos,
 } from '@/graphql/mutations'
 import { listMatchingEntries, userLocationQuery, verifyLogin } from '@/graphql/queries'
+import { displayType, entryType } from '@/components/Matching/displayCore'
 import UserGMSLocationFormat from '@/components/UserSettings/UserGMSLocationFormat'
 import UserLocationMap from '@/components/UserSettings/UserLocationMap'
 import UserSettingsSwitch from '@/components/UserSettings/UserSettingsSwitch'
@@ -384,10 +385,6 @@ const goTab = (name) => {
 }
 
 const types = [{ key: 'interesse' }, { key: 'angebot' }, { key: 'gesuch' }]
-
-// UI type (Interesse/Angebot/Gesuch) <-> backend matchingType (interest/offer/need)
-const TYPE_TO_ENTRY = { interesse: 'interest', angebot: 'offer', gesuch: 'need' }
-const ENTRY_TO_TYPE = { interest: 'interesse', offer: 'angebot', need: 'gesuch' }
 
 const formatDate = (iso) =>
   iso
@@ -412,7 +409,7 @@ onEntries(({ data }) => {
   if (!data?.listMatchingEntries) return
   entries.value = data.listMatchingEntries.map((e) => ({
     uuid: e.uuid,
-    type: ENTRY_TO_TYPE[e.matchingType] || 'interesse',
+    type: displayType(e.matchingType),
     summary: e.summary,
     details: e.details || '',
     active: e.active,
@@ -470,7 +467,7 @@ function openEdit(e) {
 }
 async function save() {
   const input = {
-    matchingType: TYPE_TO_ENTRY[newType.value],
+    matchingType: entryType(newType.value),
     summary: newSummary.value.trim(),
     details: newDetails.value.trim() || null,
     remote: newRemote.value,
