@@ -3,6 +3,17 @@ import router from './router'
 import routes from './routes'
 import NotFound from '@/pages/NotFoundPage'
 
+// This file checks the full route table, matching included, so it needs the flag
+// on — routes.js reads it when the module loads, which is why this has to be a
+// hoisted vi.mock rather than an assignment. The flag's own behaviour (on and
+// off) is covered in routes.test.js.
+vi.mock('@/config', async () => {
+  const actual = await vi.importActual('@/config')
+  return {
+    default: { ...actual.default, MATCHING_ACTIVE: true },
+  }
+})
+
 vi.mock('vue', async () => {
   const actual = await vi.importActual('vue')
   return {
