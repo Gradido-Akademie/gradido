@@ -180,6 +180,21 @@
             </div>
           </BCol>
         </BRow>
+
+        <!-- The offer to keep a typed search.
+             It stands whether or not anything was found — and the empty case is the
+             stronger one: nobody offers this today, so being findable for it is
+             worth more, not less. Entering is a prepayment, which is why so few do
+             it; here the prepayment comes after the use. -->
+        <div v-if="searchQuery" class="keep-offer">
+          <i-bi-bell class="keep-icon" />
+          <span class="keep-ask">
+            {{ $t('matching.query.keepAsk', { text: searchQuery.text }) }}
+          </span>
+          <BButton variant="gradido" size="sm" class="keep-btn" @click="keepAsEntry">
+            {{ $t('matching.query.keep') }}
+          </BButton>
+        </div>
       </div>
     </div>
 
@@ -229,6 +244,7 @@ import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch'
 import 'leaflet-geosearch/dist/geosearch.css'
 import { listMatchingEntries, userLocationQuery } from '@/graphql/queries'
 import { useMatches, distanceKm } from '@/composables/useMatches'
+import { useEntryDraft } from '@/composables/useEntryDraft'
 import MatchQuery from '@/components/Matching/MatchQuery'
 import { useAppToast } from '@/composables/useToast'
 import {
@@ -295,6 +311,7 @@ const CLUSTER_PX = 26
 
 const { t, locale } = useI18n()
 const router = useRouter()
+const entryDraft = useEntryDraft()
 const store = useStore()
 const { toastError } = useAppToast()
 
@@ -335,6 +352,23 @@ const { onResult: onEntries } = useQuery(listMatchingEntries, null, {
 onEntries((result) => {
   myEntries.value = (result.data?.listMatchingEntries ?? []).filter((entry) => entry.active)
 })
+
+/**
+ * Take a typed search over to the entry form, filled in.
+ *
+ * Handed over in memory rather than as a route parameter: the words are the
+ * member's own, and an address bar keeps them long after the moment. The form still
+ * asks for the details — it is an invitation, not a form filled out behind their
+ * back, and the details are what a match is actually judged on.
+ */
+function keepAsEntry() {
+  if (!searchQuery.value) return
+  entryDraft.put({
+    summary: searchQuery.value.text,
+    matchingType: searchQuery.value.matchingType,
+  })
+  router.push('/matching/entries')
+}
 
 function onSelection(next) {
   selection.value = next
@@ -1433,6 +1467,34 @@ watch(mode, (value) => {
 .map-shell.look-hell .map-crosshair,
 .map-shell.look-normal .map-crosshair {
   color: rgb(0 0 0 / 50%);
+}
+
+/* The offer to keep a typed search. Set off by a rule rather than a box: it is an
+   invitation at the end of a result, not a warning. */
+.keep-offer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--surface-muted);
+}
+
+.keep-icon {
+  flex: none;
+  color: #c69130;
+  font-size: 1.15rem;
+}
+
+.keep-ask {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9375rem;
+}
+
+.keep-btn {
+  flex: none;
+  white-space: nowrap;
 }
 
 .controls-heading {

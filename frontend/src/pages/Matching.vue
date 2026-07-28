@@ -62,7 +62,7 @@
               })
             }}
           </span>
-          <button type="button" class="btn-add" @click="openNew">
+          <button type="button" class="btn-add" @click="openNew()">
             <i-bi-plus-lg />
             {{ $t('matching.entries.new') }}
           </button>
@@ -139,7 +139,7 @@
           <br />
           {{ $t('matching.entries.emptyText') }}
         </p>
-        <button type="button" class="btn-add" @click="openNew">
+        <button type="button" class="btn-add" @click="openNew()">
           <i-bi-plus-lg />
           {{ $t('matching.entries.new') }}
         </button>
@@ -351,11 +351,12 @@
 
 <script setup>
 import { useMutation, useQuery } from '@vue/apollo-composable'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useAppToast } from '@/composables/useToast'
+import { useEntryDraft } from '@/composables/useEntryDraft'
 import {
   createMatchingEntry,
   deleteMatchingEntry,
@@ -430,6 +431,7 @@ const { mutate: setEntryActive } = useMutation(setMatchingEntryActive)
 const { mutate: removeEntry } = useMutation(deleteMatchingEntry)
 
 // --- New / edit entry modal ---
+const entryDraft = useEntryDraft()
 const showNew = ref(false)
 const editUuid = ref(null)
 const newType = ref('interesse')
@@ -437,14 +439,27 @@ const newSummary = ref('')
 const newDetails = ref('')
 const newRemote = ref(false)
 
-function openNew() {
+function openNew({ summary = '', matchingType = 'interesse' } = {}) {
   editUuid.value = null
-  newType.value = 'interesse'
-  newSummary.value = ''
+  newType.value = matchingType
+  newSummary.value = summary
   newDetails.value = ''
   newRemote.value = false
   showNew.value = true
 }
+
+/**
+ * The map may have handed over a typed search to keep.
+ *
+ * Read once and cleared by take(), so coming back to this tab later does not open
+ * the form again over an offer the member already walked away from. The details
+ * stay empty on purpose: the sentence is theirs to finish, and the details are what
+ * the match is actually judged on.
+ */
+onMounted(() => {
+  const draft = entryDraft.take()
+  if (draft) openNew(draft)
+})
 function openEdit(e) {
   editUuid.value = e.uuid
   newType.value = e.type
