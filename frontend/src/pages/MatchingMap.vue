@@ -26,14 +26,7 @@
 
       <div
         class="map-shell gradido-border-radius app-box-shadow"
-        :class="[
-          `look-${look}`,
-          {
-            'is-list': mode === 'liste',
-            'is-cluster': clusterOpen,
-            'has-keep': searchQuery && !keepDismissed,
-          },
-        ]"
+        :class="[`look-${look}`, { 'is-list': mode === 'liste', 'is-cluster': clusterOpen }]"
       >
         <!-- In list mode the map is only decoration behind the list, but it stays in
              the DOM (so Leaflet keeps its size). inert drops the whole map — its
@@ -60,41 +53,6 @@
           @lens="setLens"
           @recenter="moveSearchTo"
         />
-
-        <!-- The offer to keep a typed search.
-             It stands whether or not anything was found — and the empty case is the
-             stronger one: nobody offers this today, so being findable for it is
-             worth more, not less. Entering is a prepayment, which is why so few do
-             it; here the prepayment comes after the use.
-
-             It lies OVER the map rather than under it. Below the map it cost layout
-             height, and that failed on both devices for opposite reasons: on a phone
-             the map gives way (it is the flexible part of a full-height column), so
-             every added row squeezed it to a strip; on a desktop the map holds its
-             65vh and the offer was pushed past the lower edge, where it was only
-             found by looking for it. Over the map it costs no height at all.
-
-             It slides up rather than appearing: something that arrives unbidden is
-             noticed by its movement, not by its presence. -->
-        <div
-          v-if="searchQuery && !keepDismissed"
-          class="keep-offer"
-          role="status"
-          aria-live="polite"
-        >
-          <i-bi-bell class="keep-icon" />
-          <span class="keep-ask">
-            {{ $t('matching.query.keepAsk', { text: searchQuery.text }) }}
-          </span>
-          <div class="keep-actions">
-            <BButton variant="gradido" size="sm" class="keep-btn" @click="keepAsEntry">
-              {{ $t('matching.query.keep') }}
-            </BButton>
-            <button type="button" class="keep-no" @click="keepDismissed = true">
-              {{ $t('matching.query.keepNo') }}
-            </button>
-          </div>
-        </div>
 
         <!-- The people of one spot no zoom could open — a slim, half-see-through
              overlay over the map, wiped away with its close cross. A row opens the
@@ -222,6 +180,42 @@
             </div>
           </BCol>
         </BRow>
+      </div>
+    </div>
+
+    <!-- The offer to keep a typed search.
+         It stands whether or not anything was found — and the empty case is the
+         stronger one: nobody offers this today, so being findable for it is worth
+         more, not less. Entering is a prepayment, which is why so few members do it;
+         here the prepayment comes after the use.
+
+         It rides the bottom of the SCREEN, not the bottom of the map. That is the
+         one place that works on both devices, and the reason is the difference
+         between them: on a phone the map is the scarce thing and the controls below
+         it have room to spare, so the band may cover those and must not touch the
+         map; on a desktop the map holds its height and it is the controls that are
+         already past the lower edge. Pinned to the map it would take the phone's map;
+         pinned to the screen it lands on the spare room of both.
+
+         It slides up rather than appearing: something that arrives unbidden is
+         noticed by its movement, not by its presence.
+
+         It sits outside the map frame in the markup as well, so no ancestor can turn
+         itself into a containing block and clip a fixed child. -->
+    <div v-if="searchQuery && !keepDismissed" class="keep-offer" role="status" aria-live="polite">
+      <div class="keep-line">
+        <i-bi-bell class="keep-icon" />
+        <span class="keep-ask">
+          {{ $t('matching.query.keepAsk', { text: searchQuery.text }) }}
+        </span>
+      </div>
+      <div class="keep-actions">
+        <BButton variant="gradido" size="sm" class="keep-btn" @click="keepAsEntry">
+          {{ $t('matching.query.keep') }}
+        </BButton>
+        <button type="button" class="keep-no" @click="keepDismissed = true">
+          {{ $t('matching.query.keepNo') }}
+        </button>
       </div>
     </div>
 
@@ -1361,13 +1355,6 @@ watch(mode, (value) => {
   z-index: 400;
 }
 
-/* On the map the band covers tiles, which can be scrolled out from under it. A list
-   cannot: scrolled to its end, the last person would stay behind the band. So the
-   list gets room to scroll past it. */
-.map-shell.has-keep .list-cover {
-  padding-bottom: 5.5rem;
-}
-
 /* On a phone the page IS the map: it fills the screen, the controls sit right
    under it, and neither needs a scroll. dvh rather than vh, so the browser's own
    collapsing address bar cannot cut the controls off the bottom. */
@@ -1515,33 +1502,45 @@ watch(mode, (value) => {
   color: rgb(0 0 0 / 50%);
 }
 
-/* The offer to keep a typed search — a band riding the lower edge of the map.
+/* The offer to keep a typed search — a band riding the bottom of the SCREEN.
 
    Half-see-through on purpose (same recipe as the cluster overlay, a little lighter):
-   the map has to stay sensed underneath, or the band reads as a page of its own
-   rather than as something said about what is on screen. The small blur keeps the
-   words legible over whatever tiles happen to lie beneath.
+   whatever it covers has to stay sensed underneath, or the band reads as a page of
+   its own rather than as something said about what is on screen. The small blur
+   keeps the words legible over whatever happens to lie beneath.
 
-   Sits above the list cover (400) and the crosshair (450) — the offer belongs to the
-   search, and the search is the same in both modes — but under the look switch and
-   the way back (500), which must stay reachable, and under the cluster window (500),
-   which is opened deliberately. */
+   Under the gold trim (z-index 1000, App.vue) which frames the whole app, and under
+   the query menu and any modal, which are answers to a deliberate act. Above
+   everything on the page, because it belongs to the screen rather than to the map. */
 .keep-offer {
-  position: absolute;
-  z-index: 460;
+  position: fixed;
+  z-index: 900;
   right: 0;
   bottom: 0;
   left: 0;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  padding: 0.75rem 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  /* The gold trim is 13px of fixed decoration along the bottom edge (.goldrand in
+     App.vue). The band passes behind it, so its own content needs that much room
+     plus air, or the buttons would sit on the trim. */
+  padding: 0.85rem 1.25rem calc(13px + 0.7rem);
   border-top: 1px solid color-mix(in srgb, #c69130 45%, transparent);
   background: color-mix(in srgb, var(--surface) 80%, transparent);
   backdrop-filter: blur(3px);
   color: var(--text);
   animation: keep-rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) 0.25s both;
+}
+
+/* Question on one line, answers on the next — always, not only when the width
+   happens to force it. Side by side on a wide screen the sentence and the buttons
+   read as one crowded row; stacked, the question is a question and the buttons are
+   its two answers. */
+.keep-line {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 /* Arriving unbidden, it is the movement that is noticed — not the presence. The
@@ -1572,17 +1571,19 @@ watch(mode, (value) => {
   font-size: 1.15rem;
 }
 
+/* Capped, so the sentence stays a readable measure on a wide screen instead of
+   running the whole width of the display. */
 .keep-ask {
   flex: 1;
-  min-width: 12rem;
+  min-width: 0;
+  max-width: 46rem;
   font-size: 0.9375rem;
 }
 
 .keep-actions {
   display: flex;
-  flex: none;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
 }
 
 /* The house button carries 50px of side padding, which is the width of a landing

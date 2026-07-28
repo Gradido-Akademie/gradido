@@ -326,22 +326,27 @@ watch(
   color: var(--text-muted);
 }
 
+/* Room for the chosen one's ring to stand free of its neighbours. */
 .typed-stances {
   display: flex;
-  gap: 0.375rem;
+  gap: 0.625rem;
   margin-top: 0.5rem;
 }
 
 /* Not a channel colour. On the map red/green/blue already mean "what the other
    person said"; the stance is MY word, and the house already has a colour for that
-   — the gold of the home marker. So the three states read: nothing to ask yet
-   (flat and faint) -> your turn (gold ring) -> asked (filled).
-   The ring is 2px in every state and only changes colour, so nothing shifts when
-   the field fills. Deckkraft alone was the whole difference before, and it was
-   too small to notice in either mode. */
+   — the gold of the home marker.
+
+   The weight of the outline carries the state, and it runs the right way round: the
+   ones still on offer wear a hairline, the one actually chosen wears the thick ring.
+   The first try had it backwards — a fat ring on the two open choices and none at
+   all on the chosen one, which made the answer look like the leftover.
+
+   The thick ring is a shadow, not a border, so the three chips never shift as the
+   choice moves between them. */
 .stance {
   padding: 0.3rem 0.85rem;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   border-radius: 1rem;
   background: var(--surface-muted);
   color: var(--text);
@@ -351,9 +356,11 @@ watch(
   transition:
     border-color 0.18s ease,
     background 0.18s ease,
+    box-shadow 0.18s ease,
     color 0.18s ease;
 }
 
+/* Nothing to complete yet: no outline at all, and the words step back. */
 .stance:disabled {
   border-color: transparent;
   color: var(--text-muted);
@@ -362,19 +369,22 @@ watch(
   cursor: default;
 }
 
+/* On offer: a hairline. Enough to say "pressable", not enough to compete with the
+   one that was pressed. */
 .stance:not(:disabled) {
-  border-color: #c69130;
+  border-color: color-mix(in srgb, #c69130 70%, transparent);
   background: var(--surface);
 }
 
-.stance:not(:disabled):hover {
-  background: color-mix(in srgb, #c69130 12%, var(--surface));
-}
-
 .stance.is-chosen {
-  border-color: var(--text);
+  border-color: transparent;
   background: var(--text);
   color: var(--surface);
+  box-shadow: 0 0 0 3px #c69130;
+}
+
+.stance:not(:disabled, .is-chosen):hover {
+  background: color-mix(in srgb, #c69130 12%, var(--surface));
 }
 
 .typed-hint {
