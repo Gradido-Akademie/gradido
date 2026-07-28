@@ -495,6 +495,17 @@
       "sendEmail": "E-Mail senden",
       "sendGradido": "Gradido senden"
     },
+    "query": {
+      "all": "Alles",
+      "allHint": "alle meine Einträge",
+      "clear": "Suche zurücksetzen",
+      "label": "Ich suche gerade nach",
+      "open": "Suche wählen",
+      "other": "Etwas anderes suchen …",
+      "pick": "Wähle, wie Du es meinst — damit wird gesucht.",
+      "placeholder": "Fahrrad",
+      "untouched": "Deine Einträge bleiben unberührt."
+    },
     "save": "Speichern",
     "tabs": {
       "about": "Über mich",
