@@ -11,8 +11,9 @@ const i18n = createI18n({
     de: {
       matching: {
         query: {
-          all: 'Alles',
-          allHint: 'alle meine Einträge',
+          all: 'Alle meine Einträge',
+          details: 'Näheres zu Deiner Suche',
+          detailsPlaceholder: 'gebraucht, 28 Zoll',
           clear: 'Suche zurücksetzen',
           label: 'Ich suche gerade nach',
           open: 'Suche wählen',
@@ -66,7 +67,7 @@ const last = (wrapper) => emitted(wrapper).at(-1)?.[0]
 describe('MatchQuery', () => {
   describe('the closed bar', () => {
     it('says what is being searched for', () => {
-      expect(mountQuery().text()).toContain('Alles')
+      expect(mountQuery().text()).toContain('Alle meine Einträge')
     })
 
     it('names the entry when one of mine is the question', () => {
@@ -90,7 +91,7 @@ describe('MatchQuery', () => {
       const options = wrapper.findAll('.query-option').map((o) => o.text())
 
       expect(options).toHaveLength(4)
-      expect(options[0]).toContain('Alles')
+      expect(options[0]).toContain('Alle meine Einträge')
       expect(options[1]).toContain('Ich suche einen Klavierlehrer')
       expect(options[2]).toContain('Ich biete Gartenarbeit')
       expect(options[3]).toContain('Etwas anderes')
@@ -147,7 +148,51 @@ describe('MatchQuery', () => {
       await wrapper.find('.typed-input').setValue('Fahrrad')
       await wrapper.findAll('.stance')[2].trigger('click')
 
-      expect(last(wrapper)).toEqual({ kind: 'typed', text: 'Fahrrad', matchingType: 'gesuch' })
+      expect(last(wrapper)).toEqual({
+        kind: 'typed',
+        text: 'Fahrrad',
+        details: '',
+        matchingType: 'gesuch',
+      })
+    })
+
+    it('carries the particulars along with the question', async () => {
+      // They are what lifts a hit from "same word" to "same thing", so they have to
+      // reach the search - and, later, the entry the search can become.
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+      const fields = wrapper.findAll('.typed-input')
+      await fields[0].setValue('Fahrrad')
+      await fields[1].setValue('  gebraucht, 28 Zoll  ')
+      await wrapper.findAll('.stance')[2].trigger('click')
+
+      expect(last(wrapper).details).toBe('gebraucht, 28 Zoll')
+    })
+
+    it('takes the stance back when only the particulars change', async () => {
+      // Same rule as for the summary, and for the same reason: the particulars narrow
+      // the very same question, so changing them unmakes the sentence that was asked.
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+      const fields = wrapper.findAll('.typed-input')
+      await fields[0].setValue('Fahrrad')
+      await wrapper.findAll('.stance')[2].trigger('click')
+
+      expect(wrapper.find('.stance.is-chosen').exists()).toBe(true)
+
+      await fields[1].setValue('nur Damenrad')
+
+      expect(wrapper.find('.stance.is-chosen').exists()).toBe(false)
+    })
+
+    it('asks on the summary alone - the particulars are an offer, not a toll', async () => {
+      const wrapper = mountQuery()
+      await startTyping(wrapper)
+      await wrapper.findAll('.typed-input')[0].setValue('Fahrrad')
+
+      expect(wrapper.findAll('.stance').every((s) => s.attributes('disabled') === undefined)).toBe(
+        true,
+      )
     })
 
     it('keeps the stances inert while there is nothing to complete', async () => {

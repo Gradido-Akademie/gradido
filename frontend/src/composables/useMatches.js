@@ -416,12 +416,14 @@ function hitsIn(entry, words) {
  * asks for, and let crude word overlap stand in for a score - enough to show that a
  * typed question narrows to one channel and ranks by something.
  */
-function answerQuery(channels, { text, matchingType }) {
+function answerQuery(channels, { text, details, matchingType }) {
   const wanted = COMPLEMENT[matchingType]
   const entries = channels[wanted]
   if (!entries || !entries.length) return {}
 
-  const words = text
+  // Summary and particulars are one question, so they are read as one bag of words -
+  // the same way the reranker reads stem, summary and details together live.
+  const words = `${text} ${details ?? ''}`
     .toLowerCase()
     .split(/\s+/)
     .filter((word) => word.length > 2)

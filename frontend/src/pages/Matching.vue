@@ -436,11 +436,14 @@ const newSummary = ref('')
 const newDetails = ref('')
 const newRemote = ref(false)
 
-function openNew({ summary = '', matchingType = 'interesse' } = {}) {
+function openNew({ summary = '', details = '', matchingType = 'interesse' } = {}) {
   editUuid.value = null
   newType.value = matchingType
   newSummary.value = summary
-  newDetails.value = ''
+  // Carried over from a typed search when there was one. The member wrote these to
+  // sharpen that search; a stored entry is judged on the same words, so asking again
+  // would be asking them to repeat themselves.
+  newDetails.value = details
   newRemote.value = false
   showNew.value = true
 }
