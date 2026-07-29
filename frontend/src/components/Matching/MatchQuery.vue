@@ -82,10 +82,14 @@
            nobody writes an essay, and a tall field would invite one. Optional; the
            summary alone still asks a whole question. -->
       <div class="typed-row typed-details">
+        <!-- The same 500 the search route allows (matchQuerySchema in the GMS
+             backend). Stopping a long paste at the field is kinder than letting the
+             server refuse it after the question was already asked. -->
         <input
           v-model="details"
           type="text"
           class="typed-input"
+          maxlength="500"
           :placeholder="$t('matching.query.detailsPlaceholder')"
           :aria-label="$t('matching.query.details')"
           @input="onText"
