@@ -134,15 +134,15 @@
               <span>{{ $t('matching.map.found', { n: foundCount }) }}</span>
             </div>
             <div class="d-flex flex-wrap gap-3">
-              <!-- The three channel boxes step back while a typed question is asked:
-                   such a question has only one possible channel, so a box ticked off
-                   weeks ago would empty the search with no visible reason. -->
-              <label
-                v-for="channel in FILTERS"
-                v-show="!searchQuery"
-                :key="channel"
-                class="map-check"
-              >
+              <!-- All five boxes, always. They used to step back while a typed question
+                   was being asked, on the grounds that such a question has only one
+                   possible channel and a box ticked off weeks ago would empty it for no
+                   visible reason. True as far as it goes - but a search narrowed to ONE
+                   of my own entries is in exactly the same position and never got that
+                   protection, so the rule was inconsistent with itself. A control that
+                   comes and goes teaches nothing; one that is always there and always
+                   means what it says can be learned once. -->
+              <label v-for="channel in FILTERS" :key="channel" class="map-check">
                 <input v-model="visible[channel]" type="checkbox" />
                 <span class="box" />
                 <span class="swatch" :style="swatchStyle(channel)" />
@@ -506,21 +506,20 @@ const focusedMatches = computed(() => {
   return narrowed
 })
 
-/**
- * The channel checkboxes step back while a typed question is being asked.
- *
- * A typed question has exactly one possible channel - "Ich suche" can only be
- * answered by offers. Leaving the boxes in charge would let a box the member ticked
- * off weeks ago empty their search with no visible reason.
- */
-const channelGate = computed(() => (searchQuery.value ? null : visible))
-
 // The matches the map is showing right now. Drawing and counting both read this
 // one list, so the heading can never claim a person the map does not draw.
+//
+// The channel boxes are in charge here whatever the question is. They used to be
+// bypassed during a typed one, so that a box ticked off weeks ago could not empty it
+// - but the boxes were still on screen and still in charge for a search narrowed to
+// one of my own entries, which has exactly the same single channel. Protecting one
+// and not the other made the control mean different things at different moments,
+// which is worse than the case it was guarding against: an unticked box that leaves
+// the map dark at least says so, in writing, right under the map.
 const visibleMatches = computed(() => {
   const shown = []
   for (const match of focusedMatches.value) {
-    const stages = stagesOf(match, DEFAULTS, breite.value, channelGate.value)
+    const stages = stagesOf(match, DEFAULTS, breite.value, visible)
     const peak = peakStage(stages)
     if (peak < 1) continue
     shown.push({ match, stages, peak })
