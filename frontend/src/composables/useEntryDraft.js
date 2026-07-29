@@ -18,7 +18,7 @@ const draft = ref(null)
 
 export function useEntryDraft() {
   return {
-    /** @param {{summary: string, matchingType: string}} next */
+    /** @param {{summary: string, details: string, matchingType: string}} next */
     put(next) {
       draft.value = next
     },

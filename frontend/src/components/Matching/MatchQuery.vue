@@ -9,8 +9,9 @@
       :aria-label="$t('matching.query.open')"
       @click="open = !open"
     >
+      <!-- No "I am looking for" in front of it. The value says what it is on its
+           own, and the sentence only made the bar longer. -->
       <i-bi-search class="query-icon" />
-      <span class="query-label">{{ $t('matching.query.label') }}</span>
       <span class="query-value">{{ currentLabel }}</span>
       <i-bi-chevron-down class="query-caret" />
     </button>
@@ -26,10 +27,7 @@
         @click="chooseAll"
       >
         <i-bi-check v-if="selection.kind === 'all'" class="option-check" />
-        <span class="option-text">
-          {{ $t('matching.query.all') }}
-          <span class="option-hint">{{ $t('matching.query.allHint') }}</span>
-        </span>
+        <span class="option-text">{{ $t('matching.query.all') }}</span>
       </li>
 
       <li
@@ -78,6 +76,23 @@
         </button>
       </div>
 
+      <!-- A second line for the particulars. The reranker reads the stem, the summary
+           AND the details, and the details are what lift a hit from "same word" to
+           "same thing" — the seed runs measured it. One line, not a box: in a search
+           nobody writes an essay, and a tall field would invite one. Optional; the
+           summary alone still asks a whole question. -->
+      <div class="typed-row typed-details">
+        <input
+          v-model="details"
+          type="text"
+          class="typed-input"
+          :placeholder="$t('matching.query.detailsPlaceholder')"
+          :aria-label="$t('matching.query.details')"
+          @input="onText"
+          @keydown.esc="cancelTyping"
+        />
+      </div>
+
       <div class="typed-stances" role="group" :aria-label="$t('matching.query.pick')">
         <button
           v-for="channel in CHANNELS"
@@ -119,6 +134,7 @@ const { t } = useI18n()
 const open = ref(false)
 const typing = ref(false)
 const text = ref('')
+const details = ref('')
 const chosen = ref(null)
 const textInput = ref(null)
 
@@ -154,6 +170,7 @@ async function startTyping() {
   open.value = false
   typing.value = true
   text.value = props.selection.kind === 'typed' ? props.selection.text : ''
+  details.value = props.selection.kind === 'typed' ? (props.selection.details ?? '') : ''
   chosen.value = props.selection.kind === 'typed' ? props.selection.matchingType : null
   await nextTick()
   textInput.value?.focus()
@@ -162,16 +179,18 @@ async function startTyping() {
 function cancelTyping() {
   typing.value = false
   text.value = ''
+  details.value = ''
   chosen.value = null
   emit('update:selection', { kind: 'all' })
 }
 
 /**
- * Changing the words takes the stance back.
+ * Changing the words takes the stance back — the details count as words too.
  *
  * Otherwise the list below would still hold answers to a sentence that no longer
  * exists. Letting the choice fall means one rule holds throughout: what you see
- * belongs to the sentence you finished.
+ * belongs to the sentence you finished. The details narrow the very same question,
+ * so editing them has to take the stance back exactly as the summary does.
  */
 function onText() {
   chosen.value = null
@@ -180,7 +199,12 @@ function onText() {
 function ask(channel) {
   if (!canAsk.value) return
   chosen.value = channel
-  emit('update:selection', { kind: 'typed', text: text.value.trim(), matchingType: channel })
+  emit('update:selection', {
+    kind: 'typed',
+    text: text.value.trim(),
+    details: details.value.trim(),
+    matchingType: channel,
+  })
 }
 
 // Someone else may reset the search - leaving the page, or picking an entry from
@@ -216,11 +240,6 @@ watch(
 .query-icon {
   flex: none;
   opacity: 0.65;
-}
-
-.query-label {
-  color: var(--text-muted);
-  font-size: 0.875rem;
 }
 
 .query-value {
@@ -290,12 +309,6 @@ watch(
   white-space: nowrap;
 }
 
-.option-hint {
-  margin-left: 0.35rem;
-  color: var(--text-muted);
-  font-size: 0.8125rem;
-}
-
 .typed-row {
   display: flex;
   align-items: center;
@@ -304,6 +317,13 @@ watch(
   border: 1px solid var(--border-subtle, rgb(0 0 0 / 15%));
   border-radius: 0.5rem;
   background: var(--surface);
+}
+
+/* Subordinate to the line above it: same field, quieter. It carries no icon and no
+   clear cross, because it is not a second search — it is the rest of the first. */
+.typed-details {
+  margin-top: 0.375rem;
+  padding-left: 2.15rem;
 }
 
 .typed-input {

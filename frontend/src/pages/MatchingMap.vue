@@ -3,19 +3,10 @@
        content up under the content header, and this route hides it — so it would
        only glue the page to the top edge. -->
   <div class="matching-map-page">
-    <!-- Desktop only. On a phone this row is exactly the space the map wants, and
-         the way back moves onto the map instead. -->
-    <div class="map-head d-none d-lg-flex align-items-center justify-content-between mx-lg-5 mb-3">
-      <div class="min-w-0">
-        <div class="map-title">{{ $t('matching.map.title') }}</div>
-        <div class="small text-muted">{{ $t('matching.map.subtitle') }}</div>
-      </div>
-      <button type="button" class="back-btn" @click="goBack">
-        <i-bi-arrow-left />
-        <span>{{ $t('matching.map.back') }}</span>
-      </button>
-    </div>
-
+    <!-- No heading row. It named the page a second time (the menu already says
+         Matching) and cost the desktop the height the map wants, while the phone
+         never had it. The way back rides the map on both, so the two now differ
+         only in width. -->
     <div class="map-frame mx-lg-5">
       <!-- One place for one question — "what am I looking for right now?" — and it
            sits here, above the frame, in BOTH modes. Were it inside the map in one
@@ -64,13 +55,13 @@
           @close="closeCluster"
         />
 
-        <!-- With the head and the wallet's own bars gone on a phone, this is the
-             only way out — so it sits on the map, where the eye already is. It
-             stays in list mode too (a phone has no other way back), pinned over
-             the scrolling list like the Karte switch. -->
+        <!-- With the heading row gone this is the only way out on either device, so
+             it sits on the map, where the eye already is. It stays in list mode too
+             (a phone has no other way back), pinned over the scrolling list like the
+             Karte switch. -->
         <button
           type="button"
-          class="map-back d-lg-none"
+          class="map-back"
           :aria-label="$t('matching.map.back')"
           @click="goBack"
         >
@@ -378,14 +369,18 @@ onEntries((result) => {
  * Take a typed search over to the entry form, filled in.
  *
  * Handed over in memory rather than as a route parameter: the words are the
- * member's own, and an address bar keeps them long after the moment. The form still
- * asks for the details — it is an invitation, not a form filled out behind their
- * back, and the details are what a match is actually judged on.
+ * member's own, and an address bar keeps them long after the moment.
+ *
+ * The particulars travel with it. They were typed to sharpen this very search, and
+ * they are what a stored match is judged on too — asking for them a second time,
+ * one screen later, would be asking the member to repeat themselves. The form still
+ * opens and still has to be sent: an invitation, not an entry made behind their back.
  */
 function keepAsEntry() {
   if (!searchQuery.value) return
   entryDraft.put({
     summary: searchQuery.value.text,
+    details: searchQuery.value.details,
     matchingType: searchQuery.value.matchingType,
   })
   router.push('/matching/entries')
@@ -414,7 +409,11 @@ function onSelection(next) {
 // same), and the typed sentence when there is one.
 const searchQuery = computed(() =>
   selection.value.kind === 'typed'
-    ? { text: selection.value.text, matchingType: selection.value.matchingType }
+    ? {
+        text: selection.value.text,
+        details: selection.value.details ?? '',
+        matchingType: selection.value.matchingType,
+      }
     : null,
 )
 
@@ -1297,24 +1296,6 @@ watch(mode, (value) => {
 </script>
 
 <style lang="scss" scoped>
-.map-title {
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid #d1d1d1;
-  background: #fff;
-  border-radius: 26px;
-  padding: 7px 14px;
-  font-size: 14px;
-  color: #383838;
-  white-space: nowrap;
-}
-
 .map-shell {
   position: relative;
   overflow: hidden;
@@ -1389,11 +1370,20 @@ watch(mode, (value) => {
     border-radius: 0;
     margin-top: 0 !important;
   }
+}
 
-  /* Leaflet parks its zoom buttons top-left, exactly where the way back now sits. */
-  .map-shell :deep(.leaflet-top.leaflet-left) {
-    margin-top: 44px;
-  }
+/* Leaflet parks its zoom buttons top-left, exactly where the way back sits — on
+   both devices now that the heading row is gone. */
+.map-shell :deep(.leaflet-top.leaflet-left) {
+  margin-top: 44px;
+}
+
+/* Leaflet gives its corner panes z-index 1000, which put the attribution over the
+   keep offer and made the sentence unreadable. The attribution has to stay legible
+   and reachable, but it is the map's small print — it belongs under a band that was
+   put there deliberately. */
+.map-shell :deep(.leaflet-bottom) {
+  z-index: 500;
 }
 
 /* The air above belongs to the layout, not here: this page sits in the content
@@ -1531,6 +1521,18 @@ watch(mode, (value) => {
   backdrop-filter: blur(3px);
   color: var(--text);
   animation: keep-rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) 0.25s both;
+}
+
+/* On a desktop it stops where the content column starts. Across the whole width it
+   ran under the menu as well and read as an application-wide bar, which it is not —
+   it belongs to this page. The sidebar is a 2-of-12 column in DashboardLayout, so
+   that is where the band begins. On a phone there is no sidebar and it spans the
+   screen, which is right: there the whole width IS the page. */
+@media (width >= 992px) {
+  .keep-offer {
+    left: 16.6667%;
+    border-top-left-radius: 0.5rem;
+  }
 }
 
 /* Question on one line, answers on the next — always, not only when the width

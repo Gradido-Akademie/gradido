@@ -466,9 +466,7 @@
       "radiusLabel": "In welchem Umkreis suchst Du? (km)",
       "radiusTitle": "Suchradius",
       "search": "Ort oder Adresse suchen",
-      "searchHere": "Hier suchen",
-      "subtitle": "Deine Treffer in der Umgebung",
-      "title": "Auf der Karte finden"
+      "searchHere": "Hier suchen"
     },
     "new": {
       "cancel": "Abbrechen",
@@ -496,9 +494,10 @@
       "sendGradido": "Gradido senden"
     },
     "query": {
-      "all": "Alles",
-      "allHint": "alle meine Einträge",
+      "all": "Alle meine Einträge",
       "clear": "Suche zurücksetzen",
+      "details": "Näheres zu Deiner Suche",
+      "detailsPlaceholder": "gebraucht, 28 Zoll",
       "keep": "Als Eintrag behalten",
       "keepAsk": "Soll Dich künftig finden, wer zu „{text}“ passt?",
       "keepNo": "Nein, danke",
