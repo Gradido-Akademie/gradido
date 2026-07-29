@@ -12,6 +12,7 @@ import {
   listPeak,
   markerColor,
   peakStage,
+  sanitizeSelection,
   scoreToStage,
   scoresOf,
   stagesOf,
@@ -282,6 +283,72 @@ describe('displayCore', () => {
 
       expect(colours.every(Boolean)).toBe(true)
       expect(new Set(colours).size).toBe(3)
+    })
+  })
+
+  // The map remembers what the search is pointed at, so this value survives releases
+  // and sits where a member could edit it. Every rejected shape here is one that would
+  // otherwise reach the search, the menu and the keep offer at once.
+  describe('a remembered selection', () => {
+    it('keeps a typed question whole', () => {
+      expect(
+        sanitizeSelection({
+          kind: 'typed',
+          text: 'ein Fahrrad',
+          details: 'gebraucht',
+          matchingType: 'gesuch',
+        }),
+      ).toEqual({
+        kind: 'typed',
+        text: 'ein Fahrrad',
+        details: 'gebraucht',
+        matchingType: 'gesuch',
+      })
+    })
+
+    it('keeps a chosen entry of mine', () => {
+      expect(sanitizeSelection({ kind: 'entry', uuid: 'abc' })).toEqual({
+        kind: 'entry',
+        uuid: 'abc',
+      })
+    })
+
+    it('fills in particulars that were never stored', () => {
+      // The field is younger than the stored shape, so a value written before it
+      // existed has to arrive as an empty string rather than as undefined.
+      expect(
+        sanitizeSelection({ kind: 'typed', text: 'ein Fahrrad', matchingType: 'gesuch' }).details,
+      ).toBe('')
+    })
+
+    it('falls back to everything when the shape is not one we still understand', () => {
+      const bad = [
+        null,
+        undefined,
+        'ein Fahrrad',
+        { kind: 'typed', text: 'ein Fahrrad', matchingType: 'need' }, // server word, not ours
+        { kind: 'typed', text: '   ', matchingType: 'gesuch' },
+        { kind: 'typed', matchingType: 'gesuch' },
+        { kind: 'entry' },
+        { kind: 'entry', uuid: '' },
+        { kind: 'somethingElse' },
+      ]
+
+      for (const stored of bad) {
+        expect(sanitizeSelection(stored)).toEqual({ kind: 'all' })
+      }
+    })
+
+    it('does not carry anything extra across', () => {
+      // What comes out is built here, never passed through - so a key from an older
+      // release, or one somebody added by hand, cannot ride along into the page.
+      const out = sanitizeSelection({
+        kind: 'entry',
+        uuid: 'abc',
+        seekerUserId: 42,
+      })
+
+      expect(out).not.toHaveProperty('seekerUserId')
     })
   })
 })
