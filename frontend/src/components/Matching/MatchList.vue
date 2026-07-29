@@ -368,7 +368,13 @@ function closeResults() {
 .match-list {
   height: 100%;
   overflow-y: auto;
-  padding: 14px 16px 24px;
+
+  /* The round back button (top-left) and the Karte switch (top-right) are pinned
+     over this scrolling list, so the first line starts below them. This was a phone
+     rule while the back button was a phone thing; it belongs to both widths now that
+     the heading row is gone and the way back rides the map everywhere. Clearing them
+     from above is also why no lane is kept free beside the switch. */
+  padding: 56px 16px 24px;
 
   /* The semantic tokens, not --bs-body-*: these are what the wallet's dark mode
      flips (.dark-mode on #app/body), the same ones the detail window rides. */
@@ -390,25 +396,11 @@ function closeResults() {
   border: 0;
 }
 
-/* On a phone the round back button (top-left) and the Karte switch (top-right) are
-   pinned over the scrolling list; push the first line clear of them, and drop the
-   right inset the desktop switch needed (the content now sits below them). */
-@media (width <= 991.98px) {
-  .match-list {
-    padding-top: 56px;
-  }
-
-  .list-controls {
-    padding-right: 0;
-  }
-}
-
 .list-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 14px 20px;
-  padding-right: 120px; /* room for the look switch pinned top-right */
   margin-bottom: 16px;
 }
 
