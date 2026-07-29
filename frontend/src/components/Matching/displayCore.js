@@ -41,6 +41,39 @@ export function entryType(type) {
 }
 
 /**
+ * What the search is currently pointed at, checked rather than trusted.
+ *
+ * The map remembers this between visits, which means the value outlives releases and
+ * sits in storage a member can edit. Anything that is not a shape this code still
+ * understands becomes "all my entries" - the one state that always works. A malformed
+ * selection would otherwise reach the search, the menu and the keep offer at once,
+ * and each of them would fail differently.
+ *
+ * Lives here rather than in the page because it is pure and because it is the part
+ * that has to be provable: a page can be looked at, a fallback for a shape nobody
+ * writes on purpose cannot.
+ */
+export function sanitizeSelection(stored) {
+  if (stored?.kind === 'entry' && typeof stored.uuid === 'string' && stored.uuid) {
+    return { kind: 'entry', uuid: stored.uuid }
+  }
+  if (
+    stored?.kind === 'typed' &&
+    typeof stored.text === 'string' &&
+    stored.text.trim() &&
+    CHANNELS.includes(stored.matchingType)
+  ) {
+    return {
+      kind: 'typed',
+      text: stored.text,
+      details: typeof stored.details === 'string' ? stored.details : '',
+      matchingType: stored.matchingType,
+    }
+  }
+  return { kind: 'all' }
+}
+
+/**
  * Canonical peak colours. The mix is additive and means the same in every map
  * appearance: red + green = yellow, all three = white (the whole person).
  * Green sits at 204 and blue is lifted to 70/90 so the channels read equally

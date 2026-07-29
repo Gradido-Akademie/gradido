@@ -204,7 +204,7 @@
         <BButton variant="gradido" size="sm" class="keep-btn" @click="keepAsEntry">
           {{ $t('matching.query.keep') }}
         </BButton>
-        <button type="button" class="keep-no" @click="keepDismissed = true">
+        <button type="button" class="keep-no" @click="answerKeepOffer()">
           {{ $t('matching.query.keepNo') }}
         </button>
       </div>
@@ -264,6 +264,7 @@ import {
   DEFAULTS,
   markerColor,
   peakStage,
+  sanitizeSelection,
   scoresOf,
   stagesOf,
   listPeak,
@@ -346,11 +347,22 @@ const radiusDraft = ref(DEFAULT_RADIUS)
 
 const { matches, presence, load } = useMatches()
 
-// What is being searched for right now. Deliberately NOT under `pref.`, unlike
-// every other choice on this page: a typed question is a one-off by nature - shown
-// to a friend, tried once - and finding yesterday's word still in the field would
-// be a puzzle, not a convenience. Whoever wants to keep it turns it into an entry.
-const selection = ref({ kind: 'all' })
+/**
+ * What is being searched for right now — remembered under `pref.` like every other
+ * choice on this page.
+ *
+ * It used to be the one exception, on the argument that a typed question is a one-off
+ * and yesterday's word in the field would puzzle rather than help. The offer to keep
+ * a search is what overturned that: taking it up LEAVES this page for the entry form,
+ * and coming back to a blank map meant losing the very results you had just decided
+ * were worth keeping. Someone who saves the search first and looks properly second is
+ * doing the sensible thing, and the page was punishing them for it.
+ *
+ * `pref.` and not something shorter-lived, for the reason Bernd gave when the map's
+ * viewport was decided: it is his own device. The words never travel to the address
+ * bar or the history — that rule is untouched, and it was always the real one.
+ */
+const selection = ref(readSelection())
 
 // My own entries, so one of them can be the question. Real data, not the stub -
 // they are mine, and the wallet already holds them.
@@ -363,6 +375,16 @@ const { onResult: onEntries } = useQuery(listMatchingEntries, null, {
 })
 onEntries((result) => {
   myEntries.value = (result.data?.listMatchingEntries ?? []).filter((entry) => entry.active)
+  // A remembered choice can outlive what it points at: the entry may have been
+  // deleted or paused since. Left standing it would show as "all my entries" in the
+  // bar while the search narrowed to something that no longer exists — a page that
+  // says one thing and does another. The state that always works is the fallback.
+  if (
+    selection.value.kind === 'entry' &&
+    !myEntries.value.some((e) => e.uuid === selection.value.uuid)
+  ) {
+    onSelection({ kind: 'all' })
+  }
 })
 
 /**
@@ -383,23 +405,32 @@ function keepAsEntry() {
     details: searchQuery.value.details,
     matchingType: searchQuery.value.matchingType,
   })
+  answerKeepOffer()
   router.push('/matching/entries')
 }
 
 /**
- * Waved away for THIS question, not for good.
+ * Answered for THIS question, not for good — and it has to outlive the page.
  *
- * The offer covers a strip of the map, so saying no has to actually clear it. But a
- * "no" to one sentence is not a "no" to the next: ask something else and the offer
- * belongs on screen again, because it is our answer to why so few members ever write
- * an entry. Not persisted for the same reason the typed search is not — it belongs
- * to a moment.
+ * Taking the offer up LEAVES the map for the entry form, so a marker that lived only
+ * in memory would be gone on the way back and the band would rise again, offering to
+ * keep a search that was just kept. Saying no is stored for the same reason: it is an
+ * answer to a sentence, and the sentence is still on screen when you return.
+ *
+ * A new question clears it. Both answers mean "not for this one" — never "never
+ * again", because the offer is our answer to why so few members ever write an entry.
  */
-const keepDismissed = ref(false)
+const keepDismissed = ref(readPref('queryAnswered', false) === true)
+
+function answerKeepOffer(answered = true) {
+  keepDismissed.value = answered
+  writePref('queryAnswered', answered)
+}
 
 function onSelection(next) {
   selection.value = next
-  keepDismissed.value = false
+  writePref('query', next)
+  answerKeepOffer(false)
   closeCluster()
   runSearch()
 }
@@ -607,6 +638,10 @@ function writePref(key, value) {
 function readLook() {
   const stored = readPref('look', null)
   return LOOKS.includes(stored) ? stored : 'dunkel'
+}
+
+function readSelection() {
+  return sanitizeSelection(readPref('query', null))
 }
 
 function readRadius() {
