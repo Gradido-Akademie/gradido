@@ -109,8 +109,15 @@ export class GroupTagResolver {
     if (tag !== undefined && tag !== null) {
       const normalised = normaliseTag(tag)
       if (normalised !== entry.tag) {
+        // ⚠️ A group cannot clash with itself. The lookup runs on a utf8mb4_unicode_ci
+        // column, so it is case- AND accent-insensitive: searching for "Monchengladbach"
+        // returns the group already called "Mönchengladbach". Without the id check that
+        // read as "group tag already exists", which was both wrong and misleading -- it
+        // made every purely cosmetic respelling impossible ("feuerwehr" -> "Feuerwehr",
+        // "Munchen" -> "München"), and blocked the one way to reach memos that carry the
+        // misspelling: rename the group onto it, adopt, rename back.
         const clash = await DbGroupTag.findOne({ where: { tag: normalised } })
-        if (clash) {
+        if (clash && clash.id !== entry.id) {
           throw new LogError('Group tag already exists', normalised)
         }
         renamedFrom = entry.tag
