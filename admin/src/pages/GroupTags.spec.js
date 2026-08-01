@@ -5,19 +5,26 @@ import GroupTags from './GroupTags.vue'
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
     t: (key) => key,
+    d: (value) => String(value),
   }),
 }))
+
+// The groups the list renders. Declared here so a test can swap it before mounting.
+const groupTagsResult = { value: { groupTags: [] } }
 
 vi.mock('@vue/apollo-composable', () => ({
   useMutation: vi.fn(() => ({
     mutate: vi.fn(),
   })),
   useQuery: vi.fn(() => ({
-    result: { value: { groupTags: [] } },
+    result: groupTagsResult,
     error: { value: null },
     refetch: vi.fn(),
     onResult: vi.fn(),
     onError: vi.fn(),
+  })),
+  useLazyQuery: vi.fn(() => ({
+    load: vi.fn(() => Promise.resolve({ legacyHashtagCounts: { exact: 0, loose: 0 } })),
   })),
 }))
 
@@ -53,6 +60,15 @@ const mockBButton = {
   name: 'BButton',
   template: '<button data-testid="mock-bbutton"><slot></slot></button>',
 }
+const mockBModal = {
+  name: 'BModal',
+  template: '<div class="mock-bmodal"><slot></slot></div>',
+}
+const mockBFormCheckbox = {
+  name: 'BFormCheckbox',
+  props: ['modelValue'],
+  template: '<label class="mock-bformcheckbox"><slot></slot></label>',
+}
 
 describe('GroupTags', () => {
   let wrapper
@@ -64,6 +80,8 @@ describe('GroupTags', () => {
           BFormGroup: mockBFormGroup,
           BFormInput: mockBFormInput,
           BButton: mockBButton,
+          BModal: mockBModal,
+          BFormCheckbox: mockBFormCheckbox,
         },
         mocks: {
           $t: (key) => key,
@@ -73,6 +91,7 @@ describe('GroupTags', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    groupTagsResult.value = { groupTags: [] }
     wrapper = createWrapper()
   })
 
@@ -108,6 +127,47 @@ describe('GroupTags', () => {
     it('drops punctuation and collapses hyphens', () => {
       expect(wrapper.vm.slugify('Gruppe 42 – Süd!')).toBe('gruppe-42-süd')
       expect(wrapper.vm.slugify('  Rand  ')).toBe('rand')
+    })
+  })
+
+  // The whole point of storing the state instead of deriving it from the group's age:
+  // every group that exists today was created before the adoption did, so "never looked
+  // at" has to be readable off the row.
+  describe('adoption state per group', () => {
+    const mountWith = (extra) => {
+      groupTagsResult.value = {
+        groupTags: [{ id: 7, tag: 'amstetten', name: 'Amstetten', ...extra }],
+      }
+      return createWrapper()
+    }
+
+    it('flags a group nobody has looked at yet', () => {
+      const w = mountWith({ hashtagsAdoptedAt: null, hashtagsAdoptedCount: null })
+      expect(w.find('[data-test="adoption-state-7"]').text()).toBe(
+        'groupTagsAdmin.adoption.stateUnchecked',
+      )
+    })
+
+    it('reports what a run adopted', () => {
+      const w = mountWith({
+        hashtagsAdoptedAt: '2026-08-01T10:00:00.000Z',
+        hashtagsAdoptedCount: 987,
+      })
+      expect(w.find('[data-test="adoption-state-7"]').text()).toBe(
+        'groupTagsAdmin.adoption.stateAdopted',
+      )
+    })
+
+    // "I looked and there was nothing" must read differently from "nobody has looked" --
+    // otherwise a group with nothing to adopt keeps asking to be checked forever.
+    it('tells "looked, found nothing" apart from "not looked at"', () => {
+      const w = mountWith({
+        hashtagsAdoptedAt: '2026-08-01T10:00:00.000Z',
+        hashtagsAdoptedCount: 0,
+      })
+      expect(w.find('[data-test="adoption-state-7"]').text()).toBe(
+        'groupTagsAdmin.adoption.stateNothing',
+      )
     })
   })
 })
