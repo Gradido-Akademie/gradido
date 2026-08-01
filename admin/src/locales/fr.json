@@ -266,6 +266,7 @@
       "foundNothing": "Aucune contribution ancienne ne nomme ce groupe dans son texte.",
       "hint": "Seules les contributions qui n’ont encore aucun groupe sont reprises. Un mot qui ne nomme aucun groupe existant reste du texte ordinaire.",
       "markChecked": "Marquer comme vérifié",
+      "searchFailed": "La recherche a échoué. Merci de réessayer.",
       "searching": "Recherche dans les contributions …",
       "stateAdopted": "vérifié le {date} — {count} reprises",
       "stateNothing": "vérifié le {date} — rien trouvé",

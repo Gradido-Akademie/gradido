@@ -106,7 +106,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useMutation, useQuery, useLazyQuery } from '@vue/apollo-composable'
+import { useMutation, useQuery, useApolloClient } from '@vue/apollo-composable'
 import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
 import { useAppToast } from '@/composables/useToast'
@@ -218,6 +218,8 @@ async function saveEdit(tag) {
 }
 
 // --- adopt the hashtags that predate the group field ---
+// LEGACY-HASHTAG-ADOPTION -- a changeover aid; see legacyHashtagAdoption.ts for how to
+// take the whole thing back out again.
 //
 // The state is read off the group, not guessed from its age: every group that exists today
 // was created before this existed, so "never looked at" has to be a stored fact. That is
@@ -251,9 +253,11 @@ const adoptionOkTitle = computed(() => {
     : t('groupTagsAdmin.adoption.markChecked')
 })
 
-const { load: loadCounts } = useLazyQuery(legacyHashtagCountsQuery, null, {
-  fetchPolicy: 'network-only',
-})
+// ⚠️ NOT useLazyQuery. Its load() answers only on the FIRST call and returns a bare `false`
+// on every one after that, without asking the server -- so opening a second group reported
+// whatever the fallback said. Asking the client directly runs every time, which is what a
+// panel opened once per group needs.
+const { client } = useApolloClient()
 
 async function openAdoption(tag) {
   adoptionId = tag.id
@@ -264,8 +268,17 @@ async function openAdoption(tag) {
   adoptionOpen.value = true
   countsLoading.value = true
   try {
-    const result = await loadCounts(legacyHashtagCountsQuery, { id: tag.id })
-    counts.value = result?.legacyHashtagCounts ?? { exact: 0, loose: 0 }
+    const { data } = await client.query({
+      query: legacyHashtagCountsQuery,
+      variables: { id: tag.id },
+      fetchPolicy: 'network-only',
+    })
+    // No fallback on purpose. A missing answer is not "nothing found" -- reading it as zero
+    // is exactly what made a broken query look like an empty result.
+    if (!data?.legacyHashtagCounts) {
+      throw new Error(t('groupTagsAdmin.adoption.searchFailed'))
+    }
+    counts.value = data.legacyHashtagCounts
   } catch (e) {
     toastError(e.message)
     adoptionOpen.value = false

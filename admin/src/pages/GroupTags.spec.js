@@ -12,6 +12,14 @@ vi.mock('vue-i18n', () => ({
 // The groups the list renders. Declared here so a test can swap it before mounting.
 const groupTagsResult = { value: { groupTags: [] } }
 
+// The one-shot search. It answers per group id, so a test can tell WHICH group was asked
+// about -- an always-the-same mock could not see the bug this replaced.
+const clientQuery = vi.fn(({ variables }) =>
+  Promise.resolve({
+    data: { legacyHashtagCounts: { exact: variables.id * 10, loose: variables.id } },
+  }),
+)
+
 vi.mock('@vue/apollo-composable', () => ({
   useMutation: vi.fn(() => ({
     mutate: vi.fn(),
@@ -23,9 +31,7 @@ vi.mock('@vue/apollo-composable', () => ({
     onResult: vi.fn(),
     onError: vi.fn(),
   })),
-  useLazyQuery: vi.fn(() => ({
-    load: vi.fn(() => Promise.resolve({ legacyHashtagCounts: { exact: 0, loose: 0 } })),
-  })),
+  useApolloClient: vi.fn(() => ({ client: { query: clientQuery } })),
 }))
 
 vi.mock('vuex', () => ({
@@ -168,6 +174,41 @@ describe('GroupTags', () => {
       expect(w.find('[data-test="adoption-state-7"]').text()).toBe(
         'groupTagsAdmin.adoption.stateNothing',
       )
+    })
+  })
+
+  // The bug this replaced: useLazyQuery's load() answers only the FIRST time and returns a
+  // bare `false` afterwards without asking the server. Every group after the first reported
+  // "nothing found" until the page was reloaded -- and it looked like a real answer, because
+  // the missing result was read as zero.
+  describe('searching several groups in a row', () => {
+    beforeEach(() => {
+      groupTagsResult.value = {
+        groupTags: [
+          { id: 1, tag: 'amstetten', name: 'Amstetten' },
+          { id: 2, tag: 'feuerwehr', name: 'Feuerwehr' },
+        ],
+      }
+      wrapper = createWrapper()
+    })
+
+    it('asks the server again for the second group', async () => {
+      await wrapper.vm.openAdoption({ id: 1, tag: 'amstetten', name: 'Amstetten' })
+      await wrapper.vm.openAdoption({ id: 2, tag: 'feuerwehr', name: 'Feuerwehr' })
+
+      expect(clientQuery).toHaveBeenCalledTimes(2)
+      expect(clientQuery.mock.calls[1][0].variables).toEqual({ id: 2 })
+      // The counts shown must be the SECOND group's, not the first one's and not zero.
+      expect(wrapper.vm.counts).toEqual({ exact: 20, loose: 2 })
+    })
+
+    // A missing answer is not an empty result. Reading it as zero is what hid the bug.
+    it('reports a failed search instead of showing it as "nothing found"', async () => {
+      clientQuery.mockResolvedValueOnce({ data: null })
+      await wrapper.vm.openAdoption({ id: 1, tag: 'amstetten', name: 'Amstetten' })
+
+      expect(wrapper.vm.counts).toBeNull()
+      expect(wrapper.vm.adoptionOpen).toBe(false)
     })
   })
 })

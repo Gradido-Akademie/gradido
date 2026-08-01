@@ -266,6 +266,7 @@
       "foundNothing": "Geen oudere bijdrage noemt deze groep in de tekst.",
       "hint": "Alleen bijdragen die nog helemaal geen groep hebben worden overgenomen. Een woord dat geen bestaande groep noemt blijft gewone tekst.",
       "markChecked": "Als gecontroleerd markeren",
+      "searchFailed": "De zoekopdracht is mislukt. Probeer het opnieuw.",
       "searching": "Zoeken in de bijdragen …",
       "stateAdopted": "gecontroleerd op {date} — {count} overgenomen",
       "stateNothing": "gecontroleerd op {date} — niets gevonden",

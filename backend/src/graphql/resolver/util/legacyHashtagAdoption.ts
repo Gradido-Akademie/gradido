@@ -1,6 +1,8 @@
 import { Contribution as DbContribution } from 'database'
 import { type HashtagMatch, matchLegacyHashtag } from './legacyHashtagRule'
 
+// LEGACY-HASHTAG-ADOPTION -- a changeover aid, meant to be removed again.
+//
 // Group functions: adopt the hashtags that predate the group field into real links.
 //
 // Before the field existed, a "#word" in the memo was the only way to name a group. Nothing
@@ -9,13 +11,43 @@ import { type HashtagMatch, matchLegacyHashtag } from './legacyHashtagRule'
 //
 // The rule itself lives in legacyHashtagRule, free of imports so it can be tested without a
 // database. Everything here is the plumbing around it.
+//
+// ★ HOW TO REMOVE IT, once every group has been looked at
+//
+// This exists for the changeover only. Every piece carries the marker above, so
+// `grep -rn LEGACY-HASHTAG-ADOPTION` finds all of it. In full:
+//
+//   backend  legacyHashtagAdoption.ts + legacyHashtagRule.ts (+ its test)  -- delete
+//            model/LegacyHashtagCounts.ts                                  -- delete
+//            GroupTagResolver: legacyHashtagCounts + adoptLegacyHashtags   -- delete both
+//            RIGHTS.ADOPT_LEGACY_HASHTAGS and its entry in ADMIN_RIGHTS    -- delete
+//   admin    groupTags.graphql: the query + the mutation                   -- delete
+//            GroupTags.vue: the adoption block, the modal, the state cell  -- delete
+//            locales: groupTagsAdmin.adoption in all 10 files              -- delete
+//   database GroupTag entity: hashtagsAdoptedAt / hashtagsAdoptedCount     -- delete
+//            a new migration dropping those two columns (0114 downgrades)  -- add
+//
+// Nothing else reads the two columns and nothing else imports these files, so the removal
+// is subtraction only -- no behaviour has to be replaced.
 
 const READ_BATCH = 500
 const INSERT_BATCH = 200
 
-// Contributions that never said anything about their group: no link row and no
-// group_tags_set_at stamp. Anything else has already made a statement -- including a
-// deliberate "no group", which is the whole reason that stamp exists.
+// Candidates are contributions that carry NO group at all.
+//
+// ★ Deliberately NOT also requiring group_tags_set_at IS NULL, although the migration this
+// replaces did. Two reasons:
+//
+//   1. It would exclude everything filed since the group field went live, because
+//      setContributionGroupTags stamps on EVERY submission -- including when the field was
+//      left empty. A member who still types "#Amstetten" out of habit today could never be
+//      found, which is precisely the case this is meant to catch during the changeover.
+//   2. The stamp guards against an AUTOMATIC reading of the memo silently overriding what
+//      someone chose. Nothing here is automatic: an administrator sees the count and
+//      presses a button, and a moderator can move the contribution back afterwards.
+//
+// What the guard still does rule out is the case that matters: a contribution that already
+// belongs to a group keeps it. Only "no group at all" is offered.
 //
 // The SQL pre-filter is the bare tag, not the hashtag: it is a superset of both spellings
 // (each contains the tag), so no candidate can be missed however many blanks sit between
@@ -38,7 +70,6 @@ const forEachCandidate = async (
          FROM contributions c
         WHERE c.id > ?
           AND c.memo LIKE CONCAT('%', ?, '%')
-          AND c.group_tags_set_at IS NULL
           AND NOT EXISTS (
                 SELECT 1 FROM contribution_group_tags cgt WHERE cgt.contribution_id = c.id)
         ORDER BY c.id

@@ -1,5 +1,6 @@
 import { Field, Int, ObjectType } from 'type-graphql'
 
+// LEGACY-HASHTAG-ADOPTION -- a changeover aid, meant to be removed again.
 // Group functions: what adopting the legacy hashtags would find for one group, right now.
 //
 // The two spellings are counted apart because they are not the same kind of thing. "#tag"

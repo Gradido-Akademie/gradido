@@ -1,3 +1,4 @@
+// LEGACY-HASHTAG-ADOPTION -- a changeover aid, meant to be removed again.
 // Group functions: the rule that decides whether a memo names a group.
 //
 // Deliberately free of imports -- no database, no entities. This is the part that must not

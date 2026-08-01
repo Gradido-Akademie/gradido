@@ -1,3 +1,4 @@
+// LEGACY-HASHTAG-ADOPTION -- a changeover aid, meant to be removed again.
 // Group functions: remember, per group, whether the hashtags that predate the group field
 // have been looked at.
 //

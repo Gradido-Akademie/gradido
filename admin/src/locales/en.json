@@ -266,6 +266,7 @@
       "foundNothing": "No older contribution names this group in its text.",
       "hint": "Only contributions that have no group at all are adopted. A word that names no existing group stays ordinary text.",
       "markChecked": "Mark as checked",
+      "searchFailed": "The search failed. Please try again.",
       "searching": "Searching the contributions …",
       "stateAdopted": "checked on {date} — {count} adopted",
       "stateNothing": "checked on {date} — nothing found",

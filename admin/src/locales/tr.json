@@ -266,6 +266,7 @@
       "foundNothing": "Hiçbir eski katkı metninde bu grubu anmıyor.",
       "hint": "Yalnızca henüz hiçbir grubu olmayan katkılar aktarılır. Var olan bir grubu adlandırmayan bir kelime sıradan metin olarak kalır.",
       "markChecked": "Denetlendi olarak işaretle",
+      "searchFailed": "Arama başarısız oldu. Lütfen tekrar deneyin.",
       "searching": "Katkılarda aranıyor …",
       "stateAdopted": "{date} tarihinde denetlendi — {count} aktarıldı",
       "stateNothing": "{date} tarihinde denetlendi — bir şey bulunamadı",

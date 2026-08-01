@@ -266,6 +266,7 @@
       "foundNothing": "Ninguna contribución antigua nombra este grupo en su texto.",
       "hint": "Solo se incorporan contribuciones que aún no tienen grupo. Una palabra que no nombra un grupo existente sigue siendo texto normal.",
       "markChecked": "Marcar como revisado",
+      "searchFailed": "La búsqueda ha fallado. Inténtalo de nuevo.",
       "searching": "Buscando en las contribuciones …",
       "stateAdopted": "revisado el {date} — {count} incorporadas",
       "stateNothing": "revisado el {date} — no se encontró nada",

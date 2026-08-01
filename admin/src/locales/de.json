@@ -266,6 +266,7 @@
       "foundNothing": "Kein älterer Beitrag nennt diese Gruppe im Text.",
       "hint": "Übernommen werden nur Beiträge, die noch gar keine Gruppe haben. Ein Wort, das keine angelegte Gruppe benennt, bleibt gewöhnlicher Text.",
       "markChecked": "Als geprüft markieren",
+      "searchFailed": "Die Suche ist fehlgeschlagen. Bitte noch einmal versuchen.",
       "searching": "Suche in den Beiträgen …",
       "stateAdopted": "geprüft am {date} — {count} übernommen",
       "stateNothing": "geprüft am {date} — nichts gefunden",

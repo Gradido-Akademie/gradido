@@ -31,6 +31,7 @@ export class GroupTag extends BaseEntity {
   })
   name: string | null
 
+  // LEGACY-HASHTAG-ADOPTION -- removable with the feature.
   // When the hashtags that predate the group field were last looked at for this group, and
   // how many contributions that run adopted. NULL means never looked at -- true for every
   // group that existed before the adoption was built, which is what the admin list flags.

@@ -266,6 +266,7 @@
       "foundNothing": "Nessun contributo più vecchio nomina questo gruppo nel testo.",
       "hint": "Vengono acquisiti solo i contributi che non hanno ancora alcun gruppo. Una parola che non nomina un gruppo esistente resta testo normale.",
       "markChecked": "Segna come verificato",
+      "searchFailed": "La ricerca non è riuscita. Riprova.",
       "searching": "Ricerca nei contributi …",
       "stateAdopted": "verificato il {date} — {count} acquisiti",
       "stateNothing": "verificato il {date} — nulla trovato",
