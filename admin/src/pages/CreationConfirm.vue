@@ -129,10 +129,10 @@ import CreaEvaluationModal from '../components/CreaEvaluationModal'
 import { adminListContributions } from '../graphql/adminListContributions.graphql'
 import { groupTags, assignContributionGroupTags } from '../graphql/groupTags.graphql'
 import { adminDeleteContribution } from '../graphql/adminDeleteContribution'
+import { adminUpdateContribution } from '../graphql/adminUpdateContribution'
 import { confirmContribution } from '../graphql/confirmContribution'
 import { denyContribution } from '../graphql/denyContribution'
 import { getContribution } from '../graphql/getContribution'
-import { adminUpdateContribution } from '../graphql/adminUpdateContribution'
 import { useAppToast } from '@/composables/useToast'
 import { useDateFormatter } from '@/composables/useDateFormatter'
 import CONFIG from '@/config'
@@ -159,7 +159,7 @@ const currentPage = ref(1)
 const pageSize = ref(25)
 const query = ref('')
 const hideResubmissionModel = ref(true)
-// Group functions ("Weg A"): filter the contribution list by a single group tag.
+// Group functions: filter the contribution list by a single group tag.
 const groupTag = ref('')
 
 const { formatDateOrDash } = useDateFormatter()
@@ -212,7 +212,6 @@ const fields = computed(() => {
     [
       { key: 'bookmark', label: t('delete') },
       { key: 'deny', label: t('deny') },
-      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -223,7 +222,6 @@ const fields = computed(() => {
     ],
     // confirmed contributions
     [
-      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -235,7 +233,6 @@ const fields = computed(() => {
     ],
     // denied contributions
     [
-      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -247,7 +244,6 @@ const fields = computed(() => {
     ],
     // deleted contributions
     [
-      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -260,7 +256,6 @@ const fields = computed(() => {
     // all contributions
     [
       { key: 'contributionStatus', label: t('status') },
-      { key: 'searchUser', label: '' },
       baseFields.name,
       baseFields.amount,
       baseFields.memo,
@@ -311,12 +306,20 @@ const showResubmissionCheckbox = computed(() => tabIndex.value === 0)
 const hideResubmission = computed(() =>
   showResubmissionCheckbox.value ? hideResubmissionModel.value : false,
 )
+
 watch(tabIndex, () => {
   currentPage.value = 1
   items.value = []
 })
 
-// Group functions ("Weg A"): canonical tag options for the filter dropdown.
+// Narrowing the list has to start over at page one. Picking a group while standing on a
+// later page would otherwise ask for a page the narrowed result does not have, and the
+// empty table reads as "this group has nothing".
+watch(groupTag, () => {
+  currentPage.value = 1
+})
+
+// Group functions: canonical tag options for the filter dropdown.
 const { result: groupTagsResult } = useQuery(groupTags)
 
 // A scoped moderator may only work in the groups their role covers, so the filter offers
@@ -325,6 +328,11 @@ const { result: groupTagsResult } = useQuery(groupTags)
 // — gets the full set unchanged.
 const seesAllGroups = computed(() => store.state.moderator?.seesAllGroups ?? true)
 const visibleGroupTags = computed(() => store.state.moderator?.visibleGroupTags ?? [])
+// "No group" is not a group, so it cannot appear in the list above. Without it a scope of
+// "one group plus the ungrouped ones" would look exactly like that one group, and the
+// ungrouped contributions the moderator is assigned to would have no filter that reaches
+// them. Older sessions predate the field, hence the fallback.
+const seesUntagged = computed(() => store.state.moderator?.seesUntagged ?? false)
 
 const groupTagOption = (groupTagItem) => ({
   value: groupTagItem.tag,
@@ -350,9 +358,11 @@ const groupTagFilterOptions = computed(() => {
     // Scoped to untagged contributions only — the one thing this moderator can see.
     return [{ value: '*untagged', text: t('groupTagFilter.untagged') }]
   }
-  // "All my groups" plus each of them; no "all", no "untagged", no group outside the scope.
+  // "All my groups" plus each of them, and "no group" when the scope covers it too; never
+  // "all", never a group outside the scope.
   return [
     { value: '*grouped', text: t('groupTagFilter.grouped') },
+    ...(seesUntagged.value ? [{ value: '*untagged', text: t('groupTagFilter.untagged') }] : []),
     ...allGroups
       .filter((groupTagItem) => visibleGroupTags.value.includes(groupTagItem.tag))
       .map(groupTagOption),
@@ -543,10 +553,18 @@ const openCreaModal = (selectedItem) => {
   showCreaModal()
 }
 
+const updateStatus = (id) => {
+  const target = items.value.find((obj) => obj.id === id)
+  if (target) {
+    target.messagesCount++
+    target.contributionStatus = 'IN_PROGRESS'
+  }
+}
+
 // Bulk resubmission: after a moderator saves a reminder on one contribution, offer to
 // apply it to all displayed contributions -- but only when the list shows a SINGLE
-// participant (all rows same userId, e.g. filtered via the magnifier) and holds more
-// than one open contribution. This never touches other participants' contributions.
+// participant (all rows same userId, e.g. filtered to one user) and holds more than one
+// open contribution. This never touches other participants' contributions.
 const { mutate: updateContributionMutation } = useMutation(adminUpdateContribution)
 const bulkResubmission = ref({ show: false, resubmissionAt: null, name: '', currentId: null })
 
@@ -604,14 +622,6 @@ const applyBulkResubmission = async () => {
     )
   }
   refetch()
-}
-
-const updateStatus = (id) => {
-  const target = items.value.find((obj) => obj.id === id)
-  if (target) {
-    target.messagesCount++
-    target.contributionStatus = 'IN_PROGRESS'
-  }
 }
 </script>
 

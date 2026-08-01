@@ -164,6 +164,7 @@ export class UserResolver {
     const moderatorGroups = describeModeratorGroups(role)
     user.visibleGroupTags = moderatorGroups.tags
     user.seesAllGroups = moderatorGroups.seesAllGroups
+    user.seesUntagged = moderatorGroups.seesUntagged
     // Elopage Status & Stored PublisherId
     user.hasElopage = await this.hasElopage(context)
 

@@ -5,7 +5,7 @@ import { getLogger as originalGetLogger } from 'log4js'
 import { GroupTagResolver } from './GroupTagResolver'
 import { parseModeratorScope } from './util/findContributions'
 
-// Group functions ("Weg A"): editing a canonical group tag. Contributions and personal
+// Group functions: editing a canonical group tag. Contributions and personal
 // user tag lists reference the numeric id, so a rename leaves them intact; the moderator
 // visibility scope stores the tag as a string and must be migrated in lock-step.
 // Deleting is intentionally not offered.

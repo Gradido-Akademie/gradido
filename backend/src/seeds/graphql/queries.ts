@@ -365,6 +365,7 @@ export const searchAdminUsers = gql`
         role
         visibleGroupTags
         seesAllGroups
+        seesUntagged
       }
     }
   }

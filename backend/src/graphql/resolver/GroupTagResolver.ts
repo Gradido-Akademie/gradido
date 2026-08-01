@@ -21,7 +21,7 @@ const normaliseTag = (tag: string): string => {
   return normalised
 }
 
-// Group functions ("Weg A"): the canonical, admin-managed list of valid group tags.
+// Group functions: the canonical, admin-managed list of valid group tags.
 // Tags are stored WITHOUT the leading '#'. This list feeds submission autocomplete,
 // the personal per-user tag lists and the moderator visibility scope.
 @Resolver(() => GroupTag)

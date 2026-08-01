@@ -6,7 +6,11 @@ import {
 } from 'database'
 import { In } from 'typeorm'
 import { LogError } from '@/server/LogError'
-import { buildModeratorScopePredicate, parseModeratorScope } from './findContributions'
+import {
+  buildModeratorScopePredicate,
+  parseModeratorScope,
+  UNTAGGED_FILTER,
+} from './findContributions'
 
 // Both moderator kinds are scoped alike: a MODERATOR_AI is a moderator who may additionally
 // use Crea — not a wider role. Every visibility-scope check goes through this helper, so a
@@ -35,6 +39,10 @@ export const assertContributionInModeratorScope = async (
     return
   }
   const inScope = await DbContribution.createQueryBuilder('Contribution')
+    // A deleted contribution still belongs to its group. Without this the guard would
+    // refuse every soft-deleted row, and a scoped moderator could not open the history of
+    // one of their own group's deleted contributions.
+    .withDeleted()
     .where('Contribution.id = :contributionId', { contributionId })
     .andWhere(predicate.sql, predicate.params)
     .getCount()
@@ -43,7 +51,7 @@ export const assertContributionInModeratorScope = async (
   }
 }
 
-// Group functions ("Weg A"): a moderator's visibility scope, stored as a JSON array on
+// Group functions: a moderator's visibility scope, stored as a JSON array on
 // user_roles.visible_group_tags. Values are canonical group tags plus the reserved
 // sentinels '*all' (see everything) and '*untagged' (contributions without a tag).
 const SCOPE_SENTINELS = ['*all', '*untagged']
@@ -56,20 +64,27 @@ const SCOPE_SENTINELS = ['*all', '*untagged']
 export interface ModeratorGroups {
   tags: string[]
   seesAllGroups: boolean
+  seesUntagged: boolean
 }
 
 export const describeModeratorGroups = (role?: DbUserRole | null): ModeratorGroups => {
   if (!role || !isScopedModeratorRole(role.role)) {
-    return { tags: [], seesAllGroups: true }
+    return { tags: [], seesAllGroups: true, seesUntagged: true }
   }
   const scope = parseModeratorScope(role.visibleGroupTags)
-  if (!scope || scope.includes('*all')) {
-    return { tags: [], seesAllGroups: true }
+  // An empty array reads the same as a missing one: the contribution list applies no
+  // predicate for it, so the description has to say "unrestricted" too, or the admin would
+  // show a cage the backend does not enforce.
+  if (!scope || scope.length === 0 || scope.includes('*all')) {
+    return { tags: [], seesAllGroups: true, seesUntagged: true }
   }
   const tags = scope.filter((tag) => tag.length > 0 && !tag.startsWith('*'))
+  // '*untagged' is stripped from the tag list — it is not a group — but whether it is part
+  // of the scope has to survive, or the admin cannot offer a filter that reaches the
+  // ungrouped contributions this moderator is assigned to.
   // Only sentinels left (in practice just '*untagged'): a real, narrow assignment, not a
   // free pass — the page lists these moderators under their own heading.
-  return { tags, seesAllGroups: false }
+  return { tags, seesAllGroups: false, seesUntagged: scope.includes(UNTAGGED_FILTER) }
 }
 
 export const loadModeratorScope = async (userId: number): Promise<string[]> => {
@@ -102,15 +117,24 @@ export const saveModeratorScope = async (userId: number, scope: string[]): Promi
     throw new LogError('Unknown scope value(s)', badSentinels.join(', '))
   }
   const realTags = normalised.filter((token) => !token.startsWith('*'))
+  let stored = normalised
   if (realTags.length > 0) {
     const canonical = await DbGroupTag.find({ where: { tag: In(realTags) } })
-    const known = new Set(canonical.map((tag) => tag.tag))
-    const unknown = realTags.filter((tag) => !known.has(tag))
+    // group_tags.tag is utf8mb4_unicode_ci, so the lookup matched regardless of case.
+    // Compare on the folded spelling, or "Feuerwehr" would be rejected as unknown while
+    // the database just returned "feuerwehr".
+    const known = new Map(canonical.map((tag) => [tag.tag.toLowerCase(), tag.tag]))
+    const unknown = realTags.filter((tag) => !known.has(tag.toLowerCase()))
     if (unknown.length > 0) {
       throw new LogError('Unknown group tag(s)', unknown.join(', '))
     }
+    // Store the canonical spelling, not what the caller typed: the predicate and the
+    // rename both compare these strings exactly.
+    stored = normalised.map((token) =>
+      token.startsWith('*') ? token : (known.get(token.toLowerCase()) ?? token),
+    )
   }
-  role.visibleGroupTags = normalised.length > 0 ? JSON.stringify(normalised) : null
+  role.visibleGroupTags = stored.length > 0 ? JSON.stringify(stored) : null
   await role.save()
-  return normalised
+  return stored
 }

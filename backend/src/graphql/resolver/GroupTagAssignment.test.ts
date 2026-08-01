@@ -10,17 +10,21 @@ import {
 } from 'database'
 import { getLogger as originalGetLogger } from 'log4js'
 import { userFactory } from '@/seeds/factory/user'
-import { createContribution, login } from '@/seeds/graphql/mutations'
+import {
+  adminCreateContribution,
+  assignContributionGroupTags,
+  createContribution,
+  login,
+} from '@/seeds/graphql/mutations'
 import { adminListContributions } from '@/seeds/graphql/queries'
 import { bibiBloxberg } from '@/seeds/users/bibi-bloxberg'
 import { peterLustig } from '@/seeds/users/peter-lustig'
 
-// Group functions ("Weg A"): a "#word" in the memo is only a group as long as nobody has
-// said otherwise. Once a contribution's group was set through the group field — including
-// a deliberate "no group" — its hashtags are ordinary text: they must not pull it into a
-// foreign group's search results, nor into that group's moderator scope, which is a real
-// access boundary. Contributions predating the field carry no stamp and keep resolving
-// their inline tag, so the existing stock is unaffected.
+// Group functions: the group field is the ONLY thing that puts a contribution into a
+// group. A "#word" in the memo is ordinary text -- it must not pull a contribution into a
+// group's search results, nor into that group's moderator scope, which is a real access
+// boundary. The hashtags that predate the field are adopted into real links per group from
+// the admin; nothing reads the memo for a group.
 
 jest.mock('core', () => {
   const originalModule = jest.requireActual('core')
@@ -45,10 +49,11 @@ let testEnv: {
 }
 
 // Every memo mentions "#music". Only the third one actually belongs to that group.
-const LEGACY = 'assignment test legacy contribution about #music'
+const UNCONVERTED = 'assignment test contribution about #music'
 const ASSIGNED_ELSEWHERE = 'assignment test thanks everyone, #music was great'
 const ASSIGNED_MUSIC = 'assignment test the choir rehearsal'
 const DELIBERATELY_NONE = 'assignment test just a note, #music played in the background'
+const WRITTEN_BY_MODERATOR = 'assignment test filed by a moderator, #music was mentioned'
 
 beforeAll(async () => {
   testEnv = await testEnvironment(originalGetLogger('apollo'))
@@ -80,13 +85,6 @@ const submit = async (memo: string, groupTags: string[]): Promise<void> => {
   }
 }
 
-// Undo the stamp, reproducing a contribution written before the group field existed.
-const makeLegacy = async (memo: string): Promise<void> => {
-  const contribution = await DbContribution.findOneOrFail({ where: { memo } })
-  contribution.groupTagsSetAt = null
-  await contribution.save()
-}
-
 const listMemos = async (groupTag?: string): Promise<string[]> => {
   const {
     data: {
@@ -111,7 +109,7 @@ const groupsShownFor = async (memo: string): Promise<string[]> => {
   return (found?.groupTags ?? []).map((tag: { tag: string }) => tag.tag)
 }
 
-describe('group assignment beats an inline hashtag', () => {
+describe('only the group field puts a contribution into a group', () => {
   let author: User
 
   beforeAll(async () => {
@@ -126,25 +124,39 @@ describe('group assignment beats an inline hashtag', () => {
     }
 
     await loginAs('bibi@bloxberg.de')
-    await submit(LEGACY, [])
+    await submit(UNCONVERTED, [])
     await submit(ASSIGNED_ELSEWHERE, ['sports'])
     await submit(ASSIGNED_MUSIC, ['music'])
     await submit(DELIBERATELY_NONE, [])
     resetToken()
 
-    // Only the first one pretends to predate the group field.
-    await makeLegacy(LEGACY)
-
     await loginAs('peter@lustig.de')
+
+    // Filed by a moderator for the member. This form has no group field, so the memo is
+    // the moderator's own wording -- a "#word" in it must not choose a group.
+    const { errors } = await mutate({
+      mutation: adminCreateContribution,
+      variables: {
+        email: 'bibi@bloxberg.de',
+        amount: '100',
+        memo: WRITTEN_BY_MODERATOR,
+        creationDate: new Date().toString(),
+      },
+    })
+    if (errors) {
+      throw new Error(`could not create admin fixture: ${JSON.stringify(errors)}`)
+    }
   })
 
   afterAll(() => {
     resetToken()
   })
 
-  it('still resolves the inline tag of a contribution written before the group field', async () => {
-    expect(await listMemos('music')).toContain(LEGACY)
-    expect(await groupsShownFor(LEGACY)).toEqual(['music'])
+  // The counterpart of adopting the old stock in the admin: everything else goes through
+  // the field. A hashtag on its own means nothing any more.
+  it('does not put a contribution into a group just because its memo names one', async () => {
+    expect(await listMemos('music')).not.toContain(UNCONVERTED)
+    expect(await groupsShownFor(UNCONVERTED)).toEqual([])
   })
 
   it('finds a contribution that really is in the group', async () => {
@@ -162,7 +174,7 @@ describe('group assignment beats an inline hashtag', () => {
     expect(await groupsShownFor(DELIBERATELY_NONE)).toEqual([])
   })
 
-  it('counts a deliberate "no group" as untagged despite the hashtag', async () => {
+  it('counts everything without a group as untagged, hashtag or not', async () => {
     const role = await UserRole.findOne({ where: { userId: author.id } })
     const entry = role ?? UserRole.create()
     entry.createdAt = entry.createdAt ?? new Date()
@@ -174,9 +186,31 @@ describe('group assignment beats an inline hashtag', () => {
     await loginAs('bibi@bloxberg.de')
     const memos = await listMemos()
     expect(memos).toContain(DELIBERATELY_NONE)
-    // The legacy one carries an unresolved-looking hashtag, so it is not "untagged".
-    expect(memos).not.toContain(LEGACY)
+    // Both of these carry "#music" in the text and no link, so both are untagged.
+    expect(memos).toContain(UNCONVERTED)
     expect(memos).not.toContain(ASSIGNED_MUSIC)
+  })
+
+  // The admin form offers no group field at all, so the memo is the moderator's own
+  // wording -- all the more reason a "#word" in it must not choose a group.
+  it('does not let a hashtag choose the group of a contribution filed by a moderator', async () => {
+    expect(await listMemos('music')).not.toContain(WRITTEN_BY_MODERATOR)
+    expect(await groupsShownFor(WRITTEN_BY_MODERATOR)).toEqual([])
+  })
+
+  // A moderator moving a contribution onto a tag that no longer exists -- an admin page
+  // still holding the list from before a rename -- used to empty its group and report
+  // success, taking it out of every group queue at once. Now it refuses, and the
+  // contribution keeps the group it had.
+  it('refuses to move a contribution onto a group that does not exist', async () => {
+    await loginAs('peter@lustig.de')
+    const contribution = await DbContribution.findOneOrFail({ where: { memo: ASSIGNED_MUSIC } })
+    const { errors } = await mutate({
+      mutation: assignContributionGroupTags,
+      variables: { contributionId: contribution.id, tags: ['muusic'] },
+    })
+    expect(errors?.[0]?.message).toContain('Unknown group tag(s)')
+    expect(await groupsShownFor(ASSIGNED_MUSIC)).toEqual(['music'])
   })
 
   it('keeps a hashtag out of a foreign moderator scope', async () => {
@@ -190,6 +224,7 @@ describe('group assignment beats an inline hashtag', () => {
     // because its author wrote "#music" in the text.
     expect(memos).not.toContain(ASSIGNED_ELSEWHERE)
     expect(memos).toContain(ASSIGNED_MUSIC)
-    expect(memos).toContain(LEGACY)
+    // Says "#music", is linked to nothing: out of the music moderator's reach.
+    expect(memos).not.toContain(UNCONVERTED)
   })
 })

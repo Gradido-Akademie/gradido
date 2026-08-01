@@ -78,7 +78,6 @@ describe('NavBar', () => {
         { path: '/federation', name: 'federation' },
         { path: '/projectBranding', name: 'projectBranding' },
         { path: '/creaSettings', name: 'creaSettings' },
-        { path: '/group-tags', name: 'group-tags' },
         { path: '/statistic', name: 'statistic' },
       ],
     })
@@ -120,8 +119,9 @@ describe('NavBar', () => {
       ])
     })
 
-    // Starting balance, instances, projects, Crea and the group list are administrators'
-    // business. Hiding them is only half of it — the router guard keeps the URLs out too.
+    // Instances, projects, Crea and the group list are administrators' business. Menu
+    // visibility is only a convenience — the route guard and the backend rights are the
+    // boundary.
     describe('as a moderator', () => {
       beforeEach(() => {
         store = createVuexStore(['MODERATOR'])

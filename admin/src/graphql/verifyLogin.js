@@ -10,6 +10,7 @@ export const verifyLogin = gql`
       language
       visibleGroupTags
       seesAllGroups
+      seesUntagged
     }
   }
 `

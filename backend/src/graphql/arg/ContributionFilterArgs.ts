@@ -1,7 +1,7 @@
 import { IsString } from 'class-validator'
 import { ArgsType, Field, InputType } from 'type-graphql'
 
-// Group functions ("Weg A"): the wallet's own contribution filter. Deliberately much
+// Group functions: the wallet's own contribution filter. Deliberately much
 // smaller than the admin's SearchContributionsFilterArgs: a member may search by text,
 // by the name of the person who submitted, and by group — but NEVER by e-mail address.
 // Keeping this a separate type means the admin-only filter fields cannot leak into the

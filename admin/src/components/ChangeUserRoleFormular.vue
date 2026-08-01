@@ -137,15 +137,21 @@ const updateUserRole = (newRole, oldRole) => {
     })
 }
 
-// --- Group functions ("Weg A"): user main tag + moderator visibility scope ---
+// --- Group functions: user main tag + moderator visibility scope ---
 const { result: groupTagsResult } = useQuery(groupTags)
 const groupTagOptions = computed(() => groupTagsResult.value?.groupTags ?? [])
 
 // The user's personal main tag (pre-filled on submission). Setting it here heals a
 // forgotten/misspelled tag at the source, not just on a single contribution.
-const { result: userTagsResult } = useQuery(userGroupTags, () => ({
-  userId: props.item.userId,
-}))
+// network-only plus an explicit refetch after saving: both queries answer with a bare list
+// of scalars, which Apollo cannot normalise, so a mutation leaves the cached entry standing.
+// The form is mounted and unmounted with the details row, so a cached answer would come
+// back on the next open and show the value from before the change.
+const { result: userTagsResult, refetch: refetchUserTags } = useQuery(
+  userGroupTags,
+  () => ({ userId: props.item.userId }),
+  { fetchPolicy: 'network-only' },
+)
 const userMainTag = ref('')
 watch(
   userTagsResult,
@@ -168,6 +174,7 @@ const saveUserMainTag = async () => {
       userId: props.item.userId,
       tags: userMainTag.value ? [userMainTag.value] : [],
     })
+    await refetchUserTags()
     toastSuccess(t('userRole.savedGroupTags'))
   } catch (error) {
     toastError(error.message)
@@ -176,9 +183,13 @@ const saveUserMainTag = async () => {
 
 // The moderator's visibility scope: which group tags they may see/edit. Sentinels
 // '*all' (everything) and '*untagged' (contributions without a tag). Empty = all.
-const { result: scopeResult } = useQuery(moderatorGroupScope, () => ({
-  userId: props.item.userId,
-}))
+const { result: scopeResult, refetch: refetchScope } = useQuery(
+  moderatorGroupScope,
+  () => ({ userId: props.item.userId }),
+  // Only an administrator may read a scope, and only a moderator has one, so asking for
+  // every expanded row would earn a 401 per ordinary user.
+  { fetchPolicy: 'network-only', enabled: showModeratorScope },
+)
 const moderatorScope = ref([])
 watch(
   scopeResult,
@@ -202,6 +213,7 @@ const saveScope = async () => {
       userId: props.item.userId,
       scope: moderatorScope.value,
     })
+    await refetchScope()
     toastSuccess(t('userRole.savedScope'))
   } catch (error) {
     toastError(error.message)

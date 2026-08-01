@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import InfoStatistic from './InfoStatistic.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createI18n } from 'vue-i18n'
-import { searchAdminUsers } from '@/graphql/queries'
+import { listContributionLinks, searchAdminUsers } from '@/graphql/queries'
 import { groupTags } from '@/graphql/contributions.graphql'
 import { BContainer, BLink } from 'bootstrap-vue-next'
 
@@ -39,6 +39,7 @@ const ADMIN_USERS = [
     role: 'ADMIN',
     visibleGroupTags: [],
     seesAllGroups: true,
+    seesUntagged: true,
   },
   {
     firstName: 'Bibi',
@@ -46,6 +47,7 @@ const ADMIN_USERS = [
     role: 'MODERATOR',
     visibleGroupTags: ['feuerwehr'],
     seesAllGroups: false,
+    seesUntagged: false,
   },
   {
     firstName: 'Garrick',
@@ -53,6 +55,7 @@ const ADMIN_USERS = [
     role: 'MODERATOR_AI',
     visibleGroupTags: ['feuerwehr', 'musik'],
     seesAllGroups: false,
+    seesUntagged: false,
   },
   {
     firstName: 'Super',
@@ -60,6 +63,7 @@ const ADMIN_USERS = [
     role: 'MODERATOR',
     visibleGroupTags: [],
     seesAllGroups: true,
+    seesUntagged: true,
   },
 ]
 
@@ -101,7 +105,19 @@ describe('InfoStatistic', () => {
     mockQueryImplementation.mockImplementation((query) => ({
       result: query === groupTags ? ref({ groupTags: GROUP_TAGS }) : ref(null),
       onResult: (callback) => {
-        if (query === searchAdminUsers) {
+        if (query === listContributionLinks) {
+          callback({
+            data: {
+              listContributionLinks: {
+                count: 2,
+                links: [
+                  { id: 1, amount: 200, name: 'Dokumenta 2017', memo: 'Memo 1', cycle: 'ONCE' },
+                  { id: 2, amount: 200, name: 'Dokumenta 2022', memo: 'Memo 2', cycle: 'ONCE' },
+                ],
+              },
+            },
+          })
+        } else if (query === searchAdminUsers) {
           callback({
             data: {
               searchAdminUsers: {
@@ -149,7 +165,7 @@ describe('InfoStatistic', () => {
     expect(wrapper.text()).toContain('support@test.com')
   })
 
-  // Group functions ("Weg A"): moderators are listed under the groups they look after.
+  // Group functions: moderators are listed under the groups they look after.
   describe('groups and moderators', () => {
     it('names every group, with and without a display name', async () => {
       await wrapper.vm.$nextTick()
@@ -199,6 +215,44 @@ describe('InfoStatistic', () => {
       expect(wrapper.text()).not.toContain('Contributions without a group')
     })
 
+    // A scope can cover a group AND the contributions that carry none. "No group" is not a
+    // group, so it never shows up in visibleGroupTags -- reading the heading off an empty
+    // tag list would drop exactly this moderator from the page.
+    it('lists a moderator who looks after a group and the ungrouped ones under both', async () => {
+      const mixed = [
+        {
+          firstName: 'Mira',
+          lastName: 'Muster',
+          role: 'MODERATOR',
+          visibleGroupTags: ['feuerwehr'],
+          seesAllGroups: false,
+          seesUntagged: true,
+        },
+      ]
+      mockQueryImplementation.mockImplementation((query) => ({
+        result: query === groupTags ? ref({ groupTags: GROUP_TAGS }) : ref(null),
+        onResult: (callback) => {
+          if (query === searchAdminUsers) {
+            callback({
+              data: { searchAdminUsers: { userCount: mixed.length, userList: mixed } },
+            })
+          }
+        },
+        onError: vi.fn(),
+      }))
+      const localWrapper = mount(InfoStatistic, {
+        global: { plugins: [router, i18n], stubs: { BContainer, BLink } },
+      })
+      await localWrapper.vm.$nextTick()
+      const sections = localWrapper.findAll('.mb-3')
+      const firefighters = sections.find((section) => section.text().includes('Feuerwehr'))
+      const untagged = sections.find((section) =>
+        section.text().includes('Contributions without a group'),
+      )
+      expect(firefighters.text()).toContain('Mira Muster')
+      expect(untagged.text()).toContain('Mira Muster')
+    })
+
     it('keeps administrators out of the group listing', async () => {
       await wrapper.vm.$nextTick()
       const sections = wrapper.findAll('.mb-3')
@@ -229,6 +283,9 @@ describe('InfoStatistic', () => {
 
     it('toasts error messages', async () => {
       await wrapper.vm.$nextTick()
+      expect(mockToastError).toHaveBeenCalledWith(
+        'listContributionLinks has no result, use default data',
+      )
       expect(mockToastError).toHaveBeenCalledWith(
         'searchAdminUsers has no result, use default data',
       )

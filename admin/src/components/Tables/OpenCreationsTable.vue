@@ -34,16 +34,6 @@
           </BButton>
         </div>
       </template>
-      <template #cell(searchUser)="row">
-        <span
-          v-if="row.item.user && row.item.user.emailContact"
-          class="pointer text-primary"
-          :title="$t('filter.byEmail')"
-          @click="$emit('search-for-email', row.item.user.emailContact.email)"
-        >
-          <IBiSearch />
-        </span>
-      </template>
       <template #cell(name)="row">
         <span v-if="row.item.user">
           {{ row.item.user.firstName }} {{ row.item.user.lastName }}
@@ -178,6 +168,7 @@
                 @update-status="updateStatus"
                 @reload-contribution="reloadContribution"
                 @update-contributions="updateContributions"
+                @search-for-email="$emit('search-for-email', $event)"
                 @resubmission-saved="$emit('resubmission-saved', $event)"
               />
             </div>
@@ -394,7 +385,12 @@ export default {
       this.pendingGroupChange = {
         contributionId: item.id,
         tag,
-        fromLabel: this.groupOptionLabel(current),
+        // Name every group the contribution currently has, not just the one the dropdown
+        // happens to show. A legacy contribution whose text names two groups carries both,
+        // and saving replaces the whole set -- the dialog has to say what is being given up.
+        fromLabel: (item.groupTags ?? []).length
+          ? item.groupTags.map((group) => this.groupOptionLabel(group.tag)).join(', ')
+          : this.groupOptionLabel(''),
         toLabel: this.groupOptionLabel(tag),
       }
       this.groupChangeModal = true

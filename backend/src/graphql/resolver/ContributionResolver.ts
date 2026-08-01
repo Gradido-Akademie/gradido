@@ -74,7 +74,7 @@ const db = AppDatabase.getInstance()
 const createLogger = () =>
   getLogger(`${LOG4JS_BASE_CATEGORY_NAME}.graphql.resolver.ContributionResolver`)
 
-// Group functions ("Weg A"): the group stays editable while a contribution is still being
+// Group functions: the group stays editable while a contribution is still being
 // worked on. Confirmed, denied and deleted ones are closed — their group is part of the
 // record. The admin uses the same list to decide whether to offer the dropdown.
 export const GROUP_TAGS_EDITABLE_STATUS: string[] = [
@@ -86,12 +86,22 @@ export const GROUP_TAGS_EDITABLE_STATUS: string[] = [
 export class ContributionResolver {
   @Authorized([RIGHTS.ADMIN_LIST_CONTRIBUTIONS])
   @Query(() => Contribution)
-  async contribution(@Arg('id', () => Int) id: number): Promise<Contribution> {
+  async contribution(
+    @Arg('id', () => Int) id: number,
+    @Ctx() context: Context,
+  ): Promise<Contribution> {
+    // Reading one contribution by id is a way past the list, so it carries the same group
+    // scope as the list and as every action taken by id.
+    await assertContributionInModeratorScope(id, context.user?.userRoles?.[0])
     const dbContribution = await DbContribution.findOne({ where: { id } })
     if (!dbContribution) {
       throw new LogError('Contribution not found', id)
     }
-    return new Contribution(dbContribution)
+    const contribution = new Contribution(dbContribution)
+    // The admin replaces a whole row with this answer, so it has to carry the group too -
+    // otherwise the reloaded row claims the contribution belongs to no group.
+    await attachContributionGroupTags([contribution])
+    return contribution
   }
 
   @Authorized([RIGHTS.CREATE_CONTRIBUTION])
@@ -127,7 +137,7 @@ export class ContributionResolver {
     return new UnconfirmedContribution(contribution)
   }
 
-  // Group functions ("Weg A"): a moderator (re)assigns the structured group tags of an
+  // Group functions: a moderator (re)assigns the structured group tags of an
   // existing contribution (contribution-level healing; user-list healing lives elsewhere).
   @Authorized([RIGHTS.ADMIN_UPDATE_CONTRIBUTION])
   @Mutation(() => Boolean)
@@ -150,7 +160,9 @@ export class ContributionResolver {
         contribution.contributionStatus,
       )
     }
-    await setContributionGroupTags(contribution.id, tags)
+    // strict: a moderator moving a contribution onto a tag that does not exist would
+    // otherwise empty its group and still report success.
+    await setContributionGroupTags(contribution.id, tags, { strict: true })
     return true
   }
 
@@ -315,6 +327,13 @@ export class ContributionResolver {
     contribution.moderatorId = moderator.id
     contribution.contributionType = ContributionType.ADMIN
     contribution.contributionStatus = ContributionStatus.PENDING
+    // Group functions: this text was written by a moderator, not by the member, and there is
+    // no group field on this form. Stamping it as "no group" keeps a "#word" in that text
+    // from pulling the contribution into a group nobody chose — and into that group's
+    // moderator scope. The group can still be set afterwards; the contribution is open.
+    // Stamped on the entity rather than through setContributionGroupTags: there are no tags
+    // to write, so it folds into the insert instead of costing two more statements.
+    contribution.groupTagsSetAt = new Date()
     logger.trace('contribution to save', contribution)
     await DbContribution.save(contribution)
     await EVENT_ADMIN_CONTRIBUTION_CREATE(emailContact.user, moderator, contribution, amount)

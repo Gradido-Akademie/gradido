@@ -15,6 +15,7 @@
       v-model="selectedGroup"
       class="contribution-filter-group"
       :options="groupOptions"
+      :aria-label="$t('contribution.filter.byGroup')"
     />
   </div>
   <div v-if="items.length === 0 && !loading">
@@ -54,10 +55,11 @@ import CONFIG from '@/config'
 import PaginatorRouteParamsPage from '@/components/PaginatorRouteParamsPage.vue'
 import { PAGE_SIZE } from '@/constants'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { groupTagLabel } from '@/utils/groupTagLabel'
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 
 // constants
@@ -75,15 +77,25 @@ const searchText = ref('')
 const selectedGroup = ref(null)
 let searchTimer = null
 
+// The paginator reads the page from the route, not from this ref, so returning to the
+// first page has to move the route as well - otherwise the list shows page one while the
+// paginator still highlights the old page and a click on it does nothing.
+const backToFirstPage = () => {
+  currentPage.value = 1
+  if (Number(route.params.page) > 1) {
+    router.push({ params: { page: 1 } })
+  }
+}
+
 watch(searchInput, (value) => {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
     searchText.value = value
-    currentPage.value = 1
+    backToFirstPage()
   }, 400)
 })
 watch(selectedGroup, () => {
-  currentPage.value = 1
+  backToFirstPage()
 })
 
 const isFiltered = computed(() => Boolean(searchText.value || selectedGroup.value))

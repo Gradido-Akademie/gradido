@@ -20,7 +20,7 @@ export class ContributionArgs {
   @isValidDateString()
   contributionDate: string
 
-  // Group functions ("Weg A"): structured group tags chosen on submission (canonical
+  // Group functions: structured group tags chosen on submission (canonical
   // tags; unknown/invalid ones are ignored). Optional and non-blocking.
   @Field(() => [String], { nullable: true, defaultValue: [] })
   groupTags?: string[] | null

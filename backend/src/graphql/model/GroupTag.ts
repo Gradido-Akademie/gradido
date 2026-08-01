@@ -1,7 +1,7 @@
 import { GroupTag as DbGroupTag } from 'database'
 import { Field, Int, ObjectType } from 'type-graphql'
 
-// Group functions ("Weg A"): a canonical group tag (stored WITHOUT the leading '#').
+// Group functions: a canonical group tag (stored WITHOUT the leading '#').
 @ObjectType()
 export class GroupTag {
   constructor(dbGroupTag: DbGroupTag) {

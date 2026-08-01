@@ -1,3 +1,4 @@
+import { myContributionGroupTags } from '@/graphql/contributions.graphql'
 import { useQuery } from '@vue/apollo-composable'
 import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -100,11 +101,24 @@ describe('ContributionList', () => {
 
   const loading = ref(false)
 
+  const myGroups = ref({
+    myContributionGroupTags: [
+      { id: 1, tag: 'choir', name: 'Choir' },
+      { id: 2, tag: 'fire', name: null },
+    ],
+  })
+
   describe('mount', () => {
     const mockListContributionsQuery = vi.fn()
 
     beforeEach(() => {
       vi.mocked(useQuery).mockImplementation((query) => {
+        // This tab asks two queries. Answering both the same way would hide which one the
+        // group dropdown reads -- and reading the canonical list instead of the member's
+        // own groups is precisely the mistake this component must not make.
+        if (query === myContributionGroupTags) {
+          return { result: myGroups, loading: ref(false) }
+        }
         return {
           result: contributions,
           loading,
@@ -144,10 +158,14 @@ describe('ContributionList', () => {
         global: { ...global, stubs: { ...global.stubs, ThemedSelect: SelectStub } },
       })
       const options = localWrapper.findComponent(SelectStub).props('options')
-      expect(options.slice(0, 3).map((option) => option.value)).toEqual([
+      // The real groups are asserted too: the three reserved answers alone would still
+      // pass if the dropdown read the community-wide list instead of the member's own.
+      expect(options.map((option) => option.value)).toEqual([
         null,
         '*grouped',
         '*untagged',
+        'choir',
+        'fire',
       ])
     })
 

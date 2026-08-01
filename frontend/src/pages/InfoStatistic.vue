@@ -53,16 +53,21 @@
 import { ref, computed } from 'vue'
 import { useQuery } from '@vue/apollo-composable'
 import CONFIG from '@/config'
-import { searchAdminUsers } from '@/graphql/queries'
+import { listContributionLinks, searchAdminUsers } from '@/graphql/queries'
 import { groupTags as groupTagsQuery } from '@/graphql/contributions.graphql'
 import { groupTagLabel } from '@/utils/groupTagLabel'
 import { useAppToast } from '../composables/useToast'
 
 const { toastError } = useAppToast()
 
+const count = ref(null)
+const countAdminUser = ref(null)
+const itemsContributionLinks = ref([])
 const itemsAdminUser = ref([])
 const supportMail = CONFIG.COMMUNITY_SUPPORT_MAIL
 
+const { onResult: onContributionLinksResult, onError: onContributionLinksError } =
+  useQuery(listContributionLinks)
 const { onResult: onAdminUsersResult, onError: onAdminUsersError } = useQuery(searchAdminUsers, {
   pageSize: 100,
   currentPage: 1,
@@ -86,7 +91,7 @@ const moderators = computed(() =>
     ),
 )
 
-// Group functions ("Weg A"): moderators are listed under every group they look after, so a
+// Group functions: moderators are listed under every group they look after, so a
 // member can see whom to address. A moderator with several groups appears several times.
 const groupSections = computed(() =>
   (groupTagsResult.value?.groupTags ?? []).map((groupTag) => ({
@@ -101,16 +106,30 @@ const groupSections = computed(() =>
 // disappears by itself once every moderator has their groups.
 const allGroupsModerators = computed(() => moderators.value.filter((item) => item.seesAllGroups))
 
-// The rare narrow case: scoped to contributions that carry no group at all. Neither a group
-// section nor a free pass, so they get their own heading instead of vanishing from the page.
+// Scoped to contributions that carry no group. Neither a group section nor a free pass, so
+// they get their own heading instead of vanishing from the page. A moderator who looks
+// after both some group and the ungrouped ones belongs under both headings, so this asks
+// the scope directly instead of inferring it from an empty tag list.
 const untaggedModerators = computed(() =>
-  moderators.value.filter((item) => !item.seesAllGroups && !item.visibleGroupTags?.length),
+  moderators.value.filter((item) => !item.seesAllGroups && item.seesUntagged),
 )
+
+onContributionLinksResult(({ data }) => {
+  if (data) {
+    count.value = data.listContributionLinks.count
+    itemsContributionLinks.value = data.listContributionLinks.links
+  }
+})
 
 onAdminUsersResult(({ data }) => {
   if (data) {
+    countAdminUser.value = data.searchAdminUsers.userCount
     itemsAdminUser.value = data.searchAdminUsers.userList
   }
+})
+
+onContributionLinksError(() => {
+  toastError('listContributionLinks has no result, use default data')
 })
 
 onAdminUsersError(() => {

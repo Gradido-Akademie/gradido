@@ -90,6 +90,7 @@
     "deleted": "The contribution has been deleted. It is now visible only to you and the moderators, invisible to the community.",
     "filter": {
       "all": "(all)",
+      "byGroup": "Filter by group",
       "grouped": "(all groups)",
       "noGroup": "(no group)",
       "noResults": "No contributions found.",
@@ -103,7 +104,7 @@
       "yourContribution": "Your Contributions to the Common Good"
     },
     "groupTag": {
-      "help": "Optional. It works without a group, too.",
+      "help": "Optional. It works without a group, too. A #word in the text does not set a group — this field does.",
       "label": "Group",
       "none": "(no group)"
     },

@@ -153,6 +153,15 @@ describe('OpenCreationsTable', () => {
       expect(wrapper.emitted('assign-group')).toBeFalsy()
     })
 
+    // Saving replaces the whole set, so a contribution that belongs to two groups loses one
+    // of them. The dropdown can only show the first, so the question has to name both --
+    // otherwise the second group disappears without ever having been on screen.
+    it('names every group it is about to replace, not just the first', () => {
+      wrapper.vm.onGroupPicked({ id: 7, groupTags: [{ tag: 'music' }, { tag: 'sports' }] }, '')
+      expect(wrapper.vm.pendingGroupChange.fromLabel).toBe('Musik (#music), #sports')
+      expect(wrapper.vm.pendingGroupChange.toLabel).toBe('contribution.noGroup')
+    })
+
     it('emits the change once confirmed', async () => {
       wrapper.vm.onGroupPicked({ id: 7, groupTags: [{ tag: 'music' }] }, 'sports')
       wrapper.vm.confirmGroupChange()

@@ -91,7 +91,7 @@ query openCreationsAmounts {
   }
 }
 
-# Group functions ("Weg A"): canonical tag list (autocomplete) + the user's own list (main tag)
+# Group functions: canonical tag list (autocomplete) + the user's own list (main tag)
 query groupTags {
   groupTags {
     id

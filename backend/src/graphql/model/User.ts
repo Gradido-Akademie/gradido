@@ -55,6 +55,7 @@ export class User {
       // Unrestricted by default; verifyLogin fills in a scoped moderator's real groups.
       this.visibleGroupTags = []
       this.seesAllGroups = true
+      this.seesUntagged = true
     }
   }
 
@@ -153,6 +154,12 @@ export class User {
 
   @Field(() => Boolean)
   seesAllGroups: boolean
+
+  // Whether the scope covers contributions without a group. "No group" is not a group, so
+  // it cannot live in the list above, but the admin needs it to offer a filter that
+  // reaches those contributions.
+  @Field(() => Boolean)
+  seesUntagged: boolean
 
   @Field(() => UserContact, { nullable: true })
   emailContact: UserContact | null

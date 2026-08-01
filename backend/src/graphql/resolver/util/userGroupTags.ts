@@ -2,7 +2,7 @@ import { GroupTag as DbGroupTag, UserGroupTag as DbUserGroupTag } from 'database
 import { In } from 'typeorm'
 import { LogError } from '@/server/LogError'
 
-// Group functions ("Weg A"): a user's personal group-tag list. The entry with the
+// Group functions: a user's personal group-tag list. The entry with the
 // lowest sort order is the user's main tag (pre-filled on submission). Returned as the
 // canonical GroupTag rows, in list order.
 export const loadUserGroupTags = async (userId: number): Promise<DbGroupTag[]> => {
@@ -38,13 +38,16 @@ export const saveUserGroupTags = async (userId: number, tags: string[]): Promise
   }
   const canonical =
     normalised.length > 0 ? await DbGroupTag.find({ where: { tag: In(normalised) } }) : []
-  const byTag = new Map(canonical.map((tag) => [tag.tag, tag]))
-  const unknown = normalised.filter((tag) => !byTag.has(tag))
+  // group_tags.tag is utf8mb4_unicode_ci, so the lookup above already matched regardless of
+  // case. Comparing the result against the raw input would reject "Feuerwehr" as unknown
+  // while the database just handed back "feuerwehr", so match on the folded spelling.
+  const byTag = new Map(canonical.map((tag) => [tag.tag.toLowerCase(), tag]))
+  const unknown = normalised.filter((tag) => !byTag.has(tag.toLowerCase()))
   if (unknown.length > 0) {
     throw new LogError('Unknown group tag(s)', unknown.join(', '))
   }
   const links = normalised.map((tag, index) => {
-    const canon = byTag.get(tag)
+    const canon = byTag.get(tag.toLowerCase())
     if (!canon) {
       throw new LogError('Unknown group tag', tag)
     }

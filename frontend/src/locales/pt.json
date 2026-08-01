@@ -90,6 +90,7 @@
     "deleted": "A contribuição foi eliminada. Agora fica visível apenas para ti e os moderadores, invisível para a comunidade.",
     "filter": {
       "all": "(todas)",
+      "byGroup": "Filtrar por grupo",
       "grouped": "(todos os grupos)",
       "noGroup": "(sem grupo)",
       "noResults": "No contributions found.",
@@ -103,7 +104,7 @@
       "yourContribution": "A tua contribuição para o bem comum"
     },
     "groupTag": {
-      "help": "Optional. It works without a group, too.",
+      "help": "Opcional. Também funciona sem grupo. Uma #palavra no texto não define um grupo — é para isso que serve este campo.",
       "label": "Group",
       "none": "(sem grupo)"
     },

@@ -90,6 +90,7 @@
     "deleted": "Пост удалён. Теперь он виден только Вам и модераторам, а сообществу невидим.",
     "filter": {
       "all": "(все)",
+      "byGroup": "Фильтр по группе",
       "grouped": "(все группы)",
       "noGroup": "(без группы)",
       "noResults": "No contributions found.",
@@ -103,7 +104,7 @@
       "yourContribution": "Ваш вклад в общее благо"
     },
     "groupTag": {
-      "help": "Optional. It works without a group, too.",
+      "help": "Необязательно. Можно и без группы. #Слово в тексте не задаёт группу — для этого есть это поле.",
       "label": "Group",
       "none": "(без группы)"
     },

@@ -21,7 +21,6 @@ export class Contribution extends UnconfirmedContribution {
     this.updatedAt = dbContribution.updatedAt
     this.updatedBy = dbContribution.updatedBy
     this.resubmissionAt = dbContribution.resubmissionAt
-    this.groupTagsSetAt = dbContribution.groupTagsSetAt
     if (ContributionStatus.CONFIRMED === dbContribution.contributionStatus) {
       this.closedAt = dbContribution.confirmedAt
       this.closedBy = dbContribution.confirmedBy
@@ -33,10 +32,6 @@ export class Contribution extends UnconfirmedContribution {
       this.closedBy = dbContribution.deniedBy
     }
   }
-
-  // Group functions ("Weg A"): not a GraphQL field — attachContributionGroupTags reads it
-  // to decide whether a legacy inline "#tag" may still stand in for the group.
-  groupTagsSetAt: Date | null
 
   @Field(() => Date, { nullable: true })
   closedAt?: Date | null
@@ -89,7 +84,7 @@ export class Contribution extends UnconfirmedContribution {
   @Field(() => Date, { nullable: true })
   resubmissionAt: Date | null
 
-  // Group functions ("Weg A"): the groups this contribution belongs to, for display in the
+  // Group functions: the groups this contribution belongs to, for display in the
   // wallet lists and the admin text column. Filled in by attachContributionGroupTags;
   // empty when the contribution belongs to no group.
   @Field(() => [GroupTag])

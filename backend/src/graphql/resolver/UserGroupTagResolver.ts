@@ -6,7 +6,7 @@ import { loadModeratorScope, saveModeratorScope } from './util/moderatorGroupSco
 import { suggestGroupTagForUser } from './util/suggestGroupTag'
 import { loadUserGroupTags, saveUserGroupTags } from './util/userGroupTags'
 
-// Group functions ("Weg A"): a user's personal group-tag list. Users manage their own
+// Group functions: a user's personal group-tag list. Users manage their own
 // list (first tag = main tag, pre-filled on submission); moderators may edit any user's
 // list — healing a forgotten/misspelled tag at the source, not just on one contribution.
 @Resolver(() => GroupTag)

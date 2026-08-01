@@ -273,6 +273,24 @@ describe('CreationConfirm', () => {
       expect(scoped.vm.groupTag).toBe('*untagged')
     })
 
+    // "No group" is not a group, so it never appears in visibleGroupTags. Deciding from that
+    // list alone would leave this moderator with '*grouped' and their group -- and
+    // '*grouped' is the exact complement of "no group", so the ungrouped contributions they
+    // are assigned to would have no reachable filter at all.
+    it('offers "no group" too when the scope covers the ungrouped contributions', () => {
+      const scoped = mountWithModerator({
+        roles: ['MODERATOR'],
+        seesAllGroups: false,
+        seesUntagged: true,
+        visibleGroupTags: ['firefighter'],
+      })
+      expect(scoped.vm.groupTagFilterOptions.map((option) => option.value)).toEqual([
+        '*grouped',
+        '*untagged',
+        'firefighter',
+      ])
+    })
+
     it('leaves an administrator the full set', () => {
       const scoped = mountWithModerator({
         roles: ['ADMIN'],
@@ -381,18 +399,5 @@ describe('CreationConfirm', () => {
 
     expect(wrapper.vm.bulkResubmission.show).toBe(false)
     expect(mockToastWarning).toHaveBeenCalled()
-  })
-
-  it('treats a "wasn\'t changed" rejection as a harmless no-op', async () => {
-    await simulateQueryResult({
-      adminListContributions: { contributionCount: 3, contributionList: openItems(3, 7) },
-    })
-    mockMutate.mockRejectedValueOnce(new Error("the contribution wasn't changed at all"))
-
-    wrapper.vm.onResubmissionSaved({ id: 1, resubmissionAt: '2026-08-01T08:46:00' })
-    await wrapper.vm.applyBulkResubmission()
-
-    expect(mockToastError).not.toHaveBeenCalled()
-    expect(mockToastSuccess).toHaveBeenCalled()
   })
 })

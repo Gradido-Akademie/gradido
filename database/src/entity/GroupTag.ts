@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 
-// Group functions (Gruppen-Funktionen, "Weg A"): the canonical list of valid group
+// Group functions: the canonical list of valid group
 // tags (admin-managed). `tag` is stored WITHOUT the leading '#'. Submission autocomplete
 // and the moderator visibility scope both draw from this list.
 @Entity('group_tags', {

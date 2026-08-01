@@ -33,6 +33,7 @@ const verifyLoginScope = gql`
       roles
       visibleGroupTags
       seesAllGroups
+      seesUntagged
     }
   }
 `
@@ -71,6 +72,7 @@ const scopeOf = async (): Promise<{
   roles: string[]
   visibleGroupTags: string[]
   seesAllGroups: boolean
+  seesUntagged: boolean
 }> => {
   const { data } = await query({ query: verifyLoginScope })
   return data.verifyLogin
@@ -87,7 +89,7 @@ describe('verifyLogin — moderator group visibility scope', () => {
   it('reports an administrator as unrestricted', async () => {
     await loginAs('peter@lustig.de')
     expect(await scopeOf()).toEqual(
-      expect.objectContaining({ visibleGroupTags: [], seesAllGroups: true }),
+      expect.objectContaining({ visibleGroupTags: [], seesAllGroups: true, seesUntagged: true }),
     )
   })
 
@@ -98,6 +100,7 @@ describe('verifyLogin — moderator group visibility scope', () => {
       roles: ['MODERATOR'],
       visibleGroupTags: [],
       seesAllGroups: true,
+      seesUntagged: true,
     })
   })
 
@@ -108,6 +111,7 @@ describe('verifyLogin — moderator group visibility scope', () => {
       roles: ['MODERATOR'],
       visibleGroupTags: ['firefighter', 'garden'],
       seesAllGroups: false,
+      seesUntagged: false,
     })
   })
 
@@ -118,6 +122,7 @@ describe('verifyLogin — moderator group visibility scope', () => {
       roles: ['MODERATOR_AI'],
       visibleGroupTags: ['firefighter'],
       seesAllGroups: false,
+      seesUntagged: false,
     })
   })
 
@@ -128,6 +133,21 @@ describe('verifyLogin — moderator group visibility scope', () => {
       roles: ['MODERATOR'],
       visibleGroupTags: [],
       seesAllGroups: false,
+      seesUntagged: true,
+    })
+  })
+
+  // The mixed case: one group plus the contributions that carry none. '*untagged' is not a
+  // group and must stay out of the tag list, but the admin needs to know it is there — it is
+  // the only way it can offer a filter reaching those contributions.
+  it('keeps the untagged half of a mixed scope out of the tags but reports it', async () => {
+    await setScope(moderator.id, RoleNames.MODERATOR, ['firefighter', '*untagged'])
+    await loginAs('bibi@bloxberg.de')
+    expect(await scopeOf()).toEqual({
+      roles: ['MODERATOR'],
+      visibleGroupTags: ['firefighter'],
+      seesAllGroups: false,
+      seesUntagged: true,
     })
   })
 })

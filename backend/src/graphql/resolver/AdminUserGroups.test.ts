@@ -10,7 +10,7 @@ import { bibiBloxberg } from '@/seeds/users/bibi-bloxberg'
 import { garrickOllivander } from '@/seeds/users/garrick-ollivander'
 import { peterLustig } from '@/seeds/users/peter-lustig'
 
-// Group functions ("Weg A"): the community info page lists moderators under the group they
+// Group functions: the community info page lists moderators under the group they
 // look after. Two things have to hold for that listing to be truthful: a KI-Moderator must
 // appear at all (they are a moderator with Crea, not a separate kind), and an unassigned
 // moderator must read as "sees every group" — because that is exactly what the contribution
@@ -46,6 +46,7 @@ interface ListedUser {
   role: string
   visibleGroupTags: string[]
   seesAllGroups: boolean
+  seesUntagged: boolean
 }
 
 const listAdminUsers = async (): Promise<ListedUser[]> => {
@@ -139,6 +140,29 @@ describe('searchAdminUsers — groups shown on the community info page', () => {
     const listed = byFirstName(users, MODERATOR)
     expect(listed?.visibleGroupTags).toEqual([])
     expect(listed?.seesAllGroups).toBe(false)
+  })
+
+  it('reports the untagged half of a mixed scope separately from the groups', async () => {
+    // A scope can cover a group AND the contributions that carry none. '*untagged' is not a
+    // group, so it must not appear in visibleGroupTags — but dropping it silently would
+    // leave the admin unable to offer a filter that reaches those contributions.
+    await setRole(
+      scopedModerator.id,
+      RoleNames.MODERATOR,
+      JSON.stringify(['firefighter', '*untagged']),
+    )
+    const users = await listAdminUsers()
+    const listed = byFirstName(users, MODERATOR)
+    expect(listed?.visibleGroupTags).toEqual(['firefighter'])
+    expect(listed?.seesAllGroups).toBe(false)
+    expect(listed?.seesUntagged).toBe(true)
+  })
+
+  it('reports a scope of only real groups as not covering the untagged ones', async () => {
+    await setRole(scopedModerator.id, RoleNames.MODERATOR, JSON.stringify(['firefighter']))
+    const users = await listAdminUsers()
+    const listed = byFirstName(users, MODERATOR)
+    expect(listed?.seesUntagged).toBe(false)
   })
 
   it('leaves administrators unrestricted', async () => {
