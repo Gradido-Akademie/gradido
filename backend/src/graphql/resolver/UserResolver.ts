@@ -100,7 +100,7 @@ import { extractGraphQLFieldsForSelect } from './util/extractGraphQLFields'
 import { findUsers } from './util/findUsers'
 import { getKlicktippState } from './util/getKlicktippState'
 import { Location2Point, Point2Location } from './util/Location2Point'
-import { describeModeratorGroups } from './util/moderatorGroupScope'
+import { describeModeratorCreationGroups } from './util/moderatorCreationGroupScope'
 import { deleteUserRole, setUserRole } from './util/modifyUserRole'
 import { sendUsersToGms } from './util/sendUserToGms'
 import { syncHumhub } from './util/syncHumhub'
@@ -161,9 +161,9 @@ export class UserResolver {
     // directly (like loadModeratorScope), so it does not depend on how the context happened
     // to load the user's roles. Same derivation as the community info page.
     const role = await DbUserRole.findOne({ where: { userId: userEntity.id } })
-    const moderatorGroups = describeModeratorGroups(role)
-    user.visibleGroupTags = moderatorGroups.tags
-    user.seesAllGroups = moderatorGroups.seesAllGroups
+    const moderatorGroups = describeModeratorCreationGroups(role)
+    user.visibleCreationGroups = moderatorGroups.tags
+    user.seesAllCreationGroups = moderatorGroups.seesAllCreationGroups
     user.seesUntagged = moderatorGroups.seesUntagged
     // Elopage Status & Stored PublisherId
     user.hasElopage = await this.hasElopage(context)

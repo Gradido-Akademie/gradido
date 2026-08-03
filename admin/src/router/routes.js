@@ -50,10 +50,10 @@ const routes = [
     component: () => import('@/pages/CreaSettings.vue'),
   },
   {
-    path: '/group-tags',
-    name: 'group-tags',
+    path: '/creation-groups',
+    name: 'creation-groups',
     meta: { requiresAdmin: true },
-    component: () => import('@/pages/GroupTags.vue'),
+    component: () => import('@/pages/CreationGroups.vue'),
   },
   {
     path: '/:catchAll(.*)',

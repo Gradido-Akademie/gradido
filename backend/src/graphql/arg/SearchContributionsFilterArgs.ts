@@ -27,5 +27,5 @@ export class SearchContributionsFilterArgs {
   // '#'). Separate from `query`, so full-text search and group filter work at the same time.
   @Field(() => String, { nullable: true, defaultValue: null })
   @IsString()
-  groupTag?: string | null
+  creationGroup?: string | null
 }

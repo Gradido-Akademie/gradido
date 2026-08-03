@@ -23,5 +23,5 @@ export class ContributionArgs {
   // Group functions: structured group tags chosen on submission (canonical
   // tags; unknown/invalid ones are ignored). Optional and non-blocking.
   @Field(() => [String], { nullable: true, defaultValue: [] })
-  groupTags?: string[] | null
+  creationGroups?: string[] | null
 }

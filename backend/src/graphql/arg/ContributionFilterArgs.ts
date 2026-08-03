@@ -17,5 +17,5 @@ export class ContributionFilterArgs {
   // search and group filter can be used at the same time.
   @Field(() => String, { nullable: true, defaultValue: null })
   @IsString()
-  groupTag?: string | null
+  creationGroup?: string | null
 }

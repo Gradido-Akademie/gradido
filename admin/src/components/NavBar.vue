@@ -43,8 +43,8 @@
           <BNavItem v-if="isAdmin" to="/creaSettings" :active="isActive('creaSettings')">
             {{ $t('navbar.crea') }}
           </BNavItem>
-          <BNavItem v-if="isAdmin" to="/group-tags" :active="isActive('group-tags')">
-            {{ $t('navbar.groupTags') }}
+          <BNavItem v-if="isAdmin" to="/creation-groups" :active="isActive('creation-groups')">
+            {{ $t('navbar.creationGroups') }}
           </BNavItem>
           <BNavItem to="/statistic" :active="isActive('statistic')">
             {{ $t('navbar.statistic') }}
