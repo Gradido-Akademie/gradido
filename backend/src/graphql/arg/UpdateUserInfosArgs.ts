@@ -68,4 +68,8 @@ export class UpdateUserInfosArgs {
   @Field(() => GmsPublishLocationType, { nullable: true })
   @IsEnum(GmsPublishLocationType)
   gmsPublishLocation?: GmsPublishLocationType | null
+
+  @Field({ nullable: true })
+  @IsString()
+  aboutMe?: string
 }

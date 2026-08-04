@@ -11,6 +11,7 @@ import { DltTransaction } from './DltTransaction'
 import { Event } from './Event'
 import { FederatedCommunity } from './FederatedCommunity'
 import { LoginElopageBuys } from './LoginElopageBuys'
+import { MatchingEntry } from './MatchingEntry'
 import { Migration } from './Migration'
 import { PendingTransaction } from './PendingTransaction'
 import { Transaction } from './Transaction'
@@ -33,6 +34,7 @@ export {
   Event,
   FederatedCommunity,
   CreationGroup,
+  MatchingEntry,
   LoginElopageBuys,
   Migration,
   PendingTransaction,
@@ -57,6 +59,7 @@ export const entities = [
   Event,
   FederatedCommunity,
   CreationGroup,
+  MatchingEntry,
   LoginElopageBuys,
   Migration,
   PendingTransaction,

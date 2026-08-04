@@ -429,3 +429,16 @@ export const user = gql`
     }
   }
 `
+
+export const listMatchingEntries = gql`
+  query {
+    listMatchingEntries {
+      uuid
+      matchingType
+      summary
+      details
+      remote
+      active
+    }
+  }
+`

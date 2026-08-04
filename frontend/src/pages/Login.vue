@@ -3,7 +3,7 @@
     <BContainer v-if="enterData">
       <div class="pb-5" align="center">{{ $t('gdd_per_link.isFree') }}</div>
       <form @submit.prevent="onSubmit">
-        <BRow>
+        <BRow class="test">
           <BCol sm="12" md="12" lg="6">
             <input-email />
           </BCol>

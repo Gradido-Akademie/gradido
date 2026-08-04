@@ -41,7 +41,9 @@ export async function upgrade(queryFn: (query: string, values?: any[]) => Promis
 
   // Part 2 — salutation / gender / moderator signature on users (E-013).
   // All nullable: null = not yet curated by the moderator.
-  await queryFn('ALTER TABLE `users` ADD COLUMN `gender` varchar(8) NULL DEFAULT NULL;')
+  await queryFn(
+    'ALTER TABLE `users` ADD COLUMN `gender` varchar(8) NULL DEFAULT NULL AFTER `about_me`;',
+  )
   await queryFn(
     'ALTER TABLE `users` ADD COLUMN `salutation` varchar(255) NULL DEFAULT NULL AFTER `gender`;',
   )

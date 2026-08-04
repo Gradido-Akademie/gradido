@@ -19,9 +19,11 @@ describe('Vuex Store', () => {
 
     localStorageMock = {
       clear: vi.fn(),
-      getItem: vi.fn(),
+      getItem: vi.fn(() => null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
+      length: 0,
+      key: vi.fn(() => null),
     }
     Object.defineProperty(window, 'localStorage', {
       value: localStorageMock,
@@ -87,6 +89,17 @@ describe('Vuex Store', () => {
       expect(testStore.state.moderator).toBeNull()
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('gradido-admin')
       expect(localStorageMock.clear).not.toHaveBeenCalled()
+    })
+
+    it('preserves the wallet dark-mode theme across logout', () => {
+      // The wallet owns 'gradido-theme-mode' but shares this origin's storage;
+      // the admin logout must not wipe it (regression: dark mode lost on
+      // wallet -> admin -> wallet).
+      localStorageMock.getItem = vi.fn((key) => (key === 'gradido-theme-mode' ? 'dark' : null))
+
+      testStore.dispatch('logout')
+
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('gradido-theme-mode', 'dark')
     })
   })
 
