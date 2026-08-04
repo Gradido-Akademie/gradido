@@ -94,12 +94,16 @@ describe('Vuex Store', () => {
     it('preserves the wallet dark-mode theme across logout', () => {
       // The wallet owns 'gradido-theme-mode' but shares this origin's storage;
       // the admin logout must not wipe it (regression: dark mode lost on
-      // wallet -> admin -> wallet).
+      // wallet -> admin -> wallet). Stated as what must NOT happen, because the
+      // logout keeps the key by never touching it: it removes its own blob and
+      // nothing else. A return to clear() would fail here.
       localStorageMock.getItem = vi.fn((key) => (key === 'gradido-theme-mode' ? 'dark' : null))
 
       testStore.dispatch('logout')
 
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('gradido-theme-mode', 'dark')
+      expect(localStorageMock.clear).not.toHaveBeenCalled()
+      expect(localStorageMock.removeItem).not.toHaveBeenCalledWith('gradido-theme-mode')
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('gradido-admin')
     })
   })
 
