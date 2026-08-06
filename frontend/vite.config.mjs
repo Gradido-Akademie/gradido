@@ -64,24 +64,18 @@ export default defineConfig(async ({ command }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
         assets: path.join(__dirname, 'src/assets'),
-        '@vee-validate/i18n/dist/locale/en.json': require.resolve(
-          '@vee-validate/i18n/dist/locale/en.json',
-        ),
-        '@vee-validate/i18n/dist/locale/de.json': require.resolve(
-          '@vee-validate/i18n/dist/locale/de.json',
-        ),
-        '@vee-validate/i18n/dist/locale/es.json': require.resolve(
-          '@vee-validate/i18n/dist/locale/es.json',
-        ),
-        '@vee-validate/i18n/dist/locale/fr.json': require.resolve(
-          '@vee-validate/i18n/dist/locale/fr.json',
-        ),
-        '@vee-validate/i18n/dist/locale/nl.json': require.resolve(
-          '@vee-validate/i18n/dist/locale/nl.json',
-        ),
-        '@vee-validate/i18n/dist/locale/tr.json': require.resolve(
-          '@vee-validate/i18n/dist/locale/tr.json',
-        ),
+        '@vee-validate/i18n/dist/locale/en.json':
+          require.resolve('@vee-validate/i18n/dist/locale/en.json'),
+        '@vee-validate/i18n/dist/locale/de.json':
+          require.resolve('@vee-validate/i18n/dist/locale/de.json'),
+        '@vee-validate/i18n/dist/locale/es.json':
+          require.resolve('@vee-validate/i18n/dist/locale/es.json'),
+        '@vee-validate/i18n/dist/locale/fr.json':
+          require.resolve('@vee-validate/i18n/dist/locale/fr.json'),
+        '@vee-validate/i18n/dist/locale/nl.json':
+          require.resolve('@vee-validate/i18n/dist/locale/nl.json'),
+        '@vee-validate/i18n/dist/locale/tr.json':
+          require.resolve('@vee-validate/i18n/dist/locale/tr.json'),
       },
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
     },
@@ -116,7 +110,6 @@ export default defineConfig(async ({ command }) => {
         CROSS_TX_REDEEM_LINK_ACTIVE: CONFIG.CROSS_TX_REDEEM_LINK_ACTIVE,
         DLT_ACTIVE: CONFIG.DLT_ACTIVE,
         GMS_ACTIVE: CONFIG.GMS_ACTIVE,
-        MATCHING_ACTIVE: CONFIG.MATCHING_ACTIVE,
         HUMHUB_ACTIVE: CONFIG.HUMHUB_ACTIVE,
         DEFAULT_PUBLISHER_ID: null,
         PORT: null,

@@ -19,6 +19,11 @@ export const mutations = {
   setPreLoginLanguage: (state, preLoginLanguage) => {
     state.preLoginLanguage = preLoginLanguage
   },
+  // Whether this instance offers matching. Refreshed wherever the wallet asks the
+  // server; false until it has an answer, so a module is never offered on a guess.
+  matchingActive: (state, matchingActive) => {
+    state.matchingActive = matchingActive
+  },
   gradidoID: (state, gradidoID) => {
     state.gradidoID = gradidoID
   },
@@ -197,6 +202,7 @@ try {
       token: null,
       tokenTime: null,
       roles: [],
+      matchingActive: false,
       newsletterState: null,
       gmsAllowed: null,
       humhubAllowed: null,

@@ -113,10 +113,15 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { ref, watch, computed, onMounted } from 'vue'
-import CONFIG from '@/config'
+import { useStore } from 'vuex'
 
-// Read once: the flag is baked in at build time, it cannot change while the app runs.
-const matchingActive = CONFIG.MATCHING_ACTIVE
+const store = useStore()
+
+// Whether this instance offers matching is an admin's decision, so it can change while
+// the app is running. Read from the store, which the navigation guard refreshes from the
+// server; false until there is an answer, so the entry is never shown on a guess.
+// The entry is a convenience - the guard and the backend rights are the boundary.
+const matchingActive = computed(() => store.state.matchingActive)
 
 const props = defineProps({
   shadow: { type: Boolean, default: true },

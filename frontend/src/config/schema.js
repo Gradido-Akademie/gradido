@@ -13,7 +13,6 @@ import {
   GMS_ACTIVE,
   GRAPHQL_URI,
   HUMHUB_ACTIVE,
-  MATCHING_ACTIVE,
   NODE_ENV,
   PRODUCTION,
 } from 'config-schema'
@@ -36,7 +35,6 @@ module.exports = Joi.object({
   GMS_ACTIVE,
   GRAPHQL_URI,
   HUMHUB_ACTIVE,
-  MATCHING_ACTIVE,
   NODE_ENV,
   PRODUCTION,
 

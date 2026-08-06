@@ -47,6 +47,9 @@ const createVuexStore = (state = {}) =>
     state: () => ({
       hasElopage: true,
       roles: [],
+      // On by default: this suite counts nav items and addresses matching by index.
+      // The off state is covered in its own block at the end.
+      matchingActive: true,
       ...state,
     }),
     getters: {
@@ -56,9 +59,6 @@ const createVuexStore = (state = {}) =>
 
 CONFIG.GMS_ACTIVE = true
 CONFIG.HUMHUB_ACTIVE = true
-// The suite below counts nav items and addresses matching by index, so it needs
-// the flag on. The off state is covered in its own block at the end.
-CONFIG.MATCHING_ACTIVE = true
 
 describe('Sidebar', () => {
   let wrapper
@@ -166,24 +166,15 @@ describe('Sidebar', () => {
   })
 })
 
-describe('Sidebar with MATCHING_ACTIVE off', () => {
+describe('Sidebar with the matching module switched off', () => {
   const mountSidebar = () =>
     mount(Sidebar, {
       global: {
-        plugins: [createVuexStore(), i18n],
+        plugins: [createVuexStore({ matchingActive: false }), i18n],
         stubs: ['router-link', 'i-bi-cash'],
         components: { BNav, BBadge, BNavItem, BImg },
       },
     })
-
-  beforeEach(() => {
-    CONFIG.MATCHING_ACTIVE = false
-  })
-
-  afterEach(() => {
-    // Leave the flag as the rest of this file expects it, whatever the order.
-    CONFIG.MATCHING_ACTIVE = true
-  })
 
   it('does not offer the matching menu item', () => {
     expect(mountSidebar().text()).not.toContain('Matching')

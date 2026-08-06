@@ -1,5 +1,16 @@
 import gql from 'graphql-tag'
 
+// Which optional modules this instance offers. The truth lives in the database and an
+// admin flips it, so the wallet asks rather than being told at build time - a build-time
+// flag could only change with a redeploy, and would disagree with the backend until then.
+export const activeModules = gql`
+  query {
+    activeModules {
+      matchingActive
+    }
+  }
+`
+
 export const verifyLogin = gql`
   query {
     verifyLogin {

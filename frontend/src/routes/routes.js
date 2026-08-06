@@ -1,50 +1,51 @@
 import NotFound from '@/pages/NotFoundPage'
-import CONFIG from '@/config'
 
-// The new matching ships dark. Without MATCHING_ACTIVE its routes are never
-// registered at all, so /matching falls through to the catch-all and shows "not
-// found" instead of opening a page the instance does not offer. Hiding only the
-// menu entry would leave the pages reachable by typing the address.
+// Whether this instance offers matching is decided by an admin in the admin panel and
+// answered by the server, so it cannot be known while this table is being built - a
+// module table is assembled at import time, an answer arrives later. The routes are
+// therefore always registered and `requiresModule` lets the navigation guard ask before
+// it opens one; hiding only the menu entry would leave the pages reachable by address.
 // Order matters in here: /matching/karte has to stay ahead of /matching/:tab,
 // or the map would be swallowed as a fourth tab.
-const matchingRoutes = CONFIG.MATCHING_ACTIVE
-  ? [
-      {
-        path: '/matching',
-        component: () => import('@/pages/Matching'),
-        meta: {
-          requiresAuth: true,
-          pageTitle: 'matching',
-        },
-        redirect: () => {
-          return { path: '/matching/entries' }
-        },
-      },
-      {
-        // Ahead of /matching/:tab so the map is a place of its own rather than a
-        // fourth tab: it is where you go looking, and it wants the whole canvas.
-        path: '/matching/karte',
-        component: () => import('@/pages/MatchingMap'),
-        meta: {
-          requiresAuth: true,
-          pageTitle: 'matching',
-          // This route brings its own head, so the layout drops the navbar, the page
-          // heading and the content header. On a phone it drops everything and the
-          // map takes the screen; on desktop the menu stays and the logo moves under
-          // it, because the navbar it used to live in is gone.
-          bareChrome: true,
-        },
-      },
-      {
-        path: '/matching/:tab',
-        component: () => import('@/pages/Matching'),
-        meta: {
-          requiresAuth: true,
-          pageTitle: 'matching',
-        },
-      },
-    ]
-  : []
+const matchingRoutes = [
+  {
+    path: '/matching',
+    component: () => import('@/pages/Matching'),
+    meta: {
+      requiresAuth: true,
+      pageTitle: 'matching',
+      requiresModule: 'matching',
+    },
+    redirect: () => {
+      return { path: '/matching/entries' }
+    },
+  },
+  {
+    // Ahead of /matching/:tab so the map is a place of its own rather than a
+    // fourth tab: it is where you go looking, and it wants the whole canvas.
+    path: '/matching/karte',
+    component: () => import('@/pages/MatchingMap'),
+    meta: {
+      requiresAuth: true,
+      pageTitle: 'matching',
+      requiresModule: 'matching',
+      // This route brings its own head, so the layout drops the navbar, the page
+      // heading and the content header. On a phone it drops everything and the
+      // map takes the screen; on desktop the menu stays and the logo moves under
+      // it, because the navbar it used to live in is gone.
+      bareChrome: true,
+    },
+  },
+  {
+    path: '/matching/:tab',
+    component: () => import('@/pages/Matching'),
+    meta: {
+      requiresAuth: true,
+      pageTitle: 'matching',
+      requiresModule: 'matching',
+    },
+  },
+]
 
 const routes = [
   {

@@ -1,66 +1,52 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
-// routes.js reads the flag once, when the module is loaded — so each case has to
-// load it afresh with its own CONFIG rather than flipping a value afterwards.
-const loadRoutes = async (matchingActive) => {
-  vi.resetModules()
-  vi.doMock('@/config', () => ({
-    default: { MATCHING_ACTIVE: matchingActive },
-  }))
-  const module = await import('./routes')
-  return module.default
-}
+import routes from './routes'
 
-const pathsOf = (routes) => routes.map((route) => route.path)
-const matchingPathsOf = (routes) => pathsOf(routes).filter((path) => path.startsWith('/matching'))
-
-afterEach(() => {
-  vi.doUnmock('@/config')
-  vi.resetModules()
-})
+const pathsOf = (list) => list.map((route) => route.path)
+const matchingPathsOf = (list) => pathsOf(list).filter((path) => path.startsWith('/matching'))
 
 describe('routes', () => {
-  describe('with MATCHING_ACTIVE on', () => {
-    it('registers all three matching routes', async () => {
-      expect(matchingPathsOf(await loadRoutes(true))).toEqual([
-        '/matching',
-        '/matching/karte',
-        '/matching/:tab',
-      ])
-    })
-
-    it('keeps the map ahead of the tab route, or the tab route swallows it', async () => {
-      const paths = matchingPathsOf(await loadRoutes(true))
-      expect(paths.indexOf('/matching/karte')).toBeLessThan(paths.indexOf('/matching/:tab'))
-    })
-
-    it('sends /matching on to the entries tab', async () => {
-      const routes = await loadRoutes(true)
-      const entry = routes.find((route) => route.path === '/matching')
-      expect(entry.redirect()).toEqual({ path: '/matching/entries' })
-    })
+  // The module switch lives in the database and is answered by the server, so it cannot
+  // be known while this table is built - a route table is assembled at import time, an
+  // answer arrives later. The routes are therefore always registered and the navigation
+  // guard decides. That is what these tests fix in place.
+  it('registers all three matching routes', () => {
+    expect(matchingPathsOf(routes)).toEqual(['/matching', '/matching/karte', '/matching/:tab'])
   })
 
-  describe('with MATCHING_ACTIVE off', () => {
-    it('registers no matching route at all', async () => {
-      expect(matchingPathsOf(await loadRoutes(false))).toEqual([])
-    })
+  it('keeps the map ahead of the tab route, or the tab route swallows it', () => {
+    const paths = matchingPathsOf(routes)
+    expect(paths.indexOf('/matching/karte')).toBeLessThan(paths.indexOf('/matching/:tab'))
+  })
 
-    it('leaves the catch-all in place, so /matching lands on not found', async () => {
-      // Hiding the menu item alone would leave the pages reachable by typing the
-      // address. Unregistered, they fall through to this route instead.
-      const routes = await loadRoutes(false)
-      const catchAll = routes.find((route) => route.name === 'NotFound')
-      expect(catchAll).toBeDefined()
-      expect(catchAll.path).toBe('/:catchAll(.*)')
-    })
+  it('sends /matching on to the entries tab', () => {
+    const entry = routes.find((route) => route.path === '/matching')
+    expect(entry.redirect()).toEqual({ path: '/matching/entries' })
+  })
 
-    it('touches nothing else — the other routes are unchanged', async () => {
-      const withMatching = pathsOf(await loadRoutes(true)).filter(
-        (path) => !path.startsWith('/matching'),
-      )
-      const withoutMatching = pathsOf(await loadRoutes(false))
-      expect(withoutMatching).toEqual(withMatching)
-    })
+  // Without this marker the guard has nothing to key on and every matching page would
+  // open whatever the switch says. It is the one line that connects the two.
+  it('marks every matching route as belonging to the matching module', () => {
+    const matchingRoutes = routes.filter((route) => route.path.startsWith('/matching'))
+
+    expect(matchingRoutes).toHaveLength(3)
+    for (const route of matchingRoutes) {
+      expect(route.meta.requiresModule).toBe('matching')
+    }
+  })
+
+  it('marks nothing else as belonging to a module', () => {
+    const others = routes.filter(
+      (route) => !route.path.startsWith('/matching') && route.meta?.requiresModule,
+    )
+
+    expect(others).toEqual([])
+  })
+
+  it('keeps the catch-all in place', () => {
+    const catchAll = routes.find((route) => route.name === 'NotFound')
+
+    expect(catchAll).toBeDefined()
+    expect(catchAll.path).toBe('/:catchAll(.*)')
   })
 })
