@@ -41,6 +41,9 @@ export enum RIGHTS {
   OPEN_CREATIONS = 'OPEN_CREATIONS',
   USER = 'USER',
   GMS_USER_PLAYGROUND = 'GMS_USER_PLAYGROUND',
+  // Matching. Every logged-in member may keep an entry of their own, so these sit with
+  // the user rights -- but while the matching module is off, the authorization gate
+  // refuses them to everyone, admins included (see module/gate.ts).
   CREATE_MATCHING_ENTRY = 'CREATE_MATCHING_ENTRY',
   UPDATE_MATCHING_ENTRY = 'UPDATE_MATCHING_ENTRY',
   DELETE_MATCHING_ENTRY = 'DELETE_MATCHING_ENTRY',
@@ -82,6 +85,10 @@ export enum RIGHTS {
   COMMUNITY_WITH_API_KEYS = 'COMMUNITY_WITH_API_KEYS',
   PROJECT_BRANDING_MUTATE = 'PROJECT_BRANDING_MUTATE',
   AI_SETTINGS = 'AI_SETTINGS',
+  // Switching an optional module on or off changes what the whole instance offers, so
+  // it gets a right of its own rather than riding along on AI_SETTINGS -- a shared
+  // right cannot be withdrawn separately.
+  MODULE_SETTINGS = 'MODULE_SETTINGS',
   MANAGE_CREATION_GROUPS = 'MANAGE_CREATION_GROUPS',
   SET_MODERATOR_CREATION_GROUP_SCOPE = 'SET_MODERATOR_CREATION_GROUP_SCOPE',
   // LEGACY-HASHTAG-ADOPTION -- removable with the feature.
