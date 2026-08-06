@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "private": true,
   "scripts": {
     "dev": "concurrently \"yarn watch-scss\" \"vite\"",
@@ -119,7 +119,7 @@
   "browserslist": [
     "> 1%",
     "last 2 versions",
-    "not ie <= 10"
+    "not dead"
   ],
   "author": "Gradido-Akademie - https://www.gradido.net/",
   "license": "Apache-2.0",
