@@ -10,6 +10,19 @@
 // Part 2 drops openai_threads. It only ever held OpenAI thread ids, which stop
 // resolving when the Assistants API is switched off — there is nothing in it worth
 // keeping. Running chats are lost, which is the intended trade (decided 06.08.).
+//
+// Two indices, one per read: user_id finds a moderator's own thread, updated_at
+// carries the retention sweep, which runs across all moderators and would otherwise
+// scan the table on every chat open.
+//
+// updated_at has no ON UPDATE clause on purpose. It decides when a thread is swept, so
+// it wants one owner, and the query layer is the one drizzle can also express.
+//
+// ⚠️ STAGING: this file is 0111 in the main repo. The tower runs seven migrations more,
+// and ts-mysql-migrate keys on the FILE NAME — renaming it would run it again against
+// existing tables. Never renumber. It has also already run here, so the two changes
+// above take effect on a fresh database only; on this tower the index is simply absent,
+// which costs nothing on a table this size.
 
 export async function upgrade(queryFn: (query: string, values?: any[]) => Promise<Array<any>>) {
   await queryFn(`
@@ -18,9 +31,10 @@ export async function upgrade(queryFn: (query: string, values?: any[]) => Promis
       user_id int(10) unsigned NOT NULL,
       messages longtext NOT NULL,
       created_at datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-      updated_at datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+      updated_at datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
       PRIMARY KEY (id),
-      KEY idx_creachat_threads_user_id (user_id)
+      KEY idx_creachat_threads_user_id (user_id),
+      KEY idx_creachat_threads_updated_at (updated_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`)
 
   await queryFn('DROP TABLE IF EXISTS openai_threads;')
