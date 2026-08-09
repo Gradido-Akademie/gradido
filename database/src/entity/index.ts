@@ -4,7 +4,6 @@ import { Contribution } from './Contribution'
 import { ContributionCreationGroup } from './ContributionCreationGroup'
 import { ContributionLink } from './ContributionLink'
 import { ContributionMessage } from './ContributionMessage'
-import { CreaChatThread } from './CreaChatThread'
 import { CreaRecord } from './CreaRecord'
 import { CreaSetting } from './CreaSetting'
 import { CreationGroup } from './CreationGroup'
@@ -29,7 +28,6 @@ export {
   ContributionCreationGroup,
   ContributionLink,
   ContributionMessage,
-  CreaChatThread,
   CreaRecord,
   CreaSetting,
   DltTransaction,
@@ -55,7 +53,6 @@ export const entities = [
   ContributionCreationGroup,
   ContributionLink,
   ContributionMessage,
-  CreaChatThread,
   CreaRecord,
   CreaSetting,
   DltTransaction,
