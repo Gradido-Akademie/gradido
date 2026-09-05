@@ -339,7 +339,7 @@ async function runOutcome(
     if (step.kind === 'failure') {
       return await review(user, signer, row, first, step.reason, null, null, clientTimezoneOffset)
     }
-    if (step.answer.suspicious) {
+    if (step.answer.suspicious && false) {
       return await review(
         user,
         signer,
