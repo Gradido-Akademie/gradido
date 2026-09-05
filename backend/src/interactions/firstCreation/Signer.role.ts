@@ -89,9 +89,6 @@ export async function loadSignerFor(memberId: number): Promise<Result<Signer, Si
   if (signerUserId === null) {
     return { success: false, error: new SignerUnavailable('NOT_CONFIGURED') }
   }
-  if (signerUserId === memberId) {
-    return { success: false, error: new SignerUnavailable('IS_MEMBER') }
-  }
   return resolveSigner(signerUserId)
 }
 
