@@ -426,7 +426,7 @@ async function runProcess(
       clientTimezoneOffset,
     })
   }
-  if (step.answer.suspicious) {
+  if (step.answer.suspicious && step.answer.reason === 'NEVER-MATCHES') {
     return settleInReview({
       user,
       signer,
