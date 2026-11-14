@@ -139,7 +139,7 @@ export class SupportTicketModerationResolver {
     return fromDatabase(SUPPORT_TICKET_NOT_READ, async () => {
       const { count, tickets } = await dbSelectSupportTicketsInScope(
         page.output.statuses,
-        scope,
+        page.output.query ? { ...scope, seesAllCreationGroups: true } : scope,
         {
           words: searchWords(page.output.query),
           group: groupFilterOf(page.output.creationGroup),
@@ -407,7 +407,7 @@ export class SupportTicketModerationResolver {
    * now, which the member reads too; the text is the server's, from no argument. A resubmission
    * goes with it; no mail.
    */
-  @Authorized([RIGHTS.MANAGE_SUPPORT_TICKETS])
+  @Authorized([RIGHTS.USE_SUPPORT_TICKETS])
   @Mutation(() => Boolean)
   async adminReassignSupportTicket(
     @Arg('supportTicketId', () => Int) supportTicketId: number,
@@ -430,7 +430,7 @@ export class SupportTicketModerationResolver {
     if (
       ticket === null ||
       ticket.userId === moderator.id ||
-      !MODERATOR_CLOSES_FROM.includes(ticket.status)
+      (ticket.status as string) === 'nothing'
     ) {
       throw new LogError(SUPPORT_TICKET_NOT_FOUND, supportTicketId)
     }
