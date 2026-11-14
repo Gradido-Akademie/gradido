@@ -138,6 +138,7 @@ export async function dbSelectSupportTicketDialogOfOwner(
         inArray(supportTicketMessagesTable.type, [
           SupportTicketMessageType.DIALOG,
           SupportTicketMessageType.REASSIGNED,
+          SupportTicketMessageType.MODERATOR,
         ]),
         // a deleted request shows no thread, here as in the wallet
         ne(supportTicketsTable.status, SupportTicketStatus.DELETED),

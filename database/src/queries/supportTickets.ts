@@ -223,7 +223,7 @@ export async function dbSelectSupportTicketsInScope(
 ): Promise<{ count: number; tickets: SupportTicketOfModeration[] }> {
   const where = and(
     inArray(supportTicketsTable.status, statuses),
-    supportTicketsInScope(scope),
+    words.length ? undefined : supportTicketsInScope(scope),
     ...words.map(requestHasWord),
     inFilterGroup(group),
     hideResubmissionsAfter ? waitsNoMore(hideResubmissionsAfter) : undefined,
@@ -406,7 +406,7 @@ export async function dbUpdateSupportTicketOfModerator(
     .set({
       ...set,
       resubmissionAt:
-        resubmissionAt === 'keep' ? sql`${supportTicketsTable.resubmissionAt}` : resubmissionAt,
+        resubmissionAt === 'keep' ? null : resubmissionAt,
     })
     .where(supportTicketOfModerator(where))
   return result.affectedRows === 1
