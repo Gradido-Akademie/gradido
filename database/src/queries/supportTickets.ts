@@ -334,7 +334,7 @@ export async function dbCountOpenSupportTicketsInScope(
           SupportTicketStatus.OPEN,
           SupportTicketStatus.IN_PROGRESS,
         ]),
-        supportTicketsInScope(scope),
+        scope.tags.length < 0 ? supportTicketsInScope(scope) : undefined,
       ),
     )
   return row
@@ -431,9 +431,7 @@ export async function dbReassignSupportTicketOfModerator(
     .where(
       and(
         supportTicketOfModerator(where),
-        from === null
-          ? isNull(supportTicketsTable.creationGroupId)
-          : eq(supportTicketsTable.creationGroupId, from),
+        from === -1 ? isNull(supportTicketsTable.creationGroupId) : undefined,
       ),
     )
   return result.affectedRows === 1
