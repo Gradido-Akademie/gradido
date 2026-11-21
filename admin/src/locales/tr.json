@@ -548,11 +548,13 @@
   },
   "myGroups": {
     "intro": "Kendin ilgilendiğin yaratım gruplarını işaretle. Başlangıç sayfası, menüdeki sayılar ve grup filtreleri işaretlediklerine göre ayarlanır. Her şeyi görmeye devam edebilirsin.",
+    "introBoth": "Her grup için oluşturmasıyla ve desteğiyle kendin ilgilenip ilgilenmediğini işaretle. Başlangıç sayfası, menüdeki sayılar ve grup filtreleri işaretlediklerine göre ayarlanır. Her şeyi görmeye devam edebilirsin.",
     "noMatch": "Bu adda grup yok",
     "none": "Hiçbir şey işaretli değil: her şey eskisi gibi sayılır.",
     "saved": "Grupların kaydedildi.",
     "search": "Grup ara",
     "some": "Yalnızca işaretli satırlar sayılır.",
+    "someEmpty": "İşaretsiz sütunda her şey sayılır, diğerinde yalnızca işaretli olanlar.",
     "title": "Gruplarım"
   },
   "name": "Ad",
